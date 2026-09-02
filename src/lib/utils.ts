@@ -63,7 +63,7 @@ const CURRENCY_LOCALE: Record<string, string> = {
 
 export function formatCurrency(
   amount: number | string | null | undefined,
-  currency = "BDT",
+  currency = "USD",
   options: Intl.NumberFormatOptions = {},
 ) {
   const value = typeof amount === "string" ? Number(amount) : (amount ?? 0);

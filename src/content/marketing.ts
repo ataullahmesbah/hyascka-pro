@@ -331,7 +331,7 @@ export const faqs: FaqSeed[] = [
   },
   {
     question: "Do you work with clients outside Bangladesh?",
-    answer: "Yes. We work with clients across Asia, Europe and North America and invoice in BDT, USD, EUR or GBP. Delivery runs asynchronously with a scheduled overlap window agreed at kickoff.",
+    answer: "Yes. We work with clients across Asia, Europe and North America and invoice in USD, EUR, GBP or BDT. Delivery runs asynchronously with a scheduled overlap window agreed at kickoff.",
     category: "Working with us",
     position: 6,
   },
@@ -361,7 +361,7 @@ export const faqs: FaqSeed[] = [
   },
   {
     question: "What does a project cost?",
-    answer: "Marketing sites start at BDT 180,000, e-commerce builds at BDT 280,000, and retainers from BDT 25,000 per month. Every service page lists its own starting price and pricing model, and after a discovery call you receive a fixed proposal with scope, deliverables and timeline — never an hourly estimate that drifts.",
+    answer: "Marketing sites start at $1,500, e-commerce builds at $2,400, and retainers from $220 per month. Every service page lists its own starting price and pricing model, and after a discovery call you receive a fixed proposal with scope, deliverables and timeline — never an hourly estimate that drifts.",
     category: "Pricing & delivery",
     position: 11,
   },

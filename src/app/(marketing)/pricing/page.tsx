@@ -38,8 +38,8 @@ const COMPARISON = [
 ];
 
 const TIERS = [
-  { key: "launch", name: "Launch", price: 180000, blurb: "Be credible quickly.", cta: "Start with Launch" },
-  { key: "growth", name: "Growth", price: 380000, blurb: "The full agency-grade site.", cta: "Choose Growth", highlighted: true },
+  { key: "launch", name: "Launch", price: 1500, blurb: "Be credible quickly.", cta: "Start with Launch" },
+  { key: "growth", name: "Growth", price: 3200, blurb: "The full agency-grade site.", cta: "Choose Growth", highlighted: true },
   { key: "platform", name: "Platform", price: null, blurb: "Website plus the system behind it.", cta: "Request a quote" },
 ] as const;
 

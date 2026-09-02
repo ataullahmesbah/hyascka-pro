@@ -155,7 +155,7 @@ export async function seedDemoData(prisma: PrismaClient) {
           requestId: request.id,
           title: `Proposal — ${service.title}`,
           body: "Fixed scope across three milestones with a two-week discovery, build increments and a launch window.",
-          amount: 240000 + index * 60000,
+          amount: 2000 + index * 500,
           validUntil: new Date(Date.now() + 21 * 864e5),
           accepted: index === 3,
         },
@@ -164,18 +164,22 @@ export async function seedDemoData(prisma: PrismaClient) {
 
     for (const [index, client] of clients.slice(0, 3).entries()) {
       const service = services[(index + 2) % services.length];
+
+      // Re-running the seed must not fail on the reference it created last
+      // time, so an existing demo order is replaced rather than duplicated.
+      await prisma.order.deleteMany({ where: { reference: ref("ORD", index + 1) } });
       await prisma.order.create({
         data: {
           reference: ref("ORD", index + 1),
           clientId: client.id,
           status: (["ACTIVE", "PENDING", "COMPLETED"] as const)[index],
-          total: 320000 + index * 80000,
+          total: 2650 + index * 650,
           notes: "Agreed from the accepted proposal.",
           createdAt: daysAgo(index * 9 + 4),
           items: {
             create: [
-              { serviceId: service.id, title: `${service.title} — milestone 1`, quantity: 1, unitPrice: 180000 },
-              { serviceId: service.id, title: "Discovery & architecture", quantity: 1, unitPrice: 140000 + index * 80000 },
+              { serviceId: service.id, title: `${service.title} — milestone 1`, quantity: 1, unitPrice: 1500 },
+              { serviceId: service.id, title: "Discovery & architecture", quantity: 1, unitPrice: 1200 + index * 650 },
             ],
           },
         },
@@ -259,7 +263,7 @@ export async function seedDemoData(prisma: PrismaClient) {
 
     for (const [index, client] of clients.entries()) {
       const status = (["PAID", "ISSUED", "OVERDUE", "PARTIALLY_PAID", "PAID", "ISSUED"] as const)[index % 6];
-      const subtotal = 140000 + index * 45000;
+      const subtotal = 1200 + index * 380;
       const tax = Math.round(subtotal * 0.15);
       const total = subtotal + tax;
       const paid = status === "PAID" ? total : status === "PARTIALLY_PAID" ? Math.round(total / 2) : 0;
@@ -369,11 +373,11 @@ export async function seedDemoData(prisma: PrismaClient) {
   if ((await prisma.expense.count()) < 6) {
     await prisma.expense.createMany({
       data: [
-        { reference: ref("EXP", 10), category: "Software", vendor: "Vercel", description: "Hosting — monthly", amount: 2400, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(10), spentAt: daysAgo(10) },
-        { reference: ref("EXP", 11), category: "Software", vendor: "Neon", description: "Database — monthly", amount: 1900, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(10), spentAt: daysAgo(10) },
-        { reference: ref("EXP", 12), category: "Advertising", vendor: "Google Ads", description: "Brand campaign", amount: 42000, status: "SUBMITTED", createdById: admin, spentAt: daysAgo(3) },
-        { reference: ref("EXP", 13), category: "Contractors", vendor: "Freelance illustrator", description: "Case study artwork", amount: 18000, status: "SUBMITTED", createdById: pm, spentAt: daysAgo(2) },
-        { reference: ref("EXP", 14), category: "Office", vendor: "WeWork", description: "Desk rental", amount: 26000, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(25), spentAt: daysAgo(25) },
+        { reference: ref("EXP", 10), category: "Software", vendor: "Vercel", description: "Hosting — monthly", amount: 20, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(10), spentAt: daysAgo(10) },
+        { reference: ref("EXP", 11), category: "Software", vendor: "Neon", description: "Database — monthly", amount: 16, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(10), spentAt: daysAgo(10) },
+        { reference: ref("EXP", 12), category: "Advertising", vendor: "Google Ads", description: "Brand campaign", amount: 350, status: "SUBMITTED", createdById: admin, spentAt: daysAgo(3) },
+        { reference: ref("EXP", 13), category: "Contractors", vendor: "Freelance illustrator", description: "Case study artwork", amount: 150, status: "SUBMITTED", createdById: pm, spentAt: daysAgo(2) },
+        { reference: ref("EXP", 14), category: "Office", vendor: "WeWork", description: "Desk rental", amount: 220, status: "APPROVED", createdById: admin, approvedById: finance, approvedAt: daysAgo(25), spentAt: daysAgo(25) },
       ],
       skipDuplicates: true,
     });

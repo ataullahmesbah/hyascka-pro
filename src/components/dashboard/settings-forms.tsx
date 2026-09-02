@@ -13,6 +13,7 @@ import {
   saveSeoSettings,
   saveSponsorsSettings,
   saveFontSettings,
+  saveLocalizationSettings,
   saveThemeSettings,
   saveTrackingSettings,
   saveWhatsappSettings,
@@ -764,6 +765,46 @@ export function FontSettingsForm({ policy }: { policy: FontPolicy }) {
         "bodyFont",
       )}
       <SubmitButton>Save typography</SubmitButton>
+    </ActionForm>
+  );
+}
+
+/**
+ * Currency and locale (PRD v5.1 §8).
+ *
+ * Changing the currency changes how prices are *displayed*; it does not convert
+ * the numbers, which is said plainly on the form so nobody expects an exchange
+ * rate that is not there.
+ */
+export function LocalizationForm({ values }: { values: Record<string, string> }) {
+  return (
+    <ActionForm action={saveLocalizationSettings} successTitle="Localization saved">
+      <SelectField
+        name="currency"
+        label="Currency"
+        hint="Applies to service prices, quotes and new invoices. Existing invoices keep the currency they were issued in."
+        defaultValue={values.currency}
+        options={[
+          { value: "USD", label: "US dollar ($)" },
+          { value: "EUR", label: "Euro (€)" },
+          { value: "GBP", label: "Pound sterling (£)" },
+          { value: "BDT", label: "Bangladeshi taka (৳)" },
+        ]}
+      />
+      <div className="rounded-lg border border-warning/40 bg-warning-soft p-3 text-step--2 text-warning">
+        This changes the currency prices are shown in — it does not convert the amounts. Update your
+        service prices to match after switching.
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <TextField name="locale" label="Locale" hint="Language tag, e.g. en or en-GB." defaultValue={values.locale} />
+        <TextField
+          name="timezone"
+          label="Time zone"
+          hint="Used for dates in the dashboard and on invoices."
+          defaultValue={values.timezone}
+        />
+      </div>
+      <SubmitButton>Save localization</SubmitButton>
     </ActionForm>
   );
 }

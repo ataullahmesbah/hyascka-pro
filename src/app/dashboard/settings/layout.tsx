@@ -5,7 +5,8 @@ import { requirePermission } from "@/lib/auth/guards";
 
 const TABS = [
   { href: "/dashboard/settings", label: "Brand" },
-  { href: "/dashboard/settings/theme", label: "Theme" },
+  { href: "/dashboard/settings/theme", label: "Theme & fonts" },
+  { href: "/dashboard/settings/localization", label: "Currency" },
   { href: "/dashboard/settings/contact", label: "Contact" },
   { href: "/dashboard/settings/sponsors", label: "Sponsors" },
   { href: "/dashboard/settings/widgets", label: "Chat & WhatsApp" },

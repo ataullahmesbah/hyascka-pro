@@ -142,9 +142,14 @@ export const defaultAssistant = {
   ],
 };
 
+/**
+ * The site sells internationally, so prices are quoted in dollars by default.
+ * An admin can switch the whole site to another currency from Settings →
+ * Localization; taka is one of the options for local work.
+ */
 export const defaultLocalization = {
-  currency: "BDT",
-  currencySymbol: "৳",
+  currency: "USD",
+  currencySymbol: "$",
   locale: "en",
   timezone: "Asia/Dhaka",
 };

@@ -32,7 +32,7 @@ export default async function NewServicePage() {
           timeline: "",
           pricingModel: "STARTING_FROM",
           startingPrice: "",
-          currency: "BDT",
+          currency: "USD",
           status: "DRAFT",
           featured: false,
           metaTitle: "",

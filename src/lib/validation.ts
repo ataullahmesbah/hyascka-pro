@@ -206,6 +206,13 @@ export const themeSettingsSchema = z
     path: ["defaultTheme"],
   });
 
+/** Currency and locale (PRD v5.1 §8). The site quotes in dollars by default. */
+export const localizationSettingsSchema = z.object({
+  currency: z.enum(["USD", "EUR", "GBP", "BDT"]),
+  locale: z.string().trim().min(2).max(10),
+  timezone: z.string().trim().min(3).max(60),
+});
+
 /** Typography (PRD v5.1 §2). Only the five shipped families are accepted. */
 export const fontSettingsSchema = z.object({
   headingFont: z.enum(FONT_IDS),

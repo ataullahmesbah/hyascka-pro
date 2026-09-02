@@ -15,6 +15,7 @@ import {
   paymentMethodSchema,
   seoSettingsSchema,
   fontSettingsSchema,
+  localizationSettingsSchema,
   themeSettingsSchema,
   sponsorsSettingsSchema,
   toActionState,
@@ -159,6 +160,28 @@ export async function saveSeoSettings(_prev: ActionState | null, formData: FormD
   if (!parsed.success) return toActionState(parsed.error);
   await writeSetting("seo", parsed.data, "SEO defaults updated");
   return { ok: true, message: "SEO defaults saved." };
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", BDT: "৳" };
+
+export async function saveLocalizationSettings(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = localizationSettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+
+  // The symbol is derived rather than typed, so it can never disagree with the
+  // currency code the formatter actually uses.
+  await writeSetting(
+    "localization",
+    { ...parsed.data, currencySymbol: CURRENCY_SYMBOLS[parsed.data.currency] ?? "$" },
+    "Localization updated",
+  );
+  return {
+    ok: true,
+    message: `Prices now show in ${parsed.data.currency}. Existing invoices keep the currency they were issued in.`,
+  };
 }
 
 export async function saveFontSettings(_prev: ActionState | null, formData: FormData): Promise<ActionState> {
