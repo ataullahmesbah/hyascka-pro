@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="HYASCKA">
+  <title>HYASCKA</title>
+  <defs>
+    <linearGradient id="c-left" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25E6FF"/><stop offset="100%" stop-color="#1B76F0"/>
+    </linearGradient>
+    <linearGradient id="c-right" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9152F8"/><stop offset="100%" stop-color="#4A38E0"/>
+    </linearGradient>
+    <linearGradient id="c-bar" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1CCCFB"/><stop offset="100%" stop-color="#7F4CF2"/>
+    </linearGradient>
+  </defs>
+  <rect x="96" y="96" width="88" height="320" rx="8" fill="url(#c-left)"/>
+  <rect x="328" y="96" width="88" height="320" rx="8" fill="url(#c-right)"/>
+  <path d="M160 320 L352 200 L352 272 L160 392 Z" fill="url(#c-bar)"/>
+</svg>

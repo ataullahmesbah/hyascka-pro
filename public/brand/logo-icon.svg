@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="HYASCKA">
+  <title>HYASCKA</title>
+  <defs>
+    <linearGradient id="hy-ramp" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0FD8F5"/>
+      <stop offset="46%" stop-color="#2C7BF2"/>
+      <stop offset="100%" stop-color="#7B45F0"/>
+    </linearGradient>
+    <linearGradient id="hy-left" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22E4FF"/>
+      <stop offset="100%" stop-color="#1E7BF0"/>
+    </linearGradient>
+    <linearGradient id="hy-right" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B4BF7"/>
+      <stop offset="100%" stop-color="#4B39E0"/>
+    </linearGradient>
+    <linearGradient id="hy-bar" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#19C8FB"/>
+      <stop offset="55%" stop-color="#3E71F4"/>
+      <stop offset="100%" stop-color="#7A47F1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- left column: bevelled face + lighter top facet -->
+  <path d="M104 132 L176 96 L176 424 L104 424 Z" fill="url(#hy-left)"/>
+  <path d="M104 132 L176 96 L176 132 L104 168 Z" fill="#ffffff" opacity="0.34"/>
+  <path d="M152 110 L176 98 L176 424 L152 424 Z" fill="#000000" opacity="0.16"/>
+
+  <!-- diagonal crossbar sweeping cyan to purple -->
+  <path d="M152 316 L360 196 L360 268 L152 388 Z" fill="url(#hy-bar)"/>
+  <path d="M152 316 L360 196 L360 216 L152 336 Z" fill="#ffffff" opacity="0.22"/>
+
+  <!-- right column: bevelled face + lighter top facet -->
+  <path d="M336 96 L408 132 L408 424 L336 424 Z" fill="url(#hy-right)"/>
+  <path d="M336 96 L408 132 L408 168 L336 132 Z" fill="#ffffff" opacity="0.28"/>
+  <path d="M336 96 L360 108 L360 424 L336 424 Z" fill="#ffffff" opacity="0.14"/>
+</svg>

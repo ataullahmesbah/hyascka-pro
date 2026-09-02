@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" role="img" aria-label="HYASCKA — Digital Service Provider">
+  <title>HYASCKA</title>
+  <defs>
+    <linearGradient id="l-left" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22E4FF"/><stop offset="100%" stop-color="#1E7BF0"/>
+    </linearGradient>
+    <linearGradient id="l-right" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B4BF7"/><stop offset="100%" stop-color="#4B39E0"/>
+    </linearGradient>
+    <linearGradient id="l-bar" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#19C8FB"/><stop offset="55%" stop-color="#3E71F4"/><stop offset="100%" stop-color="#7A47F1"/>
+    </linearGradient>
+    <linearGradient id="l-word" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#19C8FB"/><stop offset="55%" stop-color="#3E71F4"/><stop offset="100%" stop-color="#8B4BF7"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(16 12) scale(0.344)">
+    <path d="M104 132 L176 96 L176 424 L104 424 Z" fill="url(#l-left)"/>
+    <path d="M104 132 L176 96 L176 132 L104 168 Z" fill="#ffffff" opacity="0.34"/>
+    <path d="M152 316 L360 196 L360 268 L152 388 Z" fill="url(#l-bar)"/>
+    <path d="M336 96 L408 132 L408 424 L336 424 Z" fill="url(#l-right)"/>
+    <path d="M336 96 L408 132 L408 168 L336 132 Z" fill="#ffffff" opacity="0.28"/>
+  </g>
+  <text x="196" y="112" font-family="Verdana, Geneva, DejaVu Sans, sans-serif" font-size="72" font-weight="700" letter-spacing="6" fill="url(#l-word)">HYASCKA</text>
+  <text x="200" y="152" font-family="Verdana, Geneva, DejaVu Sans, sans-serif" font-size="21" font-weight="500" letter-spacing="7.5" fill="#8A93A8">DIGITAL SERVICE PROVIDER</text>
+</svg>
