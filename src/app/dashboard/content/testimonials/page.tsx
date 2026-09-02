@@ -1,5 +1,5 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { ArchiveButton, TestimonialForm } from "@/components/dashboard/content-forms";
+import { ArchiveButton, DeleteButton, RestoreButton, TestimonialForm } from "@/components/dashboard/content-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
@@ -31,7 +31,12 @@ export default async function TestimonialsPage() {
                     <StatusBadge status={testimonial.status} />
                     {testimonial.status !== "ARCHIVED" ? (
                       <ArchiveButton entity="testimonial" id={testimonial.id} />
-                    ) : null}
+                    ) : (
+                      <>
+                        <RestoreButton entity="testimonial" id={testimonial.id} />
+                        <DeleteButton entity="testimonial" id={testimonial.id} />
+                      </>
+                    )}
                   </div>
                 }
               >

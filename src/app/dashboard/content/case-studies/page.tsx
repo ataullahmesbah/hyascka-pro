@@ -1,5 +1,5 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { ArchiveButton, CaseStudyForm } from "@/components/dashboard/content-forms";
+import { ArchiveButton, CaseStudyForm, DeleteButton, RestoreButton } from "@/components/dashboard/content-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
@@ -29,7 +29,14 @@ export default async function CaseStudiesAdminPage() {
               action={
                 <div className="flex items-center gap-2">
                   <StatusBadge status={study.status} />
-                  {study.status !== "ARCHIVED" ? <ArchiveButton entity="caseStudy" id={study.id} /> : null}
+                  {study.status !== "ARCHIVED" ? (
+                        <ArchiveButton entity="caseStudy" id={study.id} />
+                      ) : (
+                        <div className="flex gap-2">
+                          <RestoreButton entity="caseStudy" id={study.id} />
+                          <DeleteButton entity="caseStudy" id={study.id} />
+                        </div>
+                      )}
                 </div>
               }
             >

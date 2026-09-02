@@ -82,6 +82,8 @@ export type PostSeed = {
   tags: string[];
   readMinutes: number;
   publishedAt: string;
+  /** Cover image, uploaded from the CMS. Falls back to a generated card. */
+  coverImage?: string | null;
 };
 
 export type TeamSeed = { name: string; role: string; bio: string; position: number };

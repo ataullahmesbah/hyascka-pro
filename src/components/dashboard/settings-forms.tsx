@@ -24,6 +24,8 @@ import { Checkbox, Field, Input, Select, Switch, Textarea } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { FONT_IDS, FONT_META, type FontId, type FontPolicy } from "@/lib/fonts";
+import { ImageUpload } from "@/components/dashboard/image-upload";
+import { IMAGE_GUIDANCE } from "@/lib/upload-limits";
 import { cn } from "@/lib/utils";
 import { THEMES, THEME_META, type ThemeId, type ThemePolicy } from "@/lib/theme";
 import type { SponsorItem, SponsorsContent } from "@/components/marketing/sponsors";
@@ -99,6 +101,9 @@ export function IntegrationToggle({
 // ---------------------------------------------------------------------------
 
 export function BrandForm({ values }: { values: Record<string, string> }) {
+  const [logoUrl, setLogoUrl] = React.useState(values.logoUrl ?? "");
+  const [faviconUrl, setFaviconUrl] = React.useState(values.faviconUrl ?? "");
+
   return (
     <ActionForm action={saveBrandSettings} successTitle="Brand saved">
       <TextField name="siteName" label="Site name" defaultValue={values.siteName} required />
@@ -109,13 +114,22 @@ export function BrandForm({ values }: { values: Record<string, string> }) {
         hint="Used in the footer and as the default meta description fallback."
         defaultValue={values.description}
       />
-      <TextField
-        name="logoUrl"
-        label="Logo URL"
-        hint="A path in /public or a full URL. The bundled mark is /brand/logo-icon.svg."
-        defaultValue={values.logoUrl}
+      <input type="hidden" name="logoUrl" value={logoUrl} />
+      <ImageUpload
+        label="Logo"
+        value={logoUrl}
+        onChange={setLogoUrl}
+        guidance={IMAGE_GUIDANCE.logo}
+        folder="hyascka/brand"
       />
-      <TextField name="faviconUrl" label="Favicon URL" defaultValue={values.faviconUrl} />
+      <input type="hidden" name="faviconUrl" value={faviconUrl} />
+      <ImageUpload
+        label="Favicon"
+        value={faviconUrl}
+        onChange={setFaviconUrl}
+        guidance="512 × 512 px, transparent"
+        folder="hyascka/brand"
+      />
       <SubmitButton>Save brand</SubmitButton>
     </ActionForm>
   );
@@ -273,8 +287,8 @@ export function SponsorsForm({ content }: { content: SponsorsContent }) {
           </Button>
         </div>
         <p className="mt-1 text-step--2 text-ink-muted">
-          Leave the logo empty to show the name as text. Logos display at 32px tall — a
-          transparent PNG or SVG around 320×80 works best.
+          Upload a logo from your computer, or leave it empty to show the name as text.
+          Logos display at 32px tall — a transparent PNG or SVG around 320×80 works best.
         </p>
 
         <div className="mt-4 space-y-3">
@@ -288,14 +302,13 @@ export function SponsorsForm({ content }: { content: SponsorsContent }) {
                   placeholder="Northlane Systems"
                 />
               </Field>
-              <Field label="Logo URL" htmlFor={`sp-img-${item.id}`}>
-                <Input
-                  id={`sp-img-${item.id}`}
-                  value={item.imageUrl ?? ""}
-                  onChange={(event) => update(index, { imageUrl: event.target.value })}
-                  placeholder="Optional"
-                />
-              </Field>
+              <ImageUpload
+                label="Logo"
+                value={item.imageUrl ?? ""}
+                onChange={(url) => update(index, { imageUrl: url })}
+                guidance={IMAGE_GUIDANCE.sponsorLogo}
+                folder="hyascka/sponsors"
+              />
               <Field label="Link" htmlFor={`sp-href-${item.id}`}>
                 <Input
                   id={`sp-href-${item.id}`}
@@ -380,6 +393,8 @@ export function ContactForm({ values }: { values: Record<string, string> }) {
 }
 
 export function SeoForm({ values }: { values: Record<string, string> }) {
+  const [ogImage, setOgImage] = React.useState(values.ogImage ?? "");
+
   return (
     <ActionForm action={saveSeoSettings} successTitle="SEO defaults saved">
       <TextField name="defaultTitle" label="Default title" defaultValue={values.defaultTitle} required />
@@ -395,7 +410,14 @@ export function SeoForm({ values }: { values: Record<string, string> }) {
         hint="Between 50 and 200 characters."
         defaultValue={values.defaultDescription}
       />
-      <TextField name="ogImage" label="Social share image" defaultValue={values.ogImage} />
+      <input type="hidden" name="ogImage" value={ogImage} />
+      <ImageUpload
+        label="Social share image"
+        value={ogImage}
+        onChange={setOgImage}
+        guidance={IMAGE_GUIDANCE.ogImage}
+        folder="hyascka/seo"
+      />
       <TextField name="twitterHandle" label="X / Twitter handle" defaultValue={values.twitterHandle} />
       <SelectField
         name="robots"

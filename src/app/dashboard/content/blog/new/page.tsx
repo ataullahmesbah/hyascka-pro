@@ -14,6 +14,7 @@ export default async function NewPostPage() {
       />
       <PostEditor
         draft={{
+          coverImage: "",
           title: "",
           slug: "",
           excerpt: "",

@@ -386,6 +386,7 @@ export const postContentSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   metaTitle: optionalText(70),
   metaDescription: optionalText(200),
+  coverImage: optionalText(500),
 });
 
 export const testimonialSchema = z.object({
@@ -396,6 +397,7 @@ export const testimonialSchema = z.object({
   quote: z.string().trim().min(20).max(1000),
   rating: z.coerce.number().int().min(1).max(5).default(5),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
+  avatarUrl: optionalText(500),
 });
 
 export const faqSchema = z.object({

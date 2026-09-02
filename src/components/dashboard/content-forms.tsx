@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 import {
   deleteContentAction,
+  purgeContentAction,
+  restoreContentAction,
   saveCaseStudyAction,
   saveFaqAction,
   saveHomepageSectionAction,
@@ -16,6 +18,8 @@ import { Panel } from "@/components/dashboard/page-shell";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/dashboard/image-upload";
+import { IMAGE_GUIDANCE } from "@/lib/upload-limits";
 
 const STATUS_OPTIONS = [
   { value: "PUBLISHED", label: "Published — live on the site" },
@@ -85,6 +89,7 @@ function SectionDataField({ defaultValue, sectionKey }: { defaultValue: string; 
 
 export type PostDraft = {
   id?: string;
+  coverImage: string;
   title: string;
   slug: string;
   excerpt: string;
@@ -98,6 +103,7 @@ export type PostDraft = {
 
 export function PostEditor({ draft }: { draft: PostDraft }) {
   const [content, setContent] = React.useState(draft.content);
+  const [coverImage, setCoverImage] = React.useState(draft.coverImage);
   const [preview, setPreview] = React.useState(false);
   const router = useRouter();
 
@@ -189,6 +195,17 @@ export function PostEditor({ draft }: { draft: PostDraft }) {
         </div>
 
         <aside className="space-y-5">
+          <Panel title="Cover image">
+            <input type="hidden" name="coverImage" value={coverImage} />
+            <ImageUpload
+              label="Cover"
+              value={coverImage}
+              onChange={setCoverImage}
+              guidance={IMAGE_GUIDANCE.blogCover}
+              folder="hyascka/blog"
+            />
+          </Panel>
+
           <Panel title="Publishing">
             <div className="space-y-5">
               <SelectFieldPlain name="status" label="Status" defaultValue={draft.status} options={STATUS_OPTIONS} />
@@ -216,11 +233,15 @@ export function TestimonialForm({
     quote: string;
     rating: number;
     status: string;
+    avatarUrl?: string | null;
   };
 }) {
+  const [avatarUrl, setAvatarUrl] = React.useState(draft?.avatarUrl ?? "");
+
   return (
     <ActionForm action={saveTestimonialAction} successTitle="Testimonial saved" resetOnSuccess={!draft}>
       {draft ? <input type="hidden" name="id" value={draft.id} /> : null}
+      <input type="hidden" name="avatarUrl" value={avatarUrl} />
       <div className="grid gap-5 sm:grid-cols-2">
         <PlainField name="author" label="Author" defaultValue={draft?.author ?? ""} required />
         <PlainField name="role" label="Role" defaultValue={draft?.role ?? ""} required />
@@ -228,6 +249,13 @@ export function TestimonialForm({
         <PlainField name="rating" label="Rating (1–5)" type="number" defaultValue={String(draft?.rating ?? 5)} />
       </div>
       <AreaFieldPlain name="quote" label="Quote" rows={4} defaultValue={draft?.quote ?? ""} />
+      <ImageUpload
+        label="Photo"
+        value={avatarUrl}
+        onChange={setAvatarUrl}
+        guidance={IMAGE_GUIDANCE.avatar}
+        folder="hyascka/people"
+      />
       <SelectFieldPlain name="status" label="Status" defaultValue={draft?.status ?? "PUBLISHED"} options={STATUS_OPTIONS} />
       <SubmitButton>{draft ? "Save testimonial" : "Add testimonial"}</SubmitButton>
     </ActionForm>
@@ -318,6 +346,57 @@ export function ArchiveButton({
           kind: "success",
           title: "Archived",
           description: "Nothing is deleted — set the status back to Published to restore it.",
+        });
+      }}
+    />
+  );
+}
+
+/**
+ * Offered only on already-archived rows — see `purgeContentAction`.
+ */
+export function DeleteButton({
+  entity,
+  id,
+}: {
+  entity: "testimonial" | "faq" | "post" | "caseStudy";
+  id: string;
+}) {
+  const { toast } = useToast();
+  return (
+    <ConfirmButton
+      label="Delete"
+      confirmLabel="Delete for good?"
+      onConfirm={async () => {
+        await purgeContentAction(entity, id);
+        toast({
+          kind: "success",
+          title: "Deleted",
+          description: "That item is gone permanently.",
+        });
+      }}
+    />
+  );
+}
+
+export function RestoreButton({
+  entity,
+  id,
+}: {
+  entity: "testimonial" | "faq" | "post" | "caseStudy";
+  id: string;
+}) {
+  const { toast } = useToast();
+  return (
+    <ConfirmButton
+      label="Restore"
+      confirmLabel="Restore it?"
+      onConfirm={async () => {
+        await restoreContentAction(entity, id);
+        toast({
+          kind: "success",
+          title: "Restored",
+          description: "It is back in the editor as a draft.",
         });
       }}
     />

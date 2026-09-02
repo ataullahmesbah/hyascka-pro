@@ -204,6 +204,7 @@ export const getPosts = cache(async (): Promise<PostSeed[]> =>
       tags: row.tags.map((t) => t.tag.slug),
       readMinutes: row.readMinutes,
       publishedAt: (row.publishedAt ?? row.createdAt).toISOString().slice(0, 10),
+      coverImage: row.coverImage,
     }));
   }, defaultPosts),
 );

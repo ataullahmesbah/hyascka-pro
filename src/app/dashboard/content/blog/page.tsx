@@ -1,5 +1,5 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { ArchiveButton } from "@/components/dashboard/content-forms";
+import { ArchiveButton, DeleteButton, RestoreButton } from "@/components/dashboard/content-forms";
 import { ButtonLink } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, LinkCell, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
@@ -58,7 +58,14 @@ export default async function BlogAdminPage() {
                       <StatusBadge status={post.status} />
                     </Td>
                     <Td>
-                      {post.status !== "ARCHIVED" ? <ArchiveButton entity="post" id={post.id} /> : null}
+                      {post.status !== "ARCHIVED" ? (
+                        <ArchiveButton entity="post" id={post.id} />
+                      ) : (
+                        <div className="flex gap-2">
+                          <RestoreButton entity="post" id={post.id} />
+                          <DeleteButton entity="post" id={post.id} />
+                        </div>
+                      )}
                     </Td>
                   </Tr>
                 ))}

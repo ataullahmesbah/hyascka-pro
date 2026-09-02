@@ -32,6 +32,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
       <PostEditor
         draft={{
           id: post.id,
+          coverImage: post.coverImage ?? "",
           title: post.title,
           slug: post.slug,
           excerpt: post.excerpt,

@@ -335,6 +335,90 @@ export async function saveHeroAction(
   return { ok: true, message: "Hero saved and published." };
 }
 
+/**
+ * Permanent removal.
+ *
+ * Kept separate from archiving on purpose: the everyday button archives, so a
+ * mis-click is recoverable, and this one is only offered once an item is
+ * already archived. That way "delete" really deletes when an admin means it,
+ * without making it the easy thing to hit by accident (PRD §47).
+ */
+export async function purgeContentAction(
+  entity: "testimonial" | "faq" | "post" | "caseStudy",
+  id: string,
+) {
+  const user = await authorize("content.manage");
+
+  switch (entity) {
+    case "testimonial":
+      await prisma.testimonial.delete({ where: { id } });
+      revalidatePath("/dashboard/content/testimonials");
+      break;
+    case "faq":
+      await prisma.fAQ.delete({ where: { id } });
+      revalidatePath("/dashboard/content/faq");
+      break;
+    case "post":
+      await prisma.blogPost.delete({ where: { id } });
+      revalidatePath("/dashboard/content/blog");
+      break;
+    case "caseStudy":
+      await prisma.caseStudy.delete({ where: { id } });
+      revalidatePath("/dashboard/content/case-studies");
+      break;
+  }
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "content.deleted",
+    entityType: entity,
+    entityId: id,
+    summary: `${entity} permanently deleted`,
+  });
+
+  revalidatePath("/", "layout");
+}
+
+/** Puts an archived item back into the editor as a draft. */
+export async function restoreContentAction(
+  entity: "testimonial" | "faq" | "post" | "caseStudy",
+  id: string,
+) {
+  const user = await authorize("content.manage");
+  const data = { status: "DRAFT" as const };
+
+  switch (entity) {
+    case "testimonial":
+      await prisma.testimonial.update({ where: { id }, data });
+      revalidatePath("/dashboard/content/testimonials");
+      break;
+    case "faq":
+      await prisma.fAQ.update({ where: { id }, data });
+      revalidatePath("/dashboard/content/faq");
+      break;
+    case "post":
+      await prisma.blogPost.update({ where: { id }, data });
+      revalidatePath("/dashboard/content/blog");
+      break;
+    case "caseStudy":
+      await prisma.caseStudy.update({ where: { id }, data });
+      revalidatePath("/dashboard/content/case-studies");
+      break;
+  }
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "content.restored",
+    entityType: entity,
+    entityId: id,
+    summary: `${entity} restored as a draft`,
+  });
+
+  revalidatePath("/", "layout");
+}
+
 export async function deleteContentAction(
   entity: "testimonial" | "faq" | "post" | "caseStudy",
   id: string,

@@ -1,5 +1,5 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { ArchiveButton, FaqForm } from "@/components/dashboard/content-forms";
+import { ArchiveButton, DeleteButton, FaqForm, RestoreButton } from "@/components/dashboard/content-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
@@ -30,7 +30,14 @@ export default async function FaqAdminPage() {
                 action={
                   <div className="flex items-center gap-2">
                     <StatusBadge status={faq.status} />
-                    {faq.status !== "ARCHIVED" ? <ArchiveButton entity="faq" id={faq.id} /> : null}
+                    {faq.status !== "ARCHIVED" ? (
+                        <ArchiveButton entity="faq" id={faq.id} />
+                      ) : (
+                        <div className="flex gap-2">
+                          <RestoreButton entity="faq" id={faq.id} />
+                          <DeleteButton entity="faq" id={faq.id} />
+                        </div>
+                      )}
                   </div>
                 }
               >
