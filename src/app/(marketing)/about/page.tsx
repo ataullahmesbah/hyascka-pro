@@ -97,7 +97,7 @@ export default async function AboutPage() {
                 delay={(index % 3) * 60}
                 className="rounded-xl border border-line bg-surface p-6"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full font-display text-base font-bold text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent font-display text-base font-bold text-accent-ink">
                   {member.name
                     .split(" ")
                     .slice(0, 2)

@@ -34,7 +34,7 @@ export default async function MessagesPage() {
                     href={`/dashboard/messages/${conversation.id}`}
                     className="-mx-2 flex items-start gap-4 rounded-lg px-2 py-4 transition-colors hover:bg-surface-2/60"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-ink">
                       {conversation.subject.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1">

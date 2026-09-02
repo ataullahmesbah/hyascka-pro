@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { IconBadge } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
-import { JsonLd, PageHeader, SectionHeading } from "@/components/ui/section";
+import { JsonLd, SectionHeading } from "@/components/ui/section";
 import { QuoteCalculator } from "@/components/marketing/quote-calculator";
 import { getServiceBySlug, getServices } from "@/lib/content";
 import { isFeatureEnabled } from "@/lib/settings";
@@ -73,15 +73,91 @@ export default async function ServiceDetailPage({
       />
       {service.faqs.length ? <JsonLd data={faqSchema(service.faqs)} /> : null}
 
-      <PageHeader eyebrow={PRICING_LABEL[service.pricingModel]} title={service.title} description={service.tagline}>
-        <ButtonLink href={`/contact?service=${service.slug}`}>
-          Request a proposal
-          <ArrowRight className="h-4 w-4" />
-        </ButtonLink>
-        <ButtonLink href="/work" variant="outline">
-          See related work
-        </ButtonLink>
-      </PageHeader>
+      {/*
+        A service page is a sales page, so the top of it has to answer "what is
+        this, what do I get, what does it cost and how long does it take"
+        without scrolling. The old header was a title and a tagline in a very
+        tall empty band.
+      */}
+      <section className="hero-surface relative overflow-hidden border-b border-line">
+        <div className="grid-texture pointer-events-none absolute inset-0" aria-hidden />
+        <div className="container-x relative grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[1.25fr_0.75fr]">
+          <div>
+            <nav aria-label="Breadcrumb" className="text-step--2 text-ink-muted">
+              <Link href="/" className="transition-colors hover:text-ink">
+                Home
+              </Link>
+              <span className="px-1.5">/</span>
+              <Link href="/services" className="transition-colors hover:text-ink">
+                Services
+              </Link>
+              <span className="px-1.5">/</span>
+              <span className="text-ink-soft">{service.title}</span>
+            </nav>
+
+            <span className="eyebrow mt-4">
+              <IconBadge name={service.icon} size="xs" />
+              {PRICING_LABEL[service.pricingModel]}
+            </span>
+
+            <h1 className="mt-4 max-w-[20ch] text-step-5 font-bold tracking-tight">
+              {service.title}
+            </h1>
+            <p className="mt-4 max-w-[54ch] text-step-1 leading-relaxed text-ink-soft">
+              {service.tagline}
+            </p>
+
+            {/* The deliverables an editor already maintains, doubling as proof. */}
+            <ul className="mt-6 flex flex-wrap gap-2">
+              {service.deliverables.slice(0, 4).map((item) => (
+                <li
+                  key={item}
+                  className="inline-flex items-center gap-1.5 rounded-pill border border-line bg-surface px-3 py-1.5 text-step--2 text-ink-soft"
+                >
+                  <Check className="h-3.5 w-3.5 shrink-0 text-success" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href={`/contact?service=${service.slug}`} size="lg">
+                Request a proposal
+                <ArrowRight className="h-4 w-4" />
+              </ButtonLink>
+              <ButtonLink href="/work" variant="outline" size="lg">
+                See related work
+              </ButtonLink>
+            </div>
+          </div>
+
+          {/* Price, timeline and what is included, above the fold. */}
+          <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+            <p className="text-step--2 font-semibold uppercase tracking-wide text-ink-muted">
+              {PRICING_LABEL[service.pricingModel]}
+            </p>
+            <p className="mt-1 font-display text-step-4 font-bold tracking-tight">
+              {service.startingPrice
+                ? formatCurrency(service.startingPrice, service.currency)
+                : "On request"}
+            </p>
+            <p className="mt-3 flex items-start gap-2 text-step--1 text-ink-soft">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
+              {service.timeline}
+            </p>
+            <p className="mt-2 flex items-start gap-2 text-step--1 text-ink-soft">
+              <Layers className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
+              {service.deliverables.length} deliverables · {service.processSteps.length} stages
+            </p>
+            <ButtonLink href={`/contact?service=${service.slug}`} className="mt-5 w-full">
+              Request a proposal
+            </ButtonLink>
+            <p className="mt-3 text-center text-step--2 text-ink-muted">
+              Fixed scope · No obligation
+            </p>
+          </div>
+        </div>
+      </section>
 
       <section className="section">
         <div className="container-x grid gap-12 lg:grid-cols-[1.4fr_0.6fr]">
@@ -110,7 +186,7 @@ export default async function ServiceDetailPage({
             <ol className="mt-6 space-y-4">
               {service.processSteps.map((step, index) => (
                 <li key={step.title} className="flex gap-4 rounded-xl border border-line bg-surface p-5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-ink">
                     {index + 1}
                   </span>
                   <div>
@@ -189,30 +265,9 @@ export default async function ServiceDetailPage({
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-xl border border-line bg-surface p-6">
-              <IconBadge name={service.icon} size="lg" />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-muted">
-                {PRICING_LABEL[service.pricingModel]}
-              </p>
-              <p className="accent-plain font-display text-3xl font-bold">
-                {service.startingPrice
-                  ? formatCurrency(service.startingPrice, service.currency)
-                  : "Custom quote"}
-              </p>
-              {service.timeline ? (
-                <p className="mt-4 flex items-center gap-2 text-sm text-ink-muted">
-                  <Clock className="h-4 w-4 text-accent" />
-                  {service.timeline}
-                </p>
-              ) : null}
-              <ButtonLink href={`/contact?service=${service.slug}`} className="mt-5 w-full">
-                Request a proposal
-              </ButtonLink>
-              <p className="mt-3 text-center text-xs text-ink-muted">
-                Fixed scope · No obligation
-              </p>
-            </div>
-
+            {/* The price and timeline are in the hero; repeating them here just
+                made the reader check whether the two agreed. This column is
+                what the hero cannot fit. */}
             <div className="rounded-xl border border-line bg-surface p-6">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
                 What you receive
@@ -225,6 +280,9 @@ export default async function ServiceDetailPage({
                   </li>
                 ))}
               </ul>
+              <ButtonLink href={`/contact?service=${service.slug}`} className="mt-5 w-full">
+                Request a proposal
+              </ButtonLink>
             </div>
 
             {service.technologies.length ? (
