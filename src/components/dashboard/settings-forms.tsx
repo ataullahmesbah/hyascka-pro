@@ -340,11 +340,17 @@ export function SponsorsForm({ content }: { content: SponsorsContent }) {
 export function WhatsappForm({ values }: { values: Record<string, string> }) {
   return (
     <ActionForm action={saveWhatsappSettings} successTitle="WhatsApp saved">
+      <TextField
+        name="phone"
+        label="WhatsApp number"
+        hint="With the country code, e.g. +8801700000000. Leave empty to hide the button."
+        defaultValue={values.phone ?? ""}
+      />
       <TextField name="label" label="Button label" defaultValue={values.label} required />
       <AreaField
         name="greeting"
         label="Pre-filled message"
-        hint="What the visitor's WhatsApp opens with. The number itself is set under Contact."
+        hint="What the visitor's WhatsApp conversation opens with."
         defaultValue={values.greeting}
       />
       <SubmitButton>Save WhatsApp settings</SubmitButton>

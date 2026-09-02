@@ -1,5 +1,9 @@
 import { Panel } from "@/components/dashboard/page-shell";
-import { AssistantForm, WhatsappForm } from "@/components/dashboard/settings-forms";
+import {
+  AssistantForm,
+  FeatureFlagToggle,
+  WhatsappForm,
+} from "@/components/dashboard/settings-forms";
 import { getSettings } from "@/lib/settings";
 import { isAssistantConfigured } from "@/lib/ai/gemini";
 
@@ -13,19 +17,29 @@ export default async function WidgetSettingsPage() {
     <div className="space-y-5">
       <Panel
         title="WhatsApp button"
-        description="A floating chat button on every public page. Show or hide it under Settings → Features."
+        description="A floating chat button on every public page."
       >
+        {/* On/off lives here as well as under Features, because this is the
+            page an admin opens when they want to turn the button off. */}
+        <div className="mb-5 rounded-lg border border-line p-4">
+          <FeatureFlagToggle
+            flagKey="whatsapp_widget"
+            enabled={Boolean(featureFlags.whatsapp_widget)}
+            description="Show the WhatsApp button on the public site"
+          />
+        </div>
+
         {!contact.whatsapp ? (
           <p className="mb-4 rounded-lg border border-warning/40 bg-warning-soft p-3 text-step--1 text-warning">
-            No WhatsApp number is set. Add one under Settings → Contact, or the button stays hidden.
+            No number yet — add one below and the button starts working.
           </p>
-        ) : (
-          <p className="mb-4 text-step--2 text-ink-muted">
-            Currently messaging <strong className="text-ink">{contact.whatsapp}</strong>. Change the
-            number under Settings → Contact.
-          </p>
-        )}
-        <WhatsappForm values={whatsapp as unknown as Record<string, string>} />
+        ) : null}
+        <WhatsappForm
+          values={{
+            ...(whatsapp as unknown as Record<string, string>),
+            phone: contact.whatsapp,
+          }}
+        />
       </Panel>
 
       <Panel
@@ -42,11 +56,13 @@ export default async function WidgetSettingsPage() {
             Gemini is connected. The assistant answers from published content only.
           </p>
         )}
-        {!featureFlags.ai_assistant ? (
-          <p className="mb-4 text-step--2 text-ink-muted">
-            The assistant is switched off under Settings → Features.
-          </p>
-        ) : null}
+        <div className="mb-5 rounded-lg border border-line p-4">
+          <FeatureFlagToggle
+            flagKey="ai_assistant"
+            enabled={Boolean(featureFlags.ai_assistant)}
+            description="Show the AI assistant on the public site"
+          />
+        </div>
         <AssistantForm
           values={{
             name: assistant.name,

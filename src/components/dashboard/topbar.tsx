@@ -112,7 +112,12 @@ function NotificationBell({
       });
     }
     setOpen(false);
-    router.push(item.href ?? `/dashboard/notifications/${item.id}`);
+    // Always open the notification itself rather than jumping straight to the
+    // record it refers to. The linked page is permission-gated, so for a role
+    // that cannot open it the jump ended on "access denied" instead of showing
+    // the message; the detail page shows the message to everyone and offers the
+    // onward link to whoever may follow it.
+    router.push(`/dashboard/notifications/${item.id}`);
   };
 
   const markAll = () => {

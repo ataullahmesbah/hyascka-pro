@@ -233,6 +233,15 @@ export const sponsorsSettingsSchema = z.object({
 export const whatsappSettingsSchema = z.object({
   greeting: z.string().trim().min(5).max(300),
   label: z.string().trim().min(2).max(60),
+  // The number lives on the contact settings, but it is edited here too —
+  // this is the page an admin opens when they think "WhatsApp".
+  phone: z
+    .string()
+    .trim()
+    .max(24)
+    .regex(/^\+?[0-9 ()-]*$/, "Digits only, optionally starting with +.")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const assistantSettingsSchema = z.object({
@@ -398,6 +407,24 @@ export const testimonialSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5).default(5),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   avatarUrl: optionalText(500),
+});
+
+/** Header and footer links (PRD v5.1 §5) — editable without touching code. */
+export const navigationItemSchema = z.object({
+  id: z.string().optional(),
+  location: z.enum(["HEADER", "FOOTER_SERVICES", "FOOTER_COMPANY", "FOOTER_LEGAL"]),
+  label: z.string().trim().min(1, "Give the link a label.").max(60),
+  href: z
+    .string()
+    .trim()
+    .min(1, "Where should the link go?")
+    .max(300)
+    .regex(
+      /^(\/|https?:\/\/|mailto:|tel:)/,
+      "Use a path starting with /, or a full https:// address.",
+    ),
+  position: z.coerce.number().int().min(0).max(999).default(0),
+  enabled: z.coerce.boolean().default(true),
 });
 
 export const faqSchema = z.object({

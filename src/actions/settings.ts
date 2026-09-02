@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
 import { authorize } from "@/lib/auth/guards";
 import { audit } from "@/lib/audit";
 import { SETTING_KEYS, type SettingKey } from "@/lib/settings";
@@ -111,8 +112,18 @@ export async function saveWhatsappSettings(
 ): Promise<ActionState> {
   const parsed = whatsappSettingsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return toActionState(parsed.error);
-  await writeSetting("whatsapp", parsed.data, "WhatsApp widget copy updated");
-  return { ok: true, message: "WhatsApp settings saved. Toggle visibility under Features." };
+  const { phone, ...widget } = parsed.data;
+
+  await writeSetting("whatsapp", widget, "WhatsApp widget copy updated");
+
+  // The number is part of the contact record, so editing it here updates the
+  // one place the rest of the site reads it from rather than keeping a copy.
+  if (phone !== undefined) {
+    const { contact } = await getSettings();
+    await writeSetting("contact", { ...contact, whatsapp: phone }, "WhatsApp number updated");
+  }
+
+  return { ok: true, message: "WhatsApp settings saved." };
 }
 
 export async function saveAssistantSettings(
