@@ -2,11 +2,18 @@
 
 A premium agency website **and** the business platform behind it: public marketing site,
 CMS, client portal, CRM, projects, finance, payments, messaging, notifications and
-role-based dashboards — built to the HYASCKA PRD v4.0.
+role-based dashboards — built to the HYASCKA PRD, v5.0.
 
 ```
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma · Three.js
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma
 ```
+
+Three themes, chosen by the visitor or locked by an admin. Measured on the five main
+pages with Lighthouse 12: **desktop 100 / 100 / 100 / 100**; mobile **92–98**
+performance with accessibility, best practices and SEO at **100**.
+
+New to the project? `docs/ENV-SETUP.md` walks through what to install, every environment
+variable, and where to get each value.
 
 ---
 
@@ -21,6 +28,11 @@ npm run db:push                   # create the schema
 npm run db:seed                   # catalogue, content, settings and demo data
 npm run dev                       # http://localhost:3000
 ```
+
+Only `DATABASE_URL`, `DIRECT_URL` and `AUTH_SECRET` are required. Every integration —
+Resend, Cloudinary, Gemini, Upstash, Telegram — is optional: the feature it powers stays
+switched off until you fill it in, and nothing else breaks. `docs/ENV-SETUP.md` has the
+sign-up steps for each.
 
 **No database yet?** The public site still runs. Every public read falls back to the
 bundled content in `src/content/`, so `npm run dev` gives you the full marketing site
@@ -67,9 +79,13 @@ npm run build && npm start &
 npm run test:smoke -- http://localhost:3000
 ```
 
-It checks that the public pages render, that a logged-out visitor cannot reach the
-dashboard, that a CLIENT session is blocked from finance/users/leads/audit even by
-typing the URL, and that every Super Admin module loads.
+67 checks: the public pages render, the site opens on the light theme and the toggle
+switches it, the homepage carries its 20 FAQ questions, the hero slider and the scroll
+reveals behave, the announcement bar stays dismissed, the API allow-list holds, a
+logged-out visitor cannot reach the dashboard, a CLIENT session is blocked from
+finance/users/leads/audit even by typing the URL, every Super Admin module loads with
+demo rows in it, the notification bell clears its own badge, and the PDF and XLSX
+exports are real files.
 
 ---
 
@@ -98,10 +114,12 @@ item is never the security boundary.
 | Projects | Milestones, tasks, activity feed, client-visible files, progress that notifies the client |
 | Finance | Invoices, payments, expenses, ledger, refunds, reports, CSV export |
 | Content CMS | Homepage sections, services, blog (with preview), case studies, testimonials, FAQ, navigation |
-| Media & SEO | Asset library, per-page metadata health, sitemap/robots |
-| Users & roles | Role and status changes, live permission matrix |
+| Media & SEO | Asset library with signed Cloudinary uploads, per-page metadata health, sitemap/robots |
+| Users & roles | A tab per role plus an all-users tab, role and status changes, live permission matrix |
 | Audit & security | Every sensitive mutation, plus failed logins and rate-limit events |
-| Settings | Brand, theme, contact, payments, tracking, SEO, maintenance, feature flags |
+| Support | Any staff role can raise a ticket and reassign it to another member |
+| Reports | Daily, weekly and monthly exports as PDF and XLSX |
+| Settings | Brand, theme governance, sponsors, widgets, contact, payments, tracking, SEO, maintenance, feature flags |
 | Client portal | Services, projects, invoices, payments, documents, messages, support, profile, security |
 
 ---
@@ -123,12 +141,18 @@ ledger entry move inside one database transaction, and verifying an already-deci
 payment is rejected rather than double-counted. Nothing financial is deleted: invoices are
 voided, payments are refunded, and every step is audited.
 
-**Performance.** Public pages are SSG + ISR. Server Components by default; the only client
-JavaScript is genuine interactivity. Icons come from an explicit registry rather than a
-namespace import (which would drag the whole icon set into the bundle). The single 3D
-canvas on the site is the hero — dynamically imported, mounted only when it scrolls into
-view, skipped entirely for reduced-motion users, and backed by a static image fallback.
-Shared First Load JS is ~103 kB.
+**Design system.** One token file, `src/styles/tokens.css`, holds every colour, type
+step, space, radius and easing; Tailwind maps through it, so a theme is changed in one
+place rather than page by page. Three themes ship — Daylight, Midnight and Network — and
+an admin decides which are offered and whether visitors may switch at all.
+
+**Performance.** Public pages are SSG + ISR, Server Components by default, and the client
+JavaScript is only what genuinely needs to be interactive. The hero network globe is
+hand-drawn SVG with no 3D library, its 460 points bucketed into six paths. Scroll
+reveals, the hero slider and the counters are server-rendered markup driven by a single
+client effect sharing one IntersectionObserver, rather than a client component per
+element. Icons come from an explicit registry, not a namespace import that would drag the
+whole set into the bundle. Shared First Load JS is ~103 kB; the homepage adds 6 kB.
 
 **Provider adapters.** `EmailService`, `StorageService`, notifications, rate limiting and
 background jobs all sit behind interfaces in `src/lib/providers/`. Swapping Resend for
@@ -152,17 +176,18 @@ src/
     (marketing)/ public website
     (auth)/      login, register, password reset, email verification
     dashboard/   role-based dashboards
-    api/         status endpoint, CSV report export
+    api/         status, chat (Gemini), contact, media upload, report export
   components/
     ui/          design-system primitives (button, card, field, table, toast, theme…)
-    marketing/   navbar, footer, hero + 3D canvas, sections, consent, tracking, widgets
+    marketing/   navbar, footer, hero + network visual, sections, sponsors, assistant,
+                 consent, tracking, widgets, site runtime
     dashboard/   shell, sidebar, topbar, forms, editors
     auth/        sign-in and password forms
   content/       default catalogue and marketing copy (seed source + fallback)
   lib/           db, rbac, auth, settings, content, seo, tracking, audit, rate limiting
-  styles/        globals.css — the design token layer
+  styles/        tokens.css (the single source of design truth) + globals.css
 tests/           end-to-end smoke test
-docs/            brand guide, deployment checklist, PRD coverage map
+docs/            PRD v5, environment setup, brand guide, deployment, coverage map
 ```
 
 ---

@@ -1,4 +1,6 @@
-# PRD v4.0 → implementation map
+# PRD → implementation map
+
+Covers PRD v4.0 (Parts I–II) and the v5.0 rework in `docs/PRD-v5.md` (Part III).
 
 Where each requirement lives, and what was deliberately deferred.
 
@@ -6,8 +8,8 @@ Where each requirement lives, and what was deliberately deferred.
 
 | § | Requirement | Where |
 |---|---|---|
-| 3 | Next.js App Router, TypeScript, PostgreSQL, Prisma, Tailwind, Zod, Three.js | Throughout; `package.json` |
-| 4–5 | Global design system, Purple/Cyan identities, Light/Dark/System | `src/styles/globals.css`, `tailwind.config.ts`, `src/components/ui/theme.tsx` |
+| 3 | Next.js App Router, TypeScript, PostgreSQL, Prisma, Tailwind, Zod | Throughout; `package.json`. Three.js was dropped in v5 — the hero is hand-drawn SVG |
+| 4–5 | Global design system and themes | Superseded by v5 §1–3 below |
 | 6 | Public sitemap | `src/app/(marketing)/**`, `src/app/sitemap.ts` |
 | 7 | Homepage: announcement, hero, capability rail, services, why, process, work, industries, testimonials, metrics, FAQ, CTA | `src/app/(marketing)/page.tsx`, `src/components/marketing/sections.tsx` |
 | 8 | Service catalogue and detail model | `prisma/schema.prisma` (Service*), `src/app/(marketing)/services/**` |
@@ -23,7 +25,7 @@ Where each requirement lives, and what was deliberately deferred.
 | 18 | CMS for homepage, services, blog, case studies, testimonials, FAQ, navigation, theme, SEO | `src/app/dashboard/content/**`, `src/actions/content.ts` |
 | 19 | Database model | `prisma/schema.prisma` |
 | 20–21 | Security and API/route model | `src/lib/auth/guards.ts`, `src/middleware.ts`, `next.config.ts` |
-| 22 | Performance engineering | SSG/ISR, Server Components, dynamic import of the 3D hero, icon registry |
+| 22 | Performance engineering | SSG/ISR, Server Components, icon registry, one shared observer; see v5 §10 |
 | 23 | SEO, canonicals, OG, sitemap, robots, structured data | `src/lib/seo.ts`, `src/app/sitemap.ts`, `src/app/robots.ts` |
 | 24 | Analytics and event tracking | `src/components/marketing/tracking.tsx`, `src/lib/tracking.ts` |
 | 25 | Reports and CSV export | `src/app/dashboard/finance/reports`, `src/app/api/reports/export/route.ts` |
@@ -56,8 +58,25 @@ Where each requirement lives, and what was deliberately deferred.
 | 48 | Growth features: quote calculator, WhatsApp widget, visual timeline, referral codes, document storage | `quote-calculator.tsx`, `widgets.tsx`, `my-projects`, `my-documents` |
 | 49 | New entities | `PaymentMethodConfig`, `MaintenanceNotice`, `TrackingConfig`, `FeatureFlag`, `ClientDocument` |
 | 50 | Additional acceptance criteria | Enforced in `finance.ts` (inactive method, duplicate TrxID, permission-gated verify) and covered by the smoke test |
-| 51 | 3D direction with performance guardrails | `hero-canvas.tsx`, `hero.tsx`, `IconBadge`, `.brand-ring` |
+| 51 | Hero direction with performance guardrails | Replaced in v5 by `network-visual.tsx` — SVG, no 3D library |
 | 53 | Launch readiness | `docs/DEPLOYMENT.md` |
+
+## Part III — v5.0 rework
+
+| § | Requirement | Where |
+|---|---|---|
+| 1 | Three themes (Daylight, Midnight, Network), light by default, visitor toggle, admin able to offer both or lock one | `src/styles/tokens.css`, `src/lib/theme.ts`, `src/components/ui/theme.tsx`, `dashboard/settings/theme` |
+| 2 | Professional type scale, gradient headings retired | `tokens.css` (`--step-*`), `src/app/layout.tsx` |
+| 3 | Button system redrawn, tuned per theme | `src/components/ui/button.tsx` |
+| 4 | Homepage rebuild: global-network hero, 2–3 slide slider, sponsor marquee, more sections, 20-question FAQ | `hero.tsx`, `network-visual.tsx`, `sponsors.tsx`, `sections.tsx`, `accordion.tsx` |
+| 5 | Navigation: sticky shrink, working dropdowns, focus-trapped mobile drawer | `src/components/marketing/navbar.tsx` |
+| 6 | Dashboard: identity in the sidebar, drawer and rail, working notification bell, charts beside figures, PDF/XLSX reports, staff-raised and reassignable tickets, per-role user tabs, fixed integration toggles | `src/components/dashboard/**`, `src/lib/reports/**`, `dashboard/support`, `dashboard/users`, `dashboard/integrations` |
+| 7 | Contact → dashboard notification + reply + Resend; WhatsApp toggle; Gemini assistant limited to public content | `src/actions/public.ts`, `src/lib/providers/email.ts`, `src/components/marketing/assistant.tsx`, `src/lib/ai/**` |
+| 8 | Free tier first, paid later without code changes | `docs/ENV-SETUP.md` §4, `src/lib/providers/**` |
+| 9 | API security, rate limiting, super-admin-only data | `src/middleware.ts` (public API allow-list), `src/lib/rate-limit.ts`, `src/lib/auth/guards.ts` |
+| 10 | 95+ on mobile and desktop, SEO/GEO/AEO | Measured: desktop 100 across the board; mobile 92–98 performance, 100 a11y/best-practices/SEO |
+| 11 | Styling controlled globally, not per page | `src/styles/tokens.css` → `tailwind.config.ts` |
+| 12 | Demo data on every previously blank surface, editable afterwards | `prisma/demo-data.ts` |
 
 ## Deliberate deviations
 
@@ -80,12 +99,12 @@ forms, which ship less client JavaScript and work without hydration.
 
 These are scoped but not built, and are the natural next iteration:
 
-- **Test depth.** `tests/smoke.mjs` covers the critical paths and the authorization
-  boundaries. Unit tests for finance calculations and status transitions, and integration
-  tests for the notification workflows, are not written yet.
-- **Media uploads.** The library reads and lists assets; the Cloudinary upload widget in
-  the CMS is stubbed behind `src/lib/providers/storage.ts`.
-- **PDF reports.** CSV export is implemented; PDF generation as a background job is not.
+- **Test depth.** `tests/smoke.mjs` covers the critical paths, the design system and the
+  authorization boundaries in 67 checks. Unit tests for finance calculations and status
+  transitions, and integration tests for the notification workflows, are not written yet.
+- **Mobile performance.** Desktop is 100 on all five main pages. Mobile performance
+  measures 92–98 depending on the run; the homepage is the page that sometimes lands
+  below 95, and its remaining cost is React hydration under Lighthouse's 4× CPU throttle.
 - **Gateway payments.** The SSLCommerz adapter is configurable and toggleable, but the
   redirect and webhook handlers are not implemented — the manual flow is complete.
 - **Proposals and orders.** Read views exist; the offer → acceptance → order lifecycle is
