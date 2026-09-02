@@ -1,3 +1,4 @@
+import type { FontId } from "@/lib/fonts";
 import type { ThemeId } from "@/lib/theme";
 
 /**
@@ -22,6 +23,14 @@ export const defaultTheme = {
   defaultTheme: "light" as ThemeId,
   enabledThemes: ["light", "midnight", "network"] as ThemeId[],
   allowUserToggle: true,
+};
+
+/**
+ * Typography (PRD v5.1 §2). Five families ship; these two are the default pair.
+ */
+export const defaultFonts = {
+  headingFont: "plus-jakarta" as FontId,
+  bodyFont: "inter" as FontId,
 };
 
 export const defaultContact = {

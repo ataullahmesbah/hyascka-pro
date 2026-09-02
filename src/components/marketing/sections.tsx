@@ -135,7 +135,7 @@ export function Metrics({ items }: { items: typeof homepage.metrics }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {items.map((metric, index) => (
         <Reveal key={metric.label} delay={index * 50} className="card p-6 text-center">
-          <p className="text-step-4 font-extrabold text-accent tabular">
+          <p className="accent-plain text-step-4 font-bold tabular">
             <Counter value={metric.value} suffix={metric.suffix} />
           </p>
           <p className="mt-1.5 text-step--1 font-semibold">{metric.label}</p>
@@ -246,7 +246,7 @@ export function FinalCta({ content }: { content: typeof homepage.finalCta }) {
           <div className="glow-1 -left-20 -top-24 h-72 w-72" aria-hidden />
           <div className="glow-2 -bottom-24 -right-16 h-72 w-72" aria-hidden />
           <div className="relative mx-auto max-w-[46ch]">
-            <h2 className="text-step-4 font-extrabold">{content.headline}</h2>
+            <h2 className="text-step-4 font-bold tracking-tight">{content.headline}</h2>
             <p className="mt-4 text-step-0 text-ink-soft">{content.subheadline}</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <ButtonLink href={content.primaryCta.href} size="lg">

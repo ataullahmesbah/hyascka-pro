@@ -12,6 +12,7 @@ import {
   savePaymentMethodAction,
   saveSeoSettings,
   saveSponsorsSettings,
+  saveFontSettings,
   saveThemeSettings,
   saveTrackingSettings,
   saveWhatsappSettings,
@@ -22,6 +23,7 @@ import { ActionForm, SubmitButton, useFieldError } from "@/components/dashboard/
 import { Checkbox, Field, Input, Select, Switch, Textarea } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { FONT_IDS, FONT_META, type FontId, type FontPolicy } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { THEMES, THEME_META, type ThemeId, type ThemePolicy } from "@/lib/theme";
 import type { SponsorItem, SponsorsContent } from "@/components/marketing/sponsors";
@@ -655,5 +657,85 @@ function SelectField({
         ))}
       </Select>
     </Field>
+  );
+}
+
+/**
+ * Typeface picker (PRD v5.1 §2).
+ *
+ * Each option renders its own name in its own font, so the choice is made by
+ * looking rather than by guessing what "Manrope" means. The families are all
+ * loaded by the root layout, so the preview is the real thing.
+ */
+export function FontSettingsForm({ policy }: { policy: FontPolicy }) {
+  const [heading, setHeading] = React.useState<FontId>(policy.headingFont);
+  const [bodyFont, setBodyFont] = React.useState<FontId>(policy.bodyFont);
+
+  const group = (
+    label: string,
+    hint: string,
+    value: FontId,
+    onChange: (id: FontId) => void,
+    name: string,
+  ) => (
+    <div>
+      <p className="text-step--1 font-medium text-ink">{label}</p>
+      <p className="mt-1 text-step--2 text-ink-muted">{hint}</p>
+      <input type="hidden" name={name} value={value} />
+      <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+        {FONT_IDS.map((id) => {
+          const meta = FONT_META[id];
+          const active = value === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onChange(id)}
+              aria-pressed={active}
+              className={cn(
+                "rounded-lg border p-4 text-left transition-colors",
+                active
+                  ? "border-accent-border bg-accent-soft"
+                  : "border-line hover:border-line-strong hover:bg-surface-2",
+              )}
+            >
+              <span
+                className="block text-step-1 font-semibold text-ink"
+                style={{ fontFamily: `var(--font-${id === "geist" ? "geist-sans" : id})` }}
+              >
+                {meta.label}
+              </span>
+              <span className="mt-1 block text-step--2 text-ink-muted">{meta.description}</span>
+              <span
+                className="mt-2.5 block text-step--1 text-ink-soft"
+                style={{ fontFamily: `var(--font-${id === "geist" ? "geist-sans" : id})` }}
+              >
+                {meta.sample}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <ActionForm action={saveFontSettings} successTitle="Typography saved">
+      {group(
+        "Heading font",
+        "Used for every headline, section title and card heading.",
+        heading,
+        setHeading,
+        "headingFont",
+      )}
+      {group(
+        "Body font",
+        "Used for paragraphs, labels and everything you actually read.",
+        bodyFont,
+        setBodyFont,
+        "bodyFont",
+      )}
+      <SubmitButton>Save typography</SubmitButton>
+    </ActionForm>
   );
 }

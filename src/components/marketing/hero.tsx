@@ -80,7 +80,7 @@ export function Hero({ content, visual }: { content: HeroContent; visual: React.
                 {slide.eyebrow}
               </span>
 
-              <h1 className="mt-5 max-w-[18ch] text-step-5 font-extrabold">
+              <h1 className="mt-5 max-w-[18ch] text-step-5 font-bold tracking-tight">
                 <Headline text={slide.headline} highlight={slide.highlight} />
               </h1>
 

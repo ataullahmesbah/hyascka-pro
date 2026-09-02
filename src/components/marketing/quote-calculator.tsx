@@ -74,7 +74,7 @@ export function QuoteCalculator({
         </Field>
       </div>
 
-      <p className="accent-text mt-5 font-display text-2xl font-extrabold">
+      <p className="accent-plain mt-5 font-display text-2xl font-bold">
         {formatCurrency(estimate.low, currency)} – {formatCurrency(estimate.high, currency)}
       </p>
 

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 import { TrackingScripts } from "@/components/marketing/tracking";
+import { CookieConsent } from "@/components/marketing/cookie-consent";
 import { DeferredWidgets } from "@/components/marketing/deferred";
 import { SiteRuntime } from "@/components/marketing/site-runtime";
 import { AnnouncementBar } from "@/components/marketing/announcement";
@@ -80,6 +81,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
         assistant={assistantOn ? settings.assistant : null}
         exitIntent={Boolean(settings.featureFlags.exit_intent_cta)}
       />
+
+      {/* Consent is asked immediately; everything else waits for idle. */}
+      <CookieConsent />
 
       <SiteRuntime />
 

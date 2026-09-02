@@ -14,7 +14,7 @@ export default function NotFound() {
       />
       <div className="relative max-w-lg text-center">
         <LogoMark size={64} className="mx-auto" />
-        <p className="accent-text mt-8 font-display text-7xl font-extrabold">404</p>
+        <p className="accent-text mt-8 font-display text-7xl font-bold">404</p>
         <h1 className="mt-3 font-display text-2xl font-bold">This page does not exist</h1>
         <p className="mt-3 text-sm leading-relaxed text-ink-muted">
           The link may be out of date, or the page may have moved. Everything below is a good place

@@ -194,7 +194,7 @@ export default async function ServiceDetailPage({
               <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-muted">
                 {PRICING_LABEL[service.pricingModel]}
               </p>
-              <p className="accent-text font-display text-3xl font-extrabold">
+              <p className="accent-plain font-display text-3xl font-bold">
                 {service.startingPrice
                   ? formatCurrency(service.startingPrice, service.currency)
                   : "Custom quote"}

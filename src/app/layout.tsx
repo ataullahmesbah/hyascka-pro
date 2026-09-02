@@ -1,39 +1,69 @@
+import * as React from "react";
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Manrope, Plus_Jakarta_Sans, Poppins } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 
 import "@/styles/globals.css";
 
 import { ThemeProvider, ThemeScript } from "@/components/ui/theme";
 import { ToastProvider } from "@/components/ui/toast";
-import { getSettings, getThemePolicy } from "@/lib/settings";
+import type { FontId } from "@/lib/fonts";
+import { getFontPolicy, getSettings, getThemePolicy } from "@/lib/settings";
 import { pageMetadata, siteUrl } from "@/lib/seo";
 
 /**
- * Two families only, both variable, both self-hosted at build time (PRD §2).
- * Plus Jakarta Sans carries the headings; Inter does the reading.
+ * All five selectable typefaces (PRD v5.1 §2), self-hosted at build time.
+ *
+ * Declaring a family costs nothing on its own — a browser only downloads a font
+ * it actually has to render — so the two an admin has chosen are the two that
+ * hit the network. That is what makes the picker in Settings → Theme a real
+ * setting rather than a code change.
+ *
+ * None are preloaded. Preloading is per-family and decided at build time, but
+ * the choice is made at runtime, so preloading would mean pulling all five over
+ * the wire. `display: "swap"` plus next/font's metric-matched fallback keeps
+ * text readable from first paint and the swap costs no layout shift.
  */
-const display = Plus_Jakarta_Sans({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-plus-jakarta",
   display: "swap",
-  // No weight array: this pulls the variable font, which is one file covering
-  // every weight instead of four separate downloads.
-  //
-  // This one *is* preloaded: it sets every heading, and measurement showed
-  // pulling it forward is worth the bytes. Inter (below) is not — see there.
-  preload: true,
-});
-
-const body = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-  // Not preloaded on purpose. Inter's variable latin file is ~50 kB, and on a
-  // throttled mobile connection preloading it competes with the HTML and CSS
-  // for the same pipe. `swap` plus next/font's metric-matched fallback means
-  // text is readable immediately and the swap costs no layout shift.
   preload: false,
 });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  preload: false,
+});
+const poppins = Poppins({
+  subsets: ["latin"],
+  // Poppins has no variable build, so the weights the design system uses are
+  // named explicitly rather than pulling the whole family.
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+  preload: false,
+});
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+  preload: false,
+});
+
+/** Maps a stored font id to the custom property that carries its family. */
+const FONT_VARIABLE: Record<FontId, string> = {
+  "plus-jakarta": "--font-plus-jakarta",
+  inter: "--font-inter",
+  poppins: "--font-poppins",
+  manrope: "--font-manrope",
+  geist: "--font-geist-sans",
+};
+
+const fontClassNames = [plusJakarta, inter, poppins, manrope, GeistSans]
+  .map((font) => font.variable)
+  .join(" ");
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo, brand } = await getSettings();
@@ -66,14 +96,22 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const policy = await getThemePolicy();
+  const [policy, fonts] = await Promise.all([getThemePolicy(), getFontPolicy()]);
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
       data-theme={policy.defaultTheme}
-      className={`${body.variable} ${display.variable}`}
+      className={fontClassNames}
+      // The whole design system reads --font-display and --font-body; pointing
+      // them at the chosen families here is the only place a font is decided.
+      style={
+        {
+          "--font-display": `var(${FONT_VARIABLE[fonts.headingFont]})`,
+          "--font-body": `var(${FONT_VARIABLE[fonts.bodyFont]})`,
+        } as React.CSSProperties
+      }
     >
       <head>
         <ThemeScript policy={policy} />

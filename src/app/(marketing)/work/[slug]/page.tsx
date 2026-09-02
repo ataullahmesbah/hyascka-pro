@@ -57,7 +57,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             {study.metrics.map((metric) => (
               <div key={metric.label} className="rounded-xl border border-line bg-surface p-6">
                 <dt className="text-xs uppercase tracking-wider text-ink-muted">{metric.label}</dt>
-                <dd className="accent-text mt-2 font-display text-2xl font-extrabold">{metric.value}</dd>
+                <dd className="accent-plain mt-2 font-display text-2xl font-bold">{metric.value}</dd>
               </div>
             ))}
           </dl>

@@ -13,6 +13,7 @@ import {
   maintenanceSettingsSchema,
   paymentMethodSchema,
   seoSettingsSchema,
+  fontSettingsSchema,
   themeSettingsSchema,
   sponsorsSettingsSchema,
   toActionState,
@@ -147,6 +148,13 @@ export async function saveSeoSettings(_prev: ActionState | null, formData: FormD
   if (!parsed.success) return toActionState(parsed.error);
   await writeSetting("seo", parsed.data, "SEO defaults updated");
   return { ok: true, message: "SEO defaults saved." };
+}
+
+export async function saveFontSettings(_prev: ActionState | null, formData: FormData): Promise<ActionState> {
+  const parsed = fontSettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+  await writeSetting("fonts", parsed.data, "Typography updated");
+  return { ok: true, message: "Typography saved. The new fonts are live on the site." };
 }
 
 export async function saveTrackingSettings(_prev: ActionState | null, formData: FormData): Promise<ActionState> {

@@ -36,7 +36,7 @@ export function Logo({
       <LogoMark size={size} />
       {wordmark ? (
         <span className="flex flex-col leading-none">
-          <span className="font-display text-[1.05rem] font-extrabold tracking-[0.16em] text-ink">
+          <span className="font-display text-[1.05rem] font-bold tracking-[0.16em] text-ink">
             {siteName}
           </span>
           {tagline ? (

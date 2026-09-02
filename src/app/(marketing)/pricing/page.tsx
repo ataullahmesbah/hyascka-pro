@@ -86,7 +86,7 @@ export default async function PricingPage() {
                 ) : null}
                 <h2 className="font-display text-xl font-bold">{tier.name}</h2>
                 <p className="mt-1.5 text-sm text-ink-muted">{tier.blurb}</p>
-                <p className="mt-5 font-display text-3xl font-extrabold">
+                <p className="mt-5 font-display text-3xl font-bold">
                   {tier.price ? (
                     <>
                       <span className="text-base font-medium text-ink-muted">from </span>

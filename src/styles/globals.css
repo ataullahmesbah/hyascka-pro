@@ -154,7 +154,25 @@
   }
 
   /* ---- Accent text (replaces gradient headings) ----------------------- */
-  .accent-text { color: hsl(var(--accent)); }
+  /*
+   * Highlighted word inside a headline.
+   *
+   * Colour alone on an extra-bold display size read as shouting. This keeps the
+   * accent colour but carries the emphasis in a soft underline sitting behind
+   * the descenders, so the word is marked rather than amplified.
+   */
+  .accent-text {
+    color: hsl(var(--accent));
+    background-image: linear-gradient(hsl(var(--accent) / 0.22), hsl(var(--accent) / 0.22));
+    background-repeat: no-repeat;
+    background-size: 100% 0.28em;
+    background-position: 0 88%;
+    padding-inline: 0.04em;
+  }
+
+  /* Plain accent colour, for numbers and small labels where the underline is
+     noise rather than emphasis. */
+  .accent-plain { color: hsl(var(--accent)); }
 
   /* The one place a gradient is still allowed: the wordmark. */
   .wordmark-gradient {

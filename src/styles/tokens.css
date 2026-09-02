@@ -10,13 +10,18 @@
   --step--1: clamp(0.83rem, 0.80rem + 0.15vw, 0.92rem);
   --step-0:  clamp(0.95rem, 0.92rem + 0.18vw, 1.05rem);
   --step-1:  clamp(1.12rem, 1.06rem + 0.30vw, 1.30rem);
-  --step-2:  clamp(1.36rem, 1.24rem + 0.58vw, 1.72rem);
-  --step-3:  clamp(1.66rem, 1.44rem + 1.05vw, 2.30rem);
-  --step-4:  clamp(2.02rem, 1.64rem + 1.80vw, 3.05rem);
-  --step-5:  clamp(2.46rem, 1.84rem + 2.95vw, 4.05rem);
-  --step-6:  clamp(2.90rem, 1.95rem + 4.50vw, 5.20rem);
+  --step-2:  clamp(1.30rem, 1.20rem + 0.48vw, 1.58rem);
+  --step-3:  clamp(1.55rem, 1.38rem + 0.80vw, 2.00rem);
+  --step-4:  clamp(1.80rem, 1.55rem + 1.15vw, 2.50rem);
+  --step-5:  clamp(2.10rem, 1.70rem + 1.90vw, 3.25rem);
+  --step-6:  clamp(2.45rem, 1.85rem + 2.80vw, 4.10rem);
 
-  --leading-tight: 1.08;
+  /* Headings: 700 at most. 800 at display sizes reads as shouting, which is
+     what made the old titles tiring. */
+  --weight-heading: 700;
+  --weight-heading-lg: 650;
+
+  --leading-tight: 1.12;
   --leading-snug: 1.28;
   --leading-normal: 1.62;
   --tracking-tight: -0.022em;

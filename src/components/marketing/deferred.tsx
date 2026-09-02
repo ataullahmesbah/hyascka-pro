@@ -11,6 +11,10 @@ import type { AssistantConfig } from "@/components/marketing/assistant";
  * None of this is needed for first paint or for reading the page, and loading it
  * eagerly cost measurable Total Blocking Time. Deferring keeps the main thread
  * free while the visitor is still reading the hero.
+ *
+ * The cookie banner is deliberately NOT in here. Consent has to be asked before
+ * non-essential cookies are set, so it cannot wait for an idle callback — it is
+ * mounted directly by the layout.
  */
 const Assistant = dynamic(
   () => import("@/components/marketing/assistant").then((m) => m.Assistant),
@@ -26,10 +30,6 @@ const BackToTop = dynamic(
 );
 const ExitIntentCta = dynamic(
   () => import("@/components/marketing/widgets").then((m) => m.ExitIntentCta),
-  { ssr: false },
-);
-const CookieConsent = dynamic(
-  () => import("@/components/marketing/cookie-consent").then((m) => m.CookieConsent),
   { ssr: false },
 );
 
@@ -81,7 +81,6 @@ export function DeferredWidgets({
 
   return (
     <>
-      <CookieConsent />
       <BackToTop />
       {whatsapp ? (
         <WhatsappWidget phone={whatsapp.phone} greeting={whatsapp.greeting} label={whatsapp.label} />

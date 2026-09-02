@@ -63,7 +63,7 @@ export default async function BlogPage() {
                   </span>
                 </div>
                 <div className="hidden items-center justify-center md:flex">
-                  <span className="flex h-28 w-28 items-center justify-center rounded-2xl font-display text-3xl font-extrabold text-white">
+                  <span className="flex h-28 w-28 items-center justify-center rounded-2xl font-display text-3xl font-bold text-white">
                     {featured.readMinutes}′
                   </span>
                 </div>

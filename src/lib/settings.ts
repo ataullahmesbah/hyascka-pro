@@ -12,10 +12,12 @@ import {
   defaultSeo,
   defaultSocial,
   defaultSponsors,
+  defaultFonts,
   defaultTheme,
   defaultTracking,
   defaultWhatsapp,
 } from "@/content/site";
+import { resolveFontPolicy, type FontPolicy } from "@/lib/fonts";
 import { resolveThemePolicy, type ThemePolicy } from "@/lib/theme";
 
 /**
@@ -25,6 +27,7 @@ import { resolveThemePolicy, type ThemePolicy } from "@/lib/theme";
 export type SiteSettings = {
   brand: typeof defaultBrand;
   theme: typeof defaultTheme;
+  fonts: typeof defaultFonts;
   contact: typeof defaultContact;
   social: typeof defaultSocial;
   seo: typeof defaultSeo;
@@ -41,6 +44,7 @@ export type SiteSettings = {
 export const SETTING_KEYS = [
   "brand",
   "theme",
+  "fonts",
   "contact",
   "social",
   "seo",
@@ -58,6 +62,7 @@ export type SettingKey = (typeof SETTING_KEYS)[number];
 const DEFAULTS: Omit<SiteSettings, "featureFlags"> = {
   brand: defaultBrand,
   theme: defaultTheme,
+  fonts: defaultFonts,
   contact: defaultContact,
   social: defaultSocial,
   seo: defaultSeo,
@@ -108,6 +113,15 @@ export const getSettings = cache(async (): Promise<SiteSettings> => {
 export async function getThemePolicy(): Promise<ThemePolicy> {
   const { theme } = await getSettings();
   return resolveThemePolicy(theme);
+}
+
+/**
+ * The typeface pair actually served, normalised so an unknown stored id falls
+ * back to the default rather than leaving the page with no font (PRD v5.1 §2).
+ */
+export async function getFontPolicy(): Promise<FontPolicy> {
+  const { fonts } = await getSettings();
+  return resolveFontPolicy(fonts);
 }
 
 export async function getSetting<K extends SettingKey>(key: K): Promise<SiteSettings[K]> {

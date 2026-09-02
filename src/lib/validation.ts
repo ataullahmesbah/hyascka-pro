@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FONT_IDS } from "@/lib/fonts";
 
 /**
  * Every API route and Server Action parses its input with one of these before
@@ -204,6 +205,12 @@ export const themeSettingsSchema = z
     message: "The default theme must be one of the enabled themes.",
     path: ["defaultTheme"],
   });
+
+/** Typography (PRD v5.1 §2). Only the five shipped families are accepted. */
+export const fontSettingsSchema = z.object({
+  headingFont: z.enum(FONT_IDS),
+  bodyFont: z.enum(FONT_IDS),
+});
 
 /** Sponsor marquee (PRD §4). Items are image or text — both are optional-safe. */
 export const sponsorsSettingsSchema = z.object({
