@@ -115,19 +115,19 @@ async function LeadsTable({ query }: { query: { q?: string; status?: string; pag
           <tbody>
             {leads.map((lead) => (
               <Tr key={lead.id}>
-                <Td className="font-mono text-xs text-muted-foreground">{lead.reference}</Td>
+                <Td className="font-mono text-xs text-ink-muted">{lead.reference}</Td>
                 <Td>
                   <LinkCell href={`/dashboard/leads/${lead.id}`}>{lead.name}</LinkCell>
-                  <p className="text-xs text-muted-foreground">{lead.email}</p>
+                  <p className="text-xs text-ink-muted">{lead.email}</p>
                 </Td>
-                <Td className="text-muted-foreground">{lead.company ?? "—"}</Td>
-                <Td className="text-muted-foreground">{lead.service?.title ?? "General"}</Td>
-                <Td className="text-muted-foreground">{lead.budget ?? "—"}</Td>
-                <Td className="text-muted-foreground">{lead.owner?.name ?? "Unassigned"}</Td>
+                <Td className="text-ink-muted">{lead.company ?? "—"}</Td>
+                <Td className="text-ink-muted">{lead.service?.title ?? "General"}</Td>
+                <Td className="text-ink-muted">{lead.budget ?? "—"}</Td>
+                <Td className="text-ink-muted">{lead.owner?.name ?? "Unassigned"}</Td>
                 <Td>
                   <StatusBadge status={lead.status} />
                 </Td>
-                <Td className="whitespace-nowrap text-muted-foreground">{formatDate(lead.createdAt)}</Td>
+                <Td className="whitespace-nowrap text-ink-muted">{formatDate(lead.createdAt)}</Td>
               </Tr>
             ))}
           </tbody>

@@ -40,8 +40,8 @@ export default async function ContactPage({
       />
 
       <section className="section">
-        <div className="container grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-2xl border border-border bg-card p-7 md:p-9">
+        <div className="container-x grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="rounded-2xl border border-line bg-surface p-7 md:p-9">
             <ContactForm
               services={services.map((service) => ({ slug: service.slug, title: service.title }))}
               defaultService={query.service}
@@ -50,62 +50,62 @@ export default async function ContactPage({
           </div>
 
           <aside className="space-y-5">
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-line bg-surface p-6">
               <h2 className="font-display text-base font-semibold">Direct contact</h2>
               <ul className="mt-4 space-y-4 text-sm">
                 <li className="flex items-start gap-3">
-                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <span>
-                    <span className="block text-xs text-muted-foreground">Email</span>
-                    <a href={`mailto:${contact.email}`} className="hover:text-primary">
+                    <span className="block text-xs text-ink-muted">Email</span>
+                    <a href={`mailto:${contact.email}`} className="hover:text-accent">
                       {contact.email}
                     </a>
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <span>
-                    <span className="block text-xs text-muted-foreground">Phone</span>
-                    <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary">
+                    <span className="block text-xs text-ink-muted">Phone</span>
+                    <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-accent">
                       {contact.phone}
                     </a>
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <span>
-                    <span className="block text-xs text-muted-foreground">WhatsApp</span>
+                    <span className="block text-xs text-ink-muted">WhatsApp</span>
                     <a
                       href={`https://wa.me/${contact.whatsapp.replace(/[^0-9]/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-primary"
+                      className="hover:text-accent"
                     >
                       Start a chat
                     </a>
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <span>
-                    <span className="block text-xs text-muted-foreground">Office</span>
+                    <span className="block text-xs text-ink-muted">Office</span>
                     {contact.addressLine}, {contact.city}, {contact.country}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <span>
-                    <span className="block text-xs text-muted-foreground">Hours</span>
+                    <span className="block text-xs text-ink-muted">Hours</span>
                     {contact.hours}
                   </span>
                 </li>
               </ul>
             </div>
 
-            <div className="brand-ring rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-line bg-surface p-6">
               <IconBadge name="Timer" />
               <h2 className="mt-4 font-display text-base font-semibold">What happens next</h2>
-              <ol className="mt-3 space-y-2.5 text-sm text-muted-foreground">
+              <ol className="mt-3 space-y-2.5 text-sm text-ink-muted">
                 <li>1. We read your enquiry properly — no automated qualification.</li>
                 <li>2. You get a reply within one business day, {contact.responseTime.toLowerCase()}.</li>
                 <li>3. A 30-minute call to understand scope and constraints.</li>

@@ -191,9 +191,107 @@ export const brandSettingsSchema = z.object({
   faviconUrl: z.string().trim().max(400),
 });
 
-export const themeSettingsSchema = z.object({
-  accent: z.enum(["purple", "cyan"]),
-  mode: z.enum(["light", "dark", "system"]),
+/** Theme governance (PRD §1). A closed set — never free-form CSS. */
+export const themeSettingsSchema = z
+  .object({
+    defaultTheme: z.enum(["light", "midnight", "network"]),
+    enabledThemes: z
+      .array(z.enum(["light", "midnight", "network"]))
+      .min(1, "Enable at least one theme."),
+    allowUserToggle: z.coerce.boolean(),
+  })
+  .refine((data) => data.enabledThemes.includes(data.defaultTheme), {
+    message: "The default theme must be one of the enabled themes.",
+    path: ["defaultTheme"],
+  });
+
+/** Sponsor marquee (PRD §4). Items are image or text — both are optional-safe. */
+export const sponsorsSettingsSchema = z.object({
+  enabled: z.coerce.boolean(),
+  title: z.string().trim().min(3).max(120),
+  direction: z.enum(["left", "right"]),
+  speed: z.coerce.number().int().min(12, "Minimum 12 seconds.").max(180),
+  items: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1).max(40),
+        label: z.string().trim().min(1, "A name is required.").max(80),
+        imageUrl: z.string().trim().max(600).optional().or(z.literal("")),
+        href: z.string().trim().max(600).optional().or(z.literal("")),
+      }),
+    )
+    .max(40, "Keep the strip under 40 items."),
+});
+
+export const whatsappSettingsSchema = z.object({
+  greeting: z.string().trim().min(5).max(300),
+  label: z.string().trim().min(2).max(60),
+});
+
+export const assistantSettingsSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  greeting: z.string().trim().min(10).max(400),
+  suggestions: z.string().max(600).optional().or(z.literal("")),
+});
+
+/** Hero slider (PRD §4). Two to three slides, each independently editable. */
+export const heroSettingsSchema = z.object({
+  autoplay: z.coerce.boolean(),
+  intervalMs: z.coerce.number().int().min(3500).max(20000),
+  trustMicrocopy: z.string().trim().max(200),
+  highlights: z.string().max(600).optional().or(z.literal("")),
+  slides: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1).max(40),
+        eyebrow: z.string().trim().min(2).max(60),
+        headline: z.string().trim().min(8).max(120),
+        highlight: z.string().trim().max(40).optional().or(z.literal("")),
+        subheadline: z.string().trim().min(20).max(500),
+        primaryCta: z.object({
+          label: z.string().trim().min(2).max(40),
+          href: z.string().trim().min(1).max(300),
+        }),
+        secondaryCta: z.object({
+          label: z.string().trim().min(2).max(40),
+          href: z.string().trim().min(1).max(300),
+        }),
+        imageUrl: z.string().trim().max(600).optional().or(z.literal("")),
+      }),
+    )
+    .min(1, "At least one slide is required.")
+    .max(5, "Keep the hero to five slides or fewer."),
+});
+
+/** Chat message accepted by the public assistant endpoint. */
+export const chatRequestSchema = z.object({
+  message: z.string().trim().min(1, "Ask a question.").max(1000),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) }))
+    .max(12)
+    .optional(),
+});
+
+/** Staff reply sent from a lead's detail page. */
+export const leadReplySchema = z.object({
+  leadId: z.string().min(1),
+  subject: z.string().trim().min(3).max(160),
+  body: z.string().trim().min(10, "Write a reply.").max(6000),
+});
+
+/** Support ticket raised by a staff member on a client's behalf. */
+export const staffTicketSchema = z.object({
+  clientId: z.string().max(40).optional().or(z.literal("")),
+  subject: z.string().trim().min(5).max(160),
+  category: z.string().trim().max(60).default("INTERNAL"),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+  assigneeId: z.string().max(40).optional().or(z.literal("")),
+  body: z.string().trim().min(10).max(4000),
+});
+
+export const ticketAssignSchema = z.object({
+  ticketId: z.string().min(1),
+  assigneeId: z.string().max(40),
 });
 
 export const contactSettingsSchema = z.object({

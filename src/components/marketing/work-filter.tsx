@@ -40,8 +40,8 @@ export function WorkFilter({
             className={cn(
               "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
               active === industry
-                ? "border-primary bg-primary-soft text-primary"
-                : "border-border hover:bg-muted",
+                ? "border-accent bg-accent-soft text-accent"
+                : "border-line hover:bg-surface-2",
             )}
           >
             {industry === "all" ? "All industries" : industry}

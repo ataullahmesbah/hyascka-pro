@@ -58,19 +58,19 @@ export default async function MediaPage() {
                         href={asset.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
+                        className="font-medium text-accent hover:underline"
                       >
                         {asset.name}
                       </a>
-                      <p className="text-xs text-muted-foreground">{asset.mimeType}</p>
+                      <p className="text-xs text-ink-muted">{asset.mimeType}</p>
                     </Td>
-                    <Td className="text-muted-foreground">{asset.folder?.name ?? "Root"}</Td>
-                    <Td className={asset.altText ? "text-muted-foreground" : "text-warning"}>
+                    <Td className="text-ink-muted">{asset.folder?.name ?? "Root"}</Td>
+                    <Td className={asset.altText ? "text-ink-muted" : "text-warning"}>
                       {asset.altText ?? "Missing — needed for accessibility"}
                     </Td>
-                    <Td className="text-muted-foreground">{humanSize(asset.sizeBytes)}</Td>
-                    <Td className="text-muted-foreground">{asset.uploadedBy?.name ?? "—"}</Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(asset.createdAt)}</Td>
+                    <Td className="text-ink-muted">{humanSize(asset.sizeBytes)}</Td>
+                    <Td className="text-ink-muted">{asset.uploadedBy?.name ?? "—"}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(asset.createdAt)}</Td>
                   </Tr>
                 ))}
               </tbody>

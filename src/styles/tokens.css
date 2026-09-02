@@ -1,0 +1,222 @@
+/* ==========================================================================
+   HYASCKA — DESIGN TOKENS
+   The single source of truth for colour, type, space, radius, shadow, motion.
+   Three themes, one contract. No component or page defines a colour.
+   ========================================================================== */
+
+:root {
+  /* ---- Fluid type scale ------------------------------------------------ */
+  --step--2: clamp(0.72rem, 0.70rem + 0.10vw, 0.78rem);
+  --step--1: clamp(0.83rem, 0.80rem + 0.15vw, 0.92rem);
+  --step-0:  clamp(0.95rem, 0.92rem + 0.18vw, 1.05rem);
+  --step-1:  clamp(1.12rem, 1.06rem + 0.30vw, 1.30rem);
+  --step-2:  clamp(1.36rem, 1.24rem + 0.58vw, 1.72rem);
+  --step-3:  clamp(1.66rem, 1.44rem + 1.05vw, 2.30rem);
+  --step-4:  clamp(2.02rem, 1.64rem + 1.80vw, 3.05rem);
+  --step-5:  clamp(2.46rem, 1.84rem + 2.95vw, 4.05rem);
+  --step-6:  clamp(2.90rem, 1.95rem + 4.50vw, 5.20rem);
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.28;
+  --leading-normal: 1.62;
+  --tracking-tight: -0.022em;
+  --tracking-wide: 0.08em;
+
+  /* ---- Space ----------------------------------------------------------- */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.25rem;
+  --space-2xl: 3.5rem;
+  --space-3xl: 5.5rem;
+  --section-y: clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+
+  /* ---- Radius ---------------------------------------------------------- */
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.375rem;
+  --radius-2xl: 1.875rem;
+  --radius-btn: 0.625rem;
+  --radius-pill: 999px;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 520ms;
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --header-h: 4rem;
+  --header-h-scrolled: 3.5rem;
+  --container: 76rem;
+}
+
+/* ==========================================================================
+   THEME 1 — DAYLIGHT (default)
+   Editorial light: paper ground, ink text, one confident indigo accent.
+   ========================================================================== */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: 0 0% 100%;
+  --bg-subtle: 220 33% 98%;
+  --surface: 0 0% 100%;
+  --surface-2: 220 30% 97%;
+  --surface-3: 220 25% 94%;
+
+  --ink: 224 40% 11%;
+  --ink-soft: 222 18% 34%;
+  --ink-muted: 220 13% 43%;
+  --ink-inverse: 0 0% 100%;
+
+  --line: 220 20% 90%;
+  --line-strong: 220 18% 82%;
+
+  --accent: 243 75% 56%;
+  --accent-hover: 243 72% 50%;
+  --accent-ink: 0 0% 100%;
+  --accent-soft: 243 92% 96%;
+  --accent-border: 243 70% 86%;
+
+  --success: 152 60% 34%;
+  --success-soft: 152 60% 95%;
+  --warning: 32 90% 42%;
+  --warning-soft: 38 95% 95%;
+  --danger: 0 70% 48%;
+  --danger-soft: 0 85% 96%;
+  --info: 205 85% 44%;
+  --info-soft: 205 90% 95%;
+
+  --shadow-xs: 0 1px 2px hsl(224 40% 11% / 0.05);
+  --shadow-sm: 0 1px 2px hsl(224 40% 11% / 0.05), 0 2px 8px -4px hsl(224 40% 11% / 0.08);
+  --shadow-md: 0 2px 4px hsl(224 40% 11% / 0.04), 0 12px 28px -12px hsl(224 40% 11% / 0.14);
+  --shadow-lg: 0 4px 8px hsl(224 40% 11% / 0.05), 0 24px 48px -20px hsl(224 40% 11% / 0.20);
+  --shadow-accent: 0 6px 20px -8px hsl(var(--accent) / 0.45);
+
+  --ring: var(--accent);
+  --overlay: 224 40% 11% / 0.42;
+
+  /* Hero / decorative */
+  --hero-bg: linear-gradient(180deg, hsl(220 40% 99%) 0%, hsl(226 60% 97%) 55%, hsl(0 0% 100%) 100%);
+  --grid-line: 224 30% 12% / 0.055;
+  --node: 243 75% 56%;
+  --arc: 243 75% 56%;
+  --glow-1: 243 80% 62% / 0.13;
+  --glow-2: 199 85% 55% / 0.11;
+}
+
+/* ==========================================================================
+   THEME 2 — MIDNIGHT
+   Near-black ground, violet accent, restrained glow.
+   ========================================================================== */
+[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --bg: 250 22% 5%;
+  --bg-subtle: 250 20% 7%;
+  --surface: 250 20% 8%;
+  --surface-2: 250 18% 11%;
+  --surface-3: 250 16% 15%;
+
+  --ink: 250 20% 97%;
+  --ink-soft: 250 12% 76%;
+  --ink-muted: 250 10% 60%;
+  --ink-inverse: 250 30% 6%;
+
+  --line: 250 16% 18%;
+  --line-strong: 250 15% 26%;
+
+  --accent: 258 92% 68%;
+  --accent-hover: 258 92% 74%;
+  --accent-ink: 258 60% 8%;
+  --accent-soft: 258 45% 18%;
+  --accent-border: 258 60% 34%;
+
+  --success: 152 62% 52%;
+  --success-soft: 152 45% 15%;
+  --warning: 38 92% 60%;
+  --warning-soft: 38 60% 16%;
+  --danger: 0 78% 66%;
+  --danger-soft: 0 50% 18%;
+  --info: 205 90% 64%;
+  --info-soft: 205 55% 17%;
+
+  --shadow-xs: 0 1px 2px hsl(250 40% 2% / 0.5);
+  --shadow-sm: 0 1px 2px hsl(250 40% 2% / 0.5), 0 2px 10px -4px hsl(250 40% 2% / 0.6);
+  --shadow-md: 0 2px 6px hsl(250 40% 2% / 0.55), 0 14px 32px -14px hsl(250 40% 2% / 0.8);
+  --shadow-lg: 0 4px 10px hsl(250 40% 2% / 0.6), 0 30px 60px -24px hsl(250 40% 2% / 0.9);
+  --shadow-accent: 0 8px 28px -10px hsl(var(--accent) / 0.55);
+
+  --ring: var(--accent);
+  --overlay: 250 40% 2% / 0.66;
+
+  --hero-bg: radial-gradient(120% 90% at 15% 0%, hsl(258 55% 14%) 0%, transparent 55%),
+             radial-gradient(100% 80% at 90% 20%, hsl(280 50% 12%) 0%, transparent 60%),
+             hsl(250 22% 5%);
+  --grid-line: 250 40% 90% / 0.055;
+  --node: 258 92% 72%;
+  --arc: 258 92% 68%;
+  --glow-1: 258 92% 62% / 0.22;
+  --glow-2: 292 80% 60% / 0.16;
+}
+
+/* ==========================================================================
+   THEME 3 — NETWORK
+   Deep navy, electric blue, hexagon-network texture.
+   ========================================================================== */
+[data-theme="network"] {
+  color-scheme: dark;
+
+  --bg: 222 60% 6%;
+  --bg-subtle: 220 55% 8%;
+  --surface: 220 52% 10%;
+  --surface-2: 219 48% 13%;
+  --surface-3: 218 44% 17%;
+
+  --ink: 210 40% 98%;
+  --ink-soft: 212 28% 78%;
+  --ink-muted: 213 20% 62%;
+  --ink-inverse: 222 70% 6%;
+
+  --line: 217 42% 20%;
+  --line-strong: 215 40% 30%;
+
+  --accent: 208 100% 60%;
+  --accent-hover: 205 100% 68%;
+  --accent-ink: 214 90% 8%;
+  --accent-soft: 210 70% 18%;
+  --accent-border: 208 70% 36%;
+
+  --success: 158 68% 48%;
+  --success-soft: 158 50% 14%;
+  --warning: 40 94% 58%;
+  --warning-soft: 38 60% 15%;
+  --danger: 358 80% 65%;
+  --danger-soft: 358 50% 17%;
+  --info: 195 95% 58%;
+  --info-soft: 195 60% 15%;
+
+  --shadow-xs: 0 1px 2px hsl(222 70% 2% / 0.5);
+  --shadow-sm: 0 1px 2px hsl(222 70% 2% / 0.5), 0 2px 10px -4px hsl(222 70% 2% / 0.6);
+  --shadow-md: 0 2px 6px hsl(222 70% 2% / 0.55), 0 14px 32px -14px hsl(222 70% 2% / 0.8);
+  --shadow-lg: 0 4px 10px hsl(222 70% 2% / 0.6), 0 30px 60px -24px hsl(222 70% 2% / 0.9);
+  --shadow-accent: 0 8px 28px -10px hsl(var(--accent) / 0.5);
+
+  --ring: var(--accent);
+  --overlay: 222 70% 2% / 0.66;
+
+  --hero-bg: radial-gradient(110% 85% at 78% 10%, hsl(210 75% 16%) 0%, transparent 58%),
+             radial-gradient(90% 70% at 10% 30%, hsl(224 70% 13%) 0%, transparent 60%),
+             hsl(222 60% 6%);
+  --grid-line: 205 90% 80% / 0.07;
+  --node: 195 100% 62%;
+  --arc: 208 100% 62%;
+  --glow-1: 208 100% 56% / 0.22;
+  --glow-2: 190 100% 55% / 0.15;
+}

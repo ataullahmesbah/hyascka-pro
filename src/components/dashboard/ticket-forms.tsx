@@ -2,9 +2,16 @@
 
 import * as React from "react";
 
-import { createTicketAction, replyToTicketAction, setTicketStatusAction } from "@/actions/messages";
+import {
+  assignTicketAction,
+  createStaffTicketAction,
+  createTicketAction,
+  replyToTicketAction,
+  setTicketStatusAction,
+} from "@/actions/messages";
 import { ActionForm, SubmitButton, useFieldError } from "@/components/dashboard/action-form";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
+import { ActionForm as Form } from "@/components/dashboard/action-form";
 import { useToast } from "@/components/ui/toast";
 
 const CATEGORIES = ["GENERAL", "BILLING", "TECHNICAL", "ACCOUNT", "FEEDBACK"];
@@ -76,7 +83,7 @@ export function TicketReply({ ticketId, canPostInternal }: { ticketId: string; c
       </Field>
       <div className="flex flex-wrap items-center justify-between gap-3">
         {canPostInternal ? (
-          <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <label className="flex items-center gap-2.5 text-sm text-ink-muted">
             <Checkbox name="isInternal" />
             Internal note (staff only)
           </label>
@@ -113,5 +120,86 @@ export function TicketStatusControl({ ticketId, status }: { ticketId: string; st
         ))}
       </Select>
     </Field>
+  );
+}
+
+
+export type StaffOption = { id: string; name: string; roleLabel: string };
+export type ClientOption = { id: string; label: string };
+
+/**
+ * Staff-raised ticket (PRD §6.4). Leaving the client blank files it as an
+ * internal token — the team tracking its own work rather than a client request.
+ */
+export function StaffTicketForm({
+  staff,
+  clients,
+}: {
+  staff: StaffOption[];
+  clients: ClientOption[];
+}) {
+  return (
+    <Form action={createStaffTicketAction} successTitle="Ticket created" resetOnSuccess>
+      <SubjectField />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Client" htmlFor="clientId" hint="Leave blank for an internal token." error={useFieldError("clientId")}>
+          <Select id="clientId" name="clientId" defaultValue="">
+            <option value="">Internal — no client</option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Assign to" htmlFor="assigneeId" error={useFieldError("assigneeId")}>
+          <Select id="assigneeId" name="assigneeId" defaultValue="">
+            <option value="">Unassigned</option>
+            {staff.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name} — {member.roleLabel}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <CategoryField />
+        <PriorityField />
+      </div>
+      <BodyField />
+      <SubmitButton className="w-full">Create ticket</SubmitButton>
+    </Form>
+  );
+}
+
+/** Reassign an open ticket to someone else on the team. */
+export function TicketAssign({
+  ticketId,
+  staff,
+  currentAssigneeId,
+}: {
+  ticketId: string;
+  staff: StaffOption[];
+  currentAssigneeId: string | null;
+}) {
+  return (
+    <Form action={assignTicketAction} successTitle="Ticket assigned">
+      <input type="hidden" name="ticketId" value={ticketId} />
+      <Field
+        label="Assigned to"
+        htmlFor="assign-to"
+        hint="The new assignee is notified and the change is written to the thread."
+        error={useFieldError("assigneeId")}
+      >
+        <Select id="assign-to" name="assigneeId" defaultValue={currentAssigneeId ?? ""}>
+          <option value="">Unassigned</option>
+          {staff.map((member) => (
+            <option key={member.id} value={member.id}>
+              {member.name} — {member.roleLabel}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <SubmitButton className="w-full">Reassign</SubmitButton>
+    </Form>
   );
 }

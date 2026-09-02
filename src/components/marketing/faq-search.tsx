@@ -32,7 +32,7 @@ export function FaqSearch({ items }: { items: FaqSeed[] }) {
   return (
     <div>
       <div className="relative">
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
         <label htmlFor="faq-search" className="sr-only">
           Search questions
         </label>
@@ -42,7 +42,7 @@ export function FaqSearch({ items }: { items: FaqSeed[] }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search questions…"
-          className="h-12 w-full rounded-full border border-input bg-surface pl-11 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/30"
+          className="h-12 w-full rounded-full border border-line-strong bg-surface pl-11 pr-4 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
 
@@ -55,7 +55,7 @@ export function FaqSearch({ items }: { items: FaqSeed[] }) {
             onClick={() => setCategory(item)}
             className={cn(
               "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
-              category === item ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-muted",
+              category === item ? "border-accent bg-accent-soft text-accent" : "border-line hover:bg-surface-2",
             )}
           >
             {item === "all" ? "All" : item}
@@ -63,7 +63,7 @@ export function FaqSearch({ items }: { items: FaqSeed[] }) {
         ))}
       </div>
 
-      <p className="mt-5 text-sm text-muted-foreground" role="status">
+      <p className="mt-5 text-sm text-ink-muted" role="status">
         {filtered.length} {filtered.length === 1 ? "question" : "questions"}
       </p>
 
@@ -77,7 +77,7 @@ export function FaqSearch({ items }: { items: FaqSeed[] }) {
           }))}
         />
       ) : (
-        <p className="mt-3 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <p className="mt-3 rounded-xl border border-dashed border-line p-8 text-center text-sm text-ink-muted">
           Nothing matches that search. Try a different term, or ask us directly.
         </p>
       )}

@@ -43,14 +43,14 @@ export default async function ServicesPage() {
       </PageHeader>
 
       <section className="section">
-        <div className="container">
+        <div className="container-x">
           <div className="mb-10 grid gap-4 sm:grid-cols-3">
             {categories.map((category) => (
-              <div key={category.slug} className="flex items-start gap-3 rounded-xl border border-border bg-card p-5">
+              <div key={category.slug} className="flex items-start gap-3 rounded-xl border border-line bg-surface p-5">
                 <IconBadge name={category.icon} size="sm" />
                 <div>
                   <h2 className="font-display text-sm font-semibold">{category.name}</h2>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  <p className="mt-1 text-xs leading-relaxed text-ink-muted">
                     {category.description}
                   </p>
                 </div>
@@ -58,6 +58,7 @@ export default async function ServicesPage() {
             ))}
           </div>
 
+          <h2 className="sr-only">All services</h2>
           <ServiceFilter
             categories={categories.map((category) => ({ slug: category.slug, name: category.name }))}
             services={services.map((service) => ({

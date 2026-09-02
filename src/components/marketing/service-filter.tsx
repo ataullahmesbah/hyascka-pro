@@ -50,8 +50,8 @@ export function ServiceFilter({
               className={cn(
                 "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                 active === category.slug
-                  ? "border-primary bg-primary-soft text-primary"
-                  : "border-border hover:bg-muted",
+                  ? "border-accent bg-accent-soft text-accent"
+                  : "border-line hover:bg-surface-2",
               )}
             >
               {category.name}
@@ -68,7 +68,7 @@ export function ServiceFilter({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search services…"
-            className="h-10 w-full rounded-full border border-input bg-surface px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/30"
+            className="h-10 w-full rounded-full border border-line-strong bg-surface px-4 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </div>
       </div>

@@ -81,35 +81,35 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
 
             <dl className="ml-auto mt-5 max-w-xs space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Subtotal</dt>
+                <dt className="text-ink-muted">Subtotal</dt>
                 <dd>{formatCurrency(Number(invoice.subtotal), invoice.currency)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Tax</dt>
+                <dt className="text-ink-muted">Tax</dt>
                 <dd>{formatCurrency(Number(invoice.tax), invoice.currency)}</dd>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 font-semibold">
+              <div className="flex justify-between border-t border-line pt-2 font-semibold">
                 <dt>Total</dt>
                 <dd>{formatCurrency(Number(invoice.total), invoice.currency)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Paid</dt>
+                <dt className="text-ink-muted">Paid</dt>
                 <dd>{formatCurrency(Number(invoice.amountPaid), invoice.currency)}</dd>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
+              <div className="flex justify-between border-t border-line pt-2 font-display text-base font-bold">
                 <dt>Outstanding</dt>
                 <dd>{formatCurrency(outstanding, invoice.currency)}</dd>
               </div>
             </dl>
 
             {invoice.notes ? (
-              <p className="mt-5 rounded-lg bg-muted/60 p-4 text-sm text-muted-foreground">{invoice.notes}</p>
+              <p className="mt-5 rounded-lg bg-surface-2/60 p-4 text-sm text-ink-muted">{invoice.notes}</p>
             ) : null}
           </Panel>
 
           <Panel title="Your payments">
             {invoice.payments.length ? (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-line">
                 {invoice.payments.map((payment) => (
                   <li key={payment.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 flex-1">
@@ -117,7 +117,7 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
                         {formatCurrency(Number(payment.amount), payment.currency)} ·{" "}
                         {payment.method.replace(/_/g, " ")}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-muted">
                         TrxID {payment.trxId ?? "—"} · submitted {formatDate(payment.createdAt, true)}
                       </p>
                       {payment.rejectionReason ? (
@@ -129,7 +129,7 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No payments submitted for this invoice yet.</p>
+              <p className="text-sm text-ink-muted">No payments submitted for this invoice yet.</p>
             )}
           </Panel>
         </div>
@@ -154,14 +154,14 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
                   }))}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-muted">
                   No payment methods are active right now. Please contact us and we will arrange it.
                 </p>
               )}
             </Panel>
           ) : (
             <Panel title="Payment">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-muted">
                 {invoice.status === "PAID"
                   ? "This invoice is fully settled. Thank you."
                   : "This invoice is not open for payment."}

@@ -1,5 +1,6 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { TicketForm } from "@/components/dashboard/ticket-forms";
+import { StaffTicketForm, TicketForm } from "@/components/dashboard/ticket-forms";
+import { ROLE_LABELS } from "@/lib/rbac";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, LinkCell, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
@@ -21,6 +22,23 @@ export default async function SupportPage() {
       </>
     );
   }
+
+  const canManage = !isClient && can(toActor(user), "support.manage");
+
+  const [staff, clientOptions] = canManage
+    ? await Promise.all([
+        prisma.user.findMany({
+          where: { role: { not: "CLIENT" }, status: "ACTIVE" },
+          select: { id: true, name: true, role: true },
+          orderBy: { name: "asc" },
+        }),
+        prisma.clientProfile.findMany({
+          select: { id: true, companyName: true, user: { select: { name: true } } },
+          orderBy: { companyName: "asc" },
+          take: 200,
+        }),
+      ])
+    : [[], []];
 
   const tickets = await prisma.supportTicket.findMany({
     where: isClient ? { clientId: user.clientProfileId ?? "__none__" } : {},
@@ -46,7 +64,7 @@ export default async function SupportPage() {
         description={isClient ? "Raise and track support requests." : "Client support tickets."}
       />
 
-      <div className={isClient ? "grid gap-5 lg:grid-cols-[1.5fr_0.5fr]" : ""}>
+      <div className={isClient || canManage ? "grid gap-5 lg:grid-cols-[1.5fr_0.6fr]" : ""}>
         <Panel title="Tickets">
           {tickets.length ? (
             <TableWrap className="border-0">
@@ -67,10 +85,10 @@ export default async function SupportPage() {
                       <Td className="font-mono text-xs">{ticket.reference}</Td>
                       <Td>
                         <LinkCell href={`/dashboard/support/${ticket.id}`}>{ticket.subject}</LinkCell>
-                        <p className="text-xs text-muted-foreground">{ticket.category}</p>
+                        <p className="text-xs text-ink-muted">{ticket.category}</p>
                       </Td>
                       {!isClient ? (
-                        <Td className="text-muted-foreground">{ticket.client.companyName ?? "—"}</Td>
+                        <Td className="text-ink-muted">{ticket.client.companyName ?? "—"}</Td>
                       ) : null}
                       <Td>
                         <StatusBadge status={ticket.priority} />
@@ -78,7 +96,7 @@ export default async function SupportPage() {
                       <Td>
                         <StatusBadge status={ticket.status} />
                       </Td>
-                      <Td className="whitespace-nowrap text-muted-foreground">{formatDate(ticket.createdAt)}</Td>
+                      <Td className="whitespace-nowrap text-ink-muted">{formatDate(ticket.createdAt)}</Td>
                     </Tr>
                   ))}
                 </tbody>
@@ -96,6 +114,25 @@ export default async function SupportPage() {
         {isClient ? (
           <Panel title="Open a ticket">
             <TicketForm />
+          </Panel>
+        ) : null}
+
+        {canManage ? (
+          <Panel
+            title="Create a ticket"
+            description="Raise an internal token or file one on a client's behalf, and assign it straight away."
+          >
+            <StaffTicketForm
+              staff={staff.map((member) => ({
+                id: member.id,
+                name: member.name,
+                roleLabel: ROLE_LABELS[member.role],
+              }))}
+              clients={clientOptions.map((client) => ({
+                id: client.id,
+                label: client.companyName ?? client.user.name,
+              }))}
+            />
           </Panel>
         ) : null}
       </div>

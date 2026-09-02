@@ -45,7 +45,7 @@ export function UserRoleControls({
   }, [roleState, statusState, toast]);
 
   if (isSelf) {
-    return <span className="text-xs text-muted-foreground">Your own account</span>;
+    return <span className="text-xs text-ink-muted">Your own account</span>;
   }
 
   return (

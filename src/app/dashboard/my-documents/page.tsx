@@ -46,7 +46,7 @@ export default async function MyDocumentsPage() {
                         href={document.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
+                        className="font-medium text-accent hover:underline"
                       >
                         {document.title}
                       </a>
@@ -54,7 +54,7 @@ export default async function MyDocumentsPage() {
                     <Td>
                       <Badge tone="outline">{document.category}</Badge>
                     </Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(document.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(document.createdAt)}</Td>
                   </Tr>
                 ))}
               </tbody>
@@ -67,7 +67,7 @@ export default async function MyDocumentsPage() {
 
       <Panel title="Project files">
         {projectFiles.length ? (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {projectFiles.map((file) => (
               <li key={file.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <div className="min-w-0 flex-1">
@@ -75,18 +75,18 @@ export default async function MyDocumentsPage() {
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="text-sm font-medium text-accent hover:underline"
                   >
                     {file.name}
                   </a>
-                  <p className="text-xs text-muted-foreground">{file.project.name}</p>
+                  <p className="text-xs text-ink-muted">{file.project.name}</p>
                 </div>
-                <span className="text-xs text-muted-foreground">{formatDate(file.createdAt)}</span>
+                <span className="text-xs text-ink-muted">{formatDate(file.createdAt)}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">No project files shared yet.</p>
+          <p className="text-sm text-ink-muted">No project files shared yet.</p>
         )}
       </Panel>
     </>

@@ -80,9 +80,9 @@ export function InvoiceBuilder({
           >
             <div className="space-y-4">
               {lines.map((line, index) => (
-                <div key={index} className="grid gap-3 rounded-lg border border-border p-4 sm:grid-cols-12">
+                <div key={index} className="grid gap-3 rounded-lg border border-line p-4 sm:grid-cols-12">
                   <div className="sm:col-span-5">
-                    <label htmlFor={`desc-${index}`} className="text-xs font-medium text-muted-foreground">
+                    <label htmlFor={`desc-${index}`} className="text-xs font-medium text-ink-muted">
                       Description
                     </label>
                     <Input
@@ -146,12 +146,12 @@ export function InvoiceBuilder({
               <Row label="Subtotal" value={formatCurrency(totals.subtotal, currency)} />
               <Row label="Discount" value={`-${formatCurrency(totals.discount, currency)}`} />
               <Row label="Tax" value={formatCurrency(totals.tax, currency)} />
-              <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
+              <div className="flex justify-between border-t border-line pt-2 font-display text-base font-bold">
                 <dt>Total</dt>
                 <dd>{formatCurrency(totals.total, currency)}</dd>
               </div>
             </dl>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs text-ink-muted">
               This preview is a convenience. The invoice total is recalculated server-side when you
               issue it.
             </p>
@@ -168,7 +168,7 @@ export function InvoiceBuilder({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-muted-foreground">{label}</dt>
+      <dt className="text-ink-muted">{label}</dt>
       <dd>{value}</dd>
     </div>
   );
@@ -193,7 +193,7 @@ function NumberCell({
 }) {
   return (
     <div className={span}>
-      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+      <label htmlFor={id} className="text-xs font-medium text-ink-muted">
         {label}
       </label>
       <Input

@@ -301,73 +301,123 @@ export const testimonials: TestimonialSeed[] = [
 export const faqs: FaqSeed[] = [
   {
     question: "How do projects usually start?",
-    answer:
-      "With a paid discovery or a free 30-minute call, depending on scope. For anything above a small build we recommend a short discovery phase — sitemap, content model, performance budget and success metrics agreed in writing before development starts. It is the cheapest way to avoid an expensive misunderstanding.",
-    category: "Working together",
+    answer: "With a 30-minute call, then a short paid discovery for anything beyond a small build. Discovery produces the sitemap, content model, performance budget and success metrics in writing before a line of code is written. It is the cheapest possible way to avoid an expensive misunderstanding, and it is yours to keep whether or not you continue with us.",
+    category: "Working with us",
     position: 1,
   },
   {
-    question: "What does a project cost?",
-    answer:
-      "Marketing sites start at BDT 180,000, e-commerce builds at BDT 280,000, and retainers from BDT 25,000 per month. Every service page lists its own starting price and pricing model. After a discovery call you receive a fixed proposal with scope, deliverables and timeline — not an hourly estimate that drifts.",
-    category: "Pricing",
+    question: "Do we own the code and the accounts?",
+    answer: "Yes, without exception. The repository, database, ad accounts, analytics properties and every credential are created in your name from day one. If we stop working together you keep everything, and we run a handover session rather than simply switching off.",
+    category: "Working with us",
     position: 2,
   },
   {
-    question: "Do we own the code and the accounts?",
-    answer:
-      "Yes, without exception. The repository, database, ad accounts, analytics properties and every credential are created in your name. If we stop working together you keep everything, and we run a handover session rather than a shutdown.",
-    category: "Working together",
+    question: "Who actually does the work?",
+    answer: "The people you meet on the first call. We are deliberately small — there is no account layer between you and the engineer, strategist or designer delivering your project. You get named contacts and direct access to them.",
+    category: "Working with us",
     position: 3,
   },
   {
-    question: "Can our team edit the site without a developer?",
-    answer:
-      "That is a build requirement, not an add-on. Homepage sections, services, pricing, blog, case studies, testimonials, FAQs, navigation, SEO metadata and the theme are all editable from the dashboard through structured forms, with preview before publishing.",
-    category: "Platform",
+    question: "How do you communicate during a project?",
+    answer: "A live staging URL from week one, a weekly demo, and a shared client portal with projects, milestones, files, invoices and messages in one place. You never have to ask where something stands — it is on screen.",
+    category: "Working with us",
     position: 4,
   },
   {
-    question: "How do you handle payments and invoicing?",
-    answer:
-      "Through the client portal. Invoices are issued to your dashboard, and you can pay by bKash, Nagad, bank transfer or card gateway — whichever methods are active. Manual payments are submitted with a transaction ID and verified by our finance team, and every step is visible to you.",
-    category: "Payments",
+    question: "What if we already have an in-house team?",
+    answer: "That is common and usually the best outcome. We hand over ticket-ready specifications with reproductions, fixes and acceptance criteria, and we can pair with your developers rather than replacing them. Several of our engagements are purely advisory.",
+    category: "Working with us",
     position: 5,
   },
   {
-    question: "What are your performance targets?",
-    answer:
-      "90+ Lighthouse on key public pages, Core Web Vitals in the green on real-device data, and WCAG 2.1 AA accessibility. These are written into the acceptance criteria of every build and verified in the deployment pipeline, not measured after the fact.",
-    category: "Platform",
+    question: "Do you work with clients outside Bangladesh?",
+    answer: "Yes. We work with clients across Asia, Europe and North America and invoice in BDT, USD, EUR or GBP. Delivery runs asynchronously with a scheduled overlap window agreed at kickoff.",
+    category: "Working with us",
     position: 6,
   },
   {
-    question: "Do you work with clients outside Bangladesh?",
-    answer:
-      "Yes. We work with clients across Asia, Europe and North America, and we invoice in BDT, USD, EUR or GBP. Delivery runs asynchronously with scheduled overlap hours agreed at kickoff.",
-    category: "Working together",
+    question: "Can our team edit the site without a developer?",
+    answer: "That is a build requirement, not an add-on. Homepage sections, services, pricing, blog, case studies, testimonials, FAQs, navigation, SEO metadata and the theme are all editable from your dashboard through structured forms, with preview before publishing.",
+    category: "Working with us",
     position: 7,
   },
   {
-    question: "What happens after launch?",
-    answer:
-      "Thirty days of support are included with every build, covering bugs and small changes. Most clients then move to a monthly retainer for iteration, content and growth work. There is no obligation to — the site is fully yours to run.",
-    category: "Working together",
+    question: "What happens if we need to pause a project?",
+    answer: "Tell us as early as you can. Work stops at the end of the current milestone, you are billed only for what is complete, and your staging environment and repository stay available. Restarting is a scheduling conversation, not a new project.",
+    category: "Working with us",
     position: 8,
   },
   {
-    question: "How is our data protected?",
-    answer:
-      "Every dashboard route and API endpoint denies by default and re-checks permissions server-side on every request. Passwords are hashed, sessions use HttpOnly cookies, sensitive endpoints are rate limited, and every financial or security-relevant action is written to an audit log.",
-    category: "Security",
+    question: "How do you handle scope changes mid-project?",
+    answer: "Small changes inside the agreed shape are absorbed. Anything that moves the scope gets a written change note with its cost and timeline impact before we start it — no surprise line items at the end.",
+    category: "Working with us",
     position: 9,
   },
   {
-    question: "Do you guarantee first-page rankings?",
-    answer:
-      "No, and we would be careful of anyone who does. Search engines do not sell that guarantee to anyone. We commit to the work, the reporting and the leading indicators, and we set realistic expectations per keyword group in the first month.",
-    category: "Pricing",
+    question: "What happens after launch?",
+    answer: "Thirty days of support are included with every build, covering bugs and small changes. Most clients then move to a monthly retainer for iteration and growth work, but there is no obligation — the site is fully yours to run.",
+    category: "Working with us",
     position: 10,
+  },
+  {
+    question: "What does a project cost?",
+    answer: "Marketing sites start at BDT 180,000, e-commerce builds at BDT 280,000, and retainers from BDT 25,000 per month. Every service page lists its own starting price and pricing model, and after a discovery call you receive a fixed proposal with scope, deliverables and timeline — never an hourly estimate that drifts.",
+    category: "Pricing & delivery",
+    position: 11,
+  },
+  {
+    question: "How are payments and invoices handled?",
+    answer: "Through your client portal. Invoices appear in your dashboard and you can pay by bKash, Nagad, bank transfer or card gateway — whichever methods are active. Manual payments are submitted with a transaction ID and verified by our finance team, and every step is visible to you.",
+    category: "Pricing & delivery",
+    position: 12,
+  },
+  {
+    question: "How long does a typical build take?",
+    answer: "Four to ten weeks for a marketing site, six to twelve for e-commerce, depending on scope and how quickly content and feedback arrive. Retainer work starts within two weeks of signing. Every proposal carries a milestone schedule with dates.",
+    category: "Pricing & delivery",
+    position: 13,
+  },
+  {
+    question: "What are your performance targets?",
+    answer: "Lighthouse 95 or better on mobile and desktop for key public pages, Core Web Vitals in the green on real-device field data, and WCAG 2.1 AA accessibility. These are written into the acceptance criteria of every build and verified in the deployment pipeline, not measured afterwards.",
+    category: "Pricing & delivery",
+    position: 14,
+  },
+  {
+    question: "Do you guarantee first-page rankings?",
+    answer: "No, and we would be cautious of anyone who does — search engines do not sell that guarantee to anybody. We commit to the work, the reporting and the leading indicators, and we set realistic expectations per keyword group in the first month.",
+    category: "Pricing & delivery",
+    position: 15,
+  },
+  {
+    question: "How is our data protected?",
+    answer: "Every dashboard route and API endpoint denies by default and re-checks permissions server-side on every request. Passwords are hashed, sessions use HttpOnly cookies and can be revoked by you, sensitive endpoints are rate limited, and every financial or security-relevant action is written to an audit log.",
+    category: "Pricing & delivery",
+    position: 16,
+  },
+  {
+    question: "What hosting and infrastructure do you use?",
+    answer: "Vercel for hosting, Neon for PostgreSQL, Cloudflare for DNS and CDN, Cloudinary for media. Everything starts on a free tier and scales by changing an environment variable, so early-stage costs stay near zero without a rewrite later.",
+    category: "Pricing & delivery",
+    position: 17,
+  },
+  {
+    question: "Can you take over a site someone else built?",
+    answer: "Often, yes. We start with a technical audit that tells you honestly whether the existing codebase is worth continuing or whether a rebuild is cheaper over eighteen months. You get that recommendation in writing even if the answer is inconvenient for us.",
+    category: "Pricing & delivery",
+    position: 18,
+  },
+  {
+    question: "What kind of reporting do we receive?",
+    answer: "A monthly report tied to the metric the engagement was set up to move — qualified leads, revenue, conversion rate — not a wall of impressions. You can also generate daily, weekly or monthly reports yourself from the dashboard and export them as PDF or Excel.",
+    category: "Pricing & delivery",
+    position: 19,
+  },
+  {
+    question: "What if something breaks at 2am?",
+    answer: "Uptime monitoring alerts us before most clients notice. Critical errors route to a real-time channel rather than a dashboard nobody watches. Retainer clients get a defined response window written into their agreement; build clients get thirty days of the same during the support period.",
+    category: "Pricing & delivery",
+    position: 20,
   },
 ];
 

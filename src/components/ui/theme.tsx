@@ -4,23 +4,18 @@ import * as React from "react";
 import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-/**
- * Theme engine (PRD §5). Admin picks the accent identity (Purple/Cyan);
- * visitors pick Light/Dark/System. Both are constrained to safe, predefined
- * options — there is no free-form CSS anywhere in this path (§47).
- */
-export type Accent = "purple" | "cyan";
-export type Mode = "light" | "dark" | "system";
-
-const MODE_KEY = "hyascka.mode";
-const ACCENT_KEY = "hyascka.accent";
+import {
+  THEME_META,
+  THEME_STORAGE_KEY,
+  isThemeId,
+  type ThemeId,
+  type ThemePolicy,
+} from "@/lib/theme";
 
 type ThemeContextValue = {
-  mode: Mode;
-  accent: Accent;
-  setMode: (mode: Mode) => void;
-  setAccent: (accent: Accent) => void;
+  theme: ThemeId;
+  setTheme: (theme: ThemeId) => void;
+  policy: ThemePolicy;
 };
 
 const ThemeContext = React.createContext<ThemeContextValue | null>(null);
@@ -32,105 +27,96 @@ export function useTheme() {
 }
 
 /**
- * Runs before paint to apply the stored preference, so there is no flash of
- * the wrong theme. Kept as a tiny inline script on purpose.
+ * Applies the theme before first paint so there is never a flash of the wrong
+ * palette. Deliberately tiny and inline — it must run before the stylesheet
+ * paints, which rules out a separate request.
  */
-export function ThemeScript({ accent, mode }: { accent: Accent; mode: Mode }) {
-  const code = `(function(){try{var d=document.documentElement;
-var m=localStorage.getItem('${MODE_KEY}')||'${mode}';
-var a=localStorage.getItem('${ACCENT_KEY}')||'${accent}';
-var dark=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
-d.classList.toggle('dark',dark);d.dataset.accent=a;d.style.colorScheme=dark?'dark':'light';}catch(e){}})();`;
+export function ThemeScript({ policy }: { policy: ThemePolicy }) {
+  const code = `(function(){try{
+var d=document.documentElement;
+var allowed=${JSON.stringify(policy.enabledThemes)};
+var def=${JSON.stringify(policy.defaultTheme)};
+var canToggle=${policy.allowUserToggle ? "true" : "false"};
+var t=def;
+if(canToggle){
+  var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
+  if(s&&allowed.indexOf(s)>-1){t=s;}
+  else{
+    var dark=allowed.filter(function(x){return x!=='light';})[0];
+    if(window.matchMedia('(prefers-color-scheme: dark)').matches&&dark&&allowed.indexOf('light')>-1){t=dark;}
+  }
+}
+d.setAttribute('data-theme',t);
+d.style.colorScheme=(t==='light')?'light':'dark';
+}catch(e){}})();`;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }
 
 export function ThemeProvider({
+  policy,
   children,
-  defaultAccent = "purple",
-  defaultMode = "system",
 }: {
+  policy: ThemePolicy;
   children: React.ReactNode;
-  defaultAccent?: Accent;
-  defaultMode?: Mode;
 }) {
-  const [mode, setModeState] = React.useState<Mode>(defaultMode);
-  const [accent, setAccentState] = React.useState<Accent>(defaultAccent);
+  const [theme, setThemeState] = React.useState<ThemeId>(policy.defaultTheme);
 
+  // Adopt whatever the pre-paint script already decided, so React state and the
+  // DOM never disagree after hydration.
   React.useEffect(() => {
-    const storedMode = localStorage.getItem(MODE_KEY) as Mode | null;
-    const storedAccent = localStorage.getItem(ACCENT_KEY) as Accent | null;
-    if (storedMode) setModeState(storedMode);
-    if (storedAccent) setAccentState(storedAccent);
+    const applied = document.documentElement.getAttribute("data-theme");
+    if (isThemeId(applied)) setThemeState(applied);
   }, []);
 
-  const applyMode = React.useCallback((next: Mode) => {
-    const dark =
-      next === "dark" ||
-      (next === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("dark", dark);
-    document.documentElement.style.colorScheme = dark ? "dark" : "light";
-  }, []);
-
-  React.useEffect(() => {
-    applyMode(mode);
-    if (mode !== "system") return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const listener = () => applyMode("system");
-    media.addEventListener("change", listener);
-    return () => media.removeEventListener("change", listener);
-  }, [mode, applyMode]);
-
-  React.useEffect(() => {
-    document.documentElement.dataset.accent = accent;
-  }, [accent]);
-
-  const setMode = React.useCallback(
-    (next: Mode) => {
-      setModeState(next);
-      localStorage.setItem(MODE_KEY, next);
+  const setTheme = React.useCallback(
+    (next: ThemeId) => {
+      if (!policy.allowUserToggle || !policy.enabledThemes.includes(next)) return;
+      setThemeState(next);
+      document.documentElement.setAttribute("data-theme", next);
+      document.documentElement.style.colorScheme = next === "light" ? "light" : "dark";
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch {
+        /* private mode — the choice simply does not persist */
+      }
     },
-    [],
+    [policy],
   );
 
-  const setAccent = React.useCallback((next: Accent) => {
-    setAccentState(next);
-    localStorage.setItem(ACCENT_KEY, next);
-  }, []);
-
-  const value = React.useMemo(
-    () => ({ mode, accent, setMode, setAccent }),
-    [mode, accent, setMode, setAccent],
-  );
+  const value = React.useMemo(() => ({ theme, setTheme, policy }), [theme, setTheme, policy]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-const MODES: { value: Mode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
-];
+const ICONS: Record<ThemeId, React.ComponentType<{ className?: string }>> = {
+  light: Sun,
+  midnight: Moon,
+  network: Monitor,
+};
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const { mode, accent, setMode, setAccent } = useTheme();
+  const { theme, setTheme, policy } = useTheme();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!open) return;
-    const onClick = (event: MouseEvent) => {
+    const onPointer = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
-    document.addEventListener("mousedown", onClick);
+    document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
-  const Current = MODES.find((item) => item.value === mode)?.icon ?? Monitor;
+  // Locked to one theme by the dashboard — there is nothing to choose.
+  if (!policy.allowUserToggle) return null;
+
+  const Current = ICONS[theme];
 
   return (
     <div ref={ref} className={cn("relative", className)}>
@@ -139,56 +125,60 @@ export function ThemeToggle({ className }: { className?: string }) {
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Appearance settings"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        aria-label={`Theme: ${THEME_META[theme].label}. Change appearance`}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:border-accent-border hover:bg-surface-2 hover:text-ink"
       >
-        <Current className="h-[18px] w-[18px]" />
+        <Current className="h-[1.05rem] w-[1.05rem]" />
       </button>
 
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-52 animate-scale-in rounded-xl border border-border bg-card p-2 shadow-elevated"
+          className="absolute right-0 z-50 mt-2 w-60 animate-scale-in overflow-hidden rounded-lg border border-line bg-surface p-1.5 shadow-lg"
         >
-          <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="px-2.5 py-1.5 text-step--2 font-semibold uppercase tracking-wide text-ink-muted">
             Appearance
           </p>
-          {MODES.map((item) => (
-            <button
-              key={item.value}
-              role="menuitemradio"
-              aria-checked={mode === item.value}
-              type="button"
-              onClick={() => setMode(item.value)}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-muted"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {mode === item.value ? <Check className="h-4 w-4 text-primary" /> : null}
-            </button>
-          ))}
-
-          <div className="my-2 h-px bg-border" />
-          <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Accent
-          </p>
-          <div className="flex gap-2 px-2 pb-1 pt-1">
-            {(["purple", "cyan"] as Accent[]).map((value) => (
+          {policy.enabledThemes.map((id) => {
+            const Icon = ICONS[id];
+            const meta = THEME_META[id];
+            return (
               <button
-                key={value}
+                key={id}
+                role="menuitemradio"
+                aria-checked={theme === id}
                 type="button"
-                onClick={() => setAccent(value)}
-                aria-pressed={accent === value}
+                onClick={() => {
+                  setTheme(id);
+                  setOpen(false);
+                }}
                 className={cn(
-                  "flex flex-1 items-center gap-2 rounded-lg border px-2.5 py-2 text-xs font-medium capitalize transition-colors",
-                  accent === value ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-muted",
+                  "flex w-full items-start gap-3 rounded-md px-2.5 py-2 text-left transition-colors duration-fast hover:bg-surface-2",
+                  theme === id && "bg-surface-2",
                 )}
               >
-                <Palette className="h-3.5 w-3.5" />
-                {value}
+                <span
+                  className="mt-0.5 h-5 w-5 shrink-0 rounded-full border border-line-strong"
+                  style={{ background: meta.swatch }}
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5 text-step--1 font-medium text-ink">
+                    <Icon className="h-3.5 w-3.5 text-ink-muted" />
+                    {meta.label}
+                  </span>
+                  <span className="mt-0.5 block text-step--2 leading-snug text-ink-muted">
+                    {meta.description}
+                  </span>
+                </span>
+                {theme === id ? <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" /> : null}
               </button>
-            ))}
-          </div>
+            );
+          })}
+          <p className="mt-1 flex items-center gap-1.5 border-t border-line px-2.5 pb-1 pt-2 text-step--2 text-ink-muted">
+            <Palette className="h-3 w-3" />
+            Saved to this device only.
+          </p>
         </div>
       ) : null}
     </div>

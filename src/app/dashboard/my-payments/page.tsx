@@ -58,10 +58,10 @@ export default async function MyPaymentsPage() {
                         {payment.invoice.number}
                       </LinkCell>
                     </Td>
-                    <Td className="text-muted-foreground">{payment.method.replace(/_/g, " ")}</Td>
-                    <Td className="font-mono text-xs text-muted-foreground">{payment.trxId ?? "—"}</Td>
+                    <Td className="text-ink-muted">{payment.method.replace(/_/g, " ")}</Td>
+                    <Td className="font-mono text-xs text-ink-muted">{payment.trxId ?? "—"}</Td>
                     <Td className="font-medium">{formatCurrency(Number(payment.amount), payment.currency)}</Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(payment.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(payment.createdAt)}</Td>
                     <Td>
                       <StatusBadge status={payment.status} />
                       {payment.rejectionReason ? (

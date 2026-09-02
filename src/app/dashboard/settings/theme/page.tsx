@@ -1,17 +1,20 @@
 import { Panel } from "@/components/dashboard/page-shell";
-import { ThemeForm } from "@/components/dashboard/settings-forms";
+import { ThemeSettingsForm } from "@/components/dashboard/settings-forms";
 import { getSettings } from "@/lib/settings";
+import { resolveThemePolicy } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
 export default async function ThemeSettingsPage() {
   const { theme } = await getSettings();
+  const policy = resolveThemePolicy(theme);
+
   return (
     <Panel
       title="Theme"
-      description="Two accent identities and three appearance modes — a closed set of safe options, so a change can never break the design system."
+      description="Three themes ship with the site. Choose what visitors see by default, which alternatives they may switch to, and whether they may switch at all."
     >
-      <ThemeForm accent={theme.accent} mode={theme.mode} />
+      <ThemeSettingsForm policy={policy} />
     </Panel>
   );
 }

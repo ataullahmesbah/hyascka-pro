@@ -20,12 +20,12 @@ export function DashboardHeader({
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {breadcrumbs?.length ? (
-          <nav aria-label="Breadcrumb" className="mb-2 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+          <nav aria-label="Breadcrumb" className="mb-2 flex flex-wrap items-center gap-1 text-xs text-ink-muted">
             {breadcrumbs.map((crumb, index) => (
               <span key={crumb.label} className="flex items-center gap-1">
                 {index > 0 ? <ChevronRight className="h-3 w-3" /> : null}
                 {crumb.href ? (
-                  <Link href={crumb.href} className="hover:text-foreground">
+                  <Link href={crumb.href} className="hover:text-ink">
                     {crumb.label}
                   </Link>
                 ) : (
@@ -37,7 +37,7 @@ export function DashboardHeader({
         ) : null}
         <h1 className="font-display text-2xl font-bold tracking-tight">{title}</h1>
         {description ? (
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1 max-w-2xl text-sm text-ink-muted">{description}</p>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
@@ -61,7 +61,7 @@ export function StatCard({
   href?: string;
 }) {
   const tones = {
-    primary: "text-primary bg-primary-soft",
+    primary: "text-accent bg-accent-soft",
     success: "text-success bg-success/12",
     warning: "text-warning bg-warning/15",
     danger: "text-danger bg-danger/12",
@@ -71,7 +71,7 @@ export function StatCard({
   const content = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-ink-muted">{label}</p>
         {icon ? (
           <span className={cn("flex h-9 w-9 items-center justify-center rounded-lg", tones[tone])}>
             <Icon name={icon} className="h-[18px] w-[18px]" />
@@ -79,13 +79,13 @@ export function StatCard({
         ) : null}
       </div>
       <p className="mt-3 font-display text-2xl font-bold tracking-tight">{value}</p>
-      {detail ? <p className="mt-1 text-xs text-muted-foreground">{detail}</p> : null}
+      {detail ? <p className="mt-1 text-xs text-ink-muted">{detail}</p> : null}
     </>
   );
 
   const className =
-    "rounded-xl border border-border bg-card p-5 transition-colors" +
-    (href ? " hover:border-primary/40" : "");
+    "rounded-xl border border-line bg-surface p-5 transition-colors" +
+    (href ? " hover:border-accent/40" : "");
 
   return href ? (
     <Link href={href} className={className}>
@@ -110,12 +110,12 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-xl border border-border bg-card", className)}>
+    <section className={cn("rounded-xl border border-line bg-surface", className)}>
       {title ? (
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div>
             <h2 className="font-display text-base font-semibold">{title}</h2>
-            {description ? <p className="mt-0.5 text-sm text-muted-foreground">{description}</p> : null}
+            {description ? <p className="mt-0.5 text-sm text-ink-muted">{description}</p> : null}
           </div>
           {action}
         </header>

@@ -7,14 +7,17 @@ import { authorize } from "@/lib/auth/guards";
 import { audit } from "@/lib/audit";
 import { SETTING_KEYS, type SettingKey } from "@/lib/settings";
 import {
+  assistantSettingsSchema,
   brandSettingsSchema,
   contactSettingsSchema,
   maintenanceSettingsSchema,
   paymentMethodSchema,
   seoSettingsSchema,
   themeSettingsSchema,
+  sponsorsSettingsSchema,
   toActionState,
   trackingSettingsSchema,
+  whatsappSettingsSchema,
   type ActionState,
 } from "@/lib/validation";
 
@@ -57,10 +60,79 @@ export async function saveBrandSettings(_prev: ActionState | null, formData: For
 }
 
 export async function saveThemeSettings(_prev: ActionState | null, formData: FormData): Promise<ActionState> {
-  const parsed = themeSettingsSchema.safeParse(Object.fromEntries(formData));
+  const parsed = themeSettingsSchema.safeParse({
+    defaultTheme: formData.get("defaultTheme"),
+    enabledThemes: formData.getAll("enabledThemes"),
+    allowUserToggle: formData.get("allowUserToggle") === "on",
+  });
   if (!parsed.success) return toActionState(parsed.error);
-  await writeSetting("theme", parsed.data, `Theme set to ${parsed.data.accent}/${parsed.data.mode}`);
-  return { ok: true, message: "Theme saved. New visitors see it immediately." };
+
+  await writeSetting(
+    "theme",
+    parsed.data,
+    `Theme policy: default ${parsed.data.defaultTheme}, ${parsed.data.enabledThemes.length} enabled, toggle ${parsed.data.allowUserToggle ? "on" : "off"}`,
+  );
+  return {
+    ok: true,
+    message: parsed.data.allowUserToggle
+      ? "Theme saved. Visitors can switch between the enabled themes."
+      : "Theme saved and locked. The visitor toggle is now hidden.",
+  };
+}
+
+export async function saveSponsorsSettings(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  let items: unknown = [];
+  try {
+    items = JSON.parse(String(formData.get("items") ?? "[]"));
+  } catch {
+    return { ok: false, message: "The sponsor list could not be read. Reload and try again." };
+  }
+
+  const parsed = sponsorsSettingsSchema.safeParse({
+    enabled: formData.get("enabled") === "on",
+    title: formData.get("title"),
+    direction: formData.get("direction"),
+    speed: formData.get("speed"),
+    items,
+  });
+  if (!parsed.success) return toActionState(parsed.error);
+
+  await writeSetting("sponsors", parsed.data, `Sponsor strip updated (${parsed.data.items.length} items)`);
+  return { ok: true, message: "Sponsor strip saved and published." };
+}
+
+export async function saveWhatsappSettings(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = whatsappSettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+  await writeSetting("whatsapp", parsed.data, "WhatsApp widget copy updated");
+  return { ok: true, message: "WhatsApp settings saved. Toggle visibility under Features." };
+}
+
+export async function saveAssistantSettings(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = assistantSettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+
+  const suggestions = (parsed.data.suggestions ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  await writeSetting(
+    "assistant",
+    { name: parsed.data.name, greeting: parsed.data.greeting, suggestions },
+    "AI assistant copy updated",
+  );
+  return { ok: true, message: "Assistant settings saved." };
 }
 
 export async function saveContactSettings(_prev: ActionState | null, formData: FormData): Promise<ActionState> {

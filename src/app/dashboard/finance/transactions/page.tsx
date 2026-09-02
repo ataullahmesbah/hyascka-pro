@@ -53,7 +53,7 @@ export default async function TransactionsPage({
                   {transactions.map((transaction) => (
                     <Tr key={transaction.id}>
                       <Td className="font-mono text-xs">{transaction.reference}</Td>
-                      <Td className="whitespace-nowrap text-muted-foreground">
+                      <Td className="whitespace-nowrap text-ink-muted">
                         {formatDate(transaction.occurredAt)}
                       </Td>
                       <Td>
@@ -61,8 +61,8 @@ export default async function TransactionsPage({
                           status={transaction.type === "INCOME" ? "PAID" : transaction.type}
                         />
                       </Td>
-                      <Td className="text-muted-foreground">{transaction.account?.name ?? "—"}</Td>
-                      <Td className="text-muted-foreground">{transaction.description}</Td>
+                      <Td className="text-ink-muted">{transaction.account?.name ?? "—"}</Td>
+                      <Td className="text-ink-muted">{transaction.description}</Td>
                       <Td
                         className={`text-right font-medium ${
                           transaction.type === "INCOME" ? "text-success" : "text-danger"

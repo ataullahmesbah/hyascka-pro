@@ -18,7 +18,7 @@ export default async function LoginPage({
   return (
     <div>
       <h1 className="font-display text-2xl font-bold">Sign in</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-muted">
         Access your projects, invoices, payments and messages.
       </p>
 
@@ -32,9 +32,9 @@ export default async function LoginPage({
         <LoginForm redirectTo={query.next} />
       </div>
 
-      <p className="mt-7 text-center text-sm text-muted-foreground">
+      <p className="mt-7 text-center text-sm text-ink-muted">
         No account yet?{" "}
-        <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+        <Link href="/register" className="font-medium text-accent underline-offset-4 hover:underline">
           Create one
         </Link>
       </p>

@@ -2,7 +2,7 @@
   "name": "hyascka-pro",
   "version": "4.0.0",
   "private": true,
-  "description": "HYASCKA \u2014 Digital Service Provider. Premium agency website + business operating platform.",
+  "description": "HYASCKA — Digital Service Provider. Premium agency website + business operating platform.",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -32,24 +32,21 @@
     "react-dom": "19.1.0",
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.5.5",
-    "three": "^0.171.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.15",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
-    "@types/three": "^0.171.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.5",
     "eslint-config-next": "^15.5.25",
+    "lighthouse": "^12.2.1",
     "playwright": "^1.49.1",
     "postcss": "^8.4.49",
     "prisma": "^6.1.0",
     "tailwindcss": "^3.4.17",
-    "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

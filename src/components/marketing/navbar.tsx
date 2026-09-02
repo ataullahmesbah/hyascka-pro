@@ -14,6 +14,17 @@ import { IconBadge } from "@/components/ui/icon";
 export type NavService = { slug: string; title: string; tagline: string; icon: string };
 export type NavLinkItem = { label: string; href: string };
 
+/**
+ * The public navigation bar.
+ *
+ * Two things the previous version got wrong and this one fixes:
+ *  1. It was transparent over content, so text slid underneath while scrolling.
+ *     The bar now always occupies layout space and gains an opaque, bordered
+ *     surface the moment the page moves.
+ *  2. Its dropdown and mobile menu depended on hover alone. Everything here is
+ *     click-driven, keyboard-reachable, closes on Escape/outside-click/route
+ *     change, and the mobile drawer traps focus and locks body scroll.
+ */
 export function Navbar({
   links,
   services,
@@ -24,77 +35,136 @@ export function Navbar({
   siteName: string;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [servicesOpen, setServicesOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const servicesRef = React.useRef<HTMLDivElement>(null);
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Any navigation closes everything.
   React.useEffect(() => {
-    setOpen(false);
+    setDrawerOpen(false);
     setServicesOpen(false);
   }, [pathname]);
 
+  // Desktop dropdown: outside click + Escape.
   React.useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
+    if (!servicesOpen) return;
+    const onPointer = (event: MouseEvent) => {
+      if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
+        setServicesOpen(false);
+      }
     };
-  }, [open]);
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setServicesOpen(false);
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [servicesOpen]);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Mobile drawer: lock scroll, trap focus, restore focus on close.
+  React.useEffect(() => {
+    if (!drawerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const node = drawerRef.current;
+    // Captured now so the cleanup restores focus to the element that opened the
+    // drawer, not to whatever the ref points at later.
+    const opener = triggerRef.current;
+    const focusables = () =>
+      Array.from(
+        node?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+    focusables()[0]?.focus();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setDrawerOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const list = focusables();
+      if (!list.length) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
+  }, [drawerOpen]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b transition-colors duration-300",
+        "sticky top-0 z-header w-full border-b transition-[height,background-color,border-color,box-shadow] duration-200",
         scrolled
-          ? "border-border bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70"
-          : "border-transparent bg-transparent",
+          ? "h-[var(--header-h-scrolled)] border-line bg-bg/85 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-bg/75"
+          : "h-[var(--header-h)] border-transparent bg-bg",
       )}
     >
-      <nav className="container flex h-[var(--header-height)] items-center justify-between gap-4" aria-label="Main">
-        <Logo siteName={siteName} />
+      <nav className="container-x flex h-full items-center justify-between gap-3" aria-label="Main">
+        <Logo siteName={siteName} size={30} />
 
-        <div className="hidden items-center gap-1 lg:flex">
-          <div
-            className="relative"
-            onMouseEnter={() => setServicesOpen(true)}
-            onMouseLeave={() => setServicesOpen(false)}
-          >
+        {/* ---- Desktop links ---- */}
+        <div className="hidden items-center gap-0.5 lg:flex">
+          <div ref={servicesRef} className="relative">
             <button
               type="button"
               aria-expanded={servicesOpen}
               aria-haspopup="true"
               onClick={() => setServicesOpen((value) => !value)}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:bg-muted",
-                isActive("/services") && "text-primary",
+                "inline-flex items-center gap-1 rounded-btn px-3 py-2 text-step--1 font-medium transition-colors duration-fast hover:bg-surface-2",
+                isActive("/services") ? "text-accent" : "text-ink-soft hover:text-ink",
               )}
             >
               Services
-              <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", servicesOpen && "rotate-180")} />
+              <ChevronDown
+                className={cn("h-3.5 w-3.5 transition-transform duration-fast", servicesOpen && "rotate-180")}
+              />
             </button>
 
             {servicesOpen ? (
-              <div className="absolute left-1/2 top-full w-[min(46rem,90vw)] -translate-x-1/2 pt-2">
-                <div className="animate-scale-in rounded-2xl border border-border bg-card p-3 shadow-elevated">
-                  <div className="grid gap-1 sm:grid-cols-2">
+              <div className="absolute left-1/2 top-full w-[min(44rem,88vw)] -translate-x-1/2 pt-2">
+                <div className="animate-scale-in rounded-xl border border-line bg-surface p-2.5 shadow-lg">
+                  <div className="grid gap-0.5 sm:grid-cols-2">
                     {services.map((service) => (
                       <Link
                         key={service.slug}
                         href={`/services/${service.slug}`}
-                        className="flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-muted"
+                        className="flex items-start gap-3 rounded-lg p-2.5 transition-colors duration-fast hover:bg-surface-2"
                       >
                         <IconBadge name={service.icon} size="sm" />
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold">{service.title}</span>
-                          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                          <span className="block text-step--1 font-semibold text-ink">{service.title}</span>
+                          <span className="mt-0.5 block truncate text-step--2 text-ink-muted">
                             {service.tagline}
                           </span>
                         </span>
@@ -103,7 +173,7 @@ export function Navbar({
                   </div>
                   <Link
                     href="/services"
-                    className="mt-2 flex items-center justify-center rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-muted"
+                    className="mt-2 flex items-center justify-center rounded-lg bg-surface-2 px-4 py-2 text-step--1 font-semibold text-accent transition-colors duration-fast hover:bg-surface-3"
                   >
                     View all services
                   </Link>
@@ -119,8 +189,8 @@ export function Navbar({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:bg-muted",
-                  isActive(link.href) && "text-primary",
+                  "rounded-btn px-3 py-2 text-step--1 font-medium transition-colors duration-fast hover:bg-surface-2",
+                  isActive(link.href) ? "text-accent" : "text-ink-soft hover:text-ink",
                 )}
               >
                 {link.label}
@@ -128,9 +198,9 @@ export function Navbar({
             ))}
         </div>
 
+        {/* ---- Actions ---- */}
         <div className="flex items-center gap-2">
-          <ThemeToggle className="hidden sm:block" />
-          {/* Visually distinct outline login button (PRD §39.6) */}
+          <ThemeToggle />
           <ButtonLink href="/login" variant="outline" size="sm" className="hidden sm:inline-flex">
             Client Login
           </ButtonLink>
@@ -138,62 +208,100 @@ export function Navbar({
             Start a project
           </ButtonLink>
           <button
+            ref={triggerRef}
             type="button"
-            onClick={() => setOpen((value) => !value)}
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border lg:hidden"
+            onClick={() => setDrawerOpen(true)}
+            aria-expanded={drawerOpen}
+            aria-controls="mobile-drawer"
+            aria-label="Open menu"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:bg-surface-2 hover:text-ink lg:hidden"
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <Menu className="h-[1.1rem] w-[1.1rem]" />
           </button>
         </div>
       </nav>
 
-      {open ? (
-        <div
-          id="mobile-nav"
-          className="fixed inset-x-0 bottom-0 top-[var(--header-height)] z-40 animate-fade-in overflow-y-auto border-t border-border bg-background lg:hidden"
-        >
-          <div className="container flex flex-col gap-1 py-6">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-xl px-4 py-3.5 text-base font-medium transition-colors hover:bg-muted",
-                  isActive(link.href) && "bg-primary-soft text-primary",
-                )}
+      {/* ---- Mobile / tablet drawer ---- */}
+      {drawerOpen ? (
+        <div className="lg:hidden">
+          <div
+            className="fixed inset-0 z-drawer bg-[hsl(var(--overlay))] backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden
+          />
+          <div
+            ref={drawerRef}
+            id="mobile-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+            className="fixed inset-y-0 right-0 z-drawer flex w-[min(22rem,88vw)] flex-col border-l border-line bg-bg shadow-lg"
+          >
+            <div className="flex h-[var(--header-h)] shrink-0 items-center justify-between border-b border-line px-5">
+              <Logo siteName={siteName} size={28} />
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close menu"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:bg-surface-2 hover:text-ink"
               >
-                {link.label}
-              </Link>
-            ))}
-
-            <p className="mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Services
-            </p>
-            <div className="grid gap-1">
-              {services.map((service) => (
-                <Link
-                  key={service.slug}
-                  href={`/services/${service.slug}`}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-muted"
-                >
-                  <IconBadge name={service.icon} size="sm" />
-                  <span className="text-sm font-medium">{service.title}</span>
-                </Link>
-              ))}
+                <X className="h-[1.1rem] w-[1.1rem]" />
+              </button>
             </div>
 
-            <div className="mt-6 flex flex-col gap-3">
-              <ButtonLink href="/contact" size="lg">
+            <div className="scrollbar-thin flex-1 overflow-y-auto overscroll-contain px-4 py-5">
+              <nav aria-label="Mobile">
+                <ul className="space-y-0.5">
+                  {links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className={cn(
+                          "block rounded-lg px-3.5 py-3 text-step-0 font-medium transition-colors duration-fast hover:bg-surface-2",
+                          isActive(link.href) ? "bg-accent-soft text-accent" : "text-ink",
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                <MobileSection title="Services">
+                  <ul className="space-y-0.5">
+                    {services.map((service) => (
+                      <li key={service.slug}>
+                        <Link
+                          href={`/services/${service.slug}`}
+                          className="flex items-center gap-3 rounded-lg px-3.5 py-2.5 transition-colors duration-fast hover:bg-surface-2"
+                        >
+                          <IconBadge name={service.icon} size="xs" />
+                          <span className="text-step--1 font-medium text-ink">{service.title}</span>
+                        </Link>
+                      </li>
+                    ))}
+                    <li>
+                      <Link
+                        href="/services"
+                        className="block rounded-lg px-3.5 py-2.5 text-step--1 font-semibold text-accent transition-colors duration-fast hover:bg-surface-2"
+                      >
+                        View all services →
+                      </Link>
+                    </li>
+                  </ul>
+                </MobileSection>
+              </nav>
+            </div>
+
+            <div className="shrink-0 space-y-3 border-t border-line p-4">
+              <ButtonLink href="/contact" size="lg" className="w-full">
                 Start a project
               </ButtonLink>
-              <ButtonLink href="/login" variant="outline" size="lg">
+              <ButtonLink href="/login" variant="outline" size="lg" className="w-full">
                 Client Login
               </ButtonLink>
-              <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
-                <span className="text-sm text-muted-foreground">Appearance</span>
+              <div className="flex items-center justify-between rounded-lg border border-line px-4 py-2.5">
+                <span className="text-step--1 text-ink-soft">Appearance</span>
                 <ThemeToggle />
               </div>
             </div>
@@ -201,5 +309,31 @@ export function Navbar({
         </div>
       ) : null}
     </header>
+  );
+}
+
+/** Collapsible group inside the drawer — open by default so nothing is hidden. */
+function MobileSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(true);
+  return (
+    <div className="mt-5 border-t border-line pt-4">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-3.5 py-1.5 text-step--2 font-semibold uppercase tracking-wide text-ink-muted"
+      >
+        {title}
+        <ChevronDown className={cn("h-4 w-4 transition-transform duration-fast", open && "rotate-180")} />
+      </button>
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="mt-1 overflow-hidden">{children}</div>
+      </div>
+    </div>
   );
 }

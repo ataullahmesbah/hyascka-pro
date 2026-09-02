@@ -29,8 +29,8 @@ export function MaintenanceCountdown({ endAt }: { endAt: string }) {
 
   return (
     <div className="mt-8" role="timer" aria-live="off">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">Expected back in</p>
-      <p className="brand-text mt-2 font-display text-4xl font-extrabold tabular-nums">
+      <p className="text-xs uppercase tracking-wider text-ink-muted">Expected back in</p>
+      <p className="accent-text mt-2 font-display text-4xl font-extrabold tabular-nums">
         {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
         {String(seconds).padStart(2, "0")}
       </p>

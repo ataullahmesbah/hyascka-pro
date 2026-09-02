@@ -94,18 +94,18 @@ export default async function ClientsPage({
                       </Td>
                       <Td>
                         <p className="text-sm">{client.user.name}</p>
-                        <p className="text-xs text-muted-foreground">{client.user.email}</p>
+                        <p className="text-xs text-ink-muted">{client.user.email}</p>
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {[client.city, client.country].filter(Boolean).join(", ") || "—"}
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {client._count.projects} · {client._count.invoices} invoices
                       </Td>
-                      <Td className={outstanding > 0 ? "font-semibold text-warning" : "text-muted-foreground"}>
+                      <Td className={outstanding > 0 ? "font-semibold text-warning" : "text-ink-muted"}>
                         {formatCurrency(outstanding)}
                       </Td>
-                      <Td className="whitespace-nowrap text-muted-foreground">{formatDate(client.createdAt)}</Td>
+                      <Td className="whitespace-nowrap text-ink-muted">{formatDate(client.createdAt)}</Td>
                     </Tr>
                   );
                 })}

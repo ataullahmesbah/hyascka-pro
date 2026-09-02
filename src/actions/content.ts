@@ -9,6 +9,7 @@ import { slugify } from "@/lib/utils";
 import {
   caseStudySchema,
   faqSchema as faqContentSchema,
+  heroSettingsSchema,
   homepageSectionSchema,
   postContentSchema,
   serviceContentSchema,
@@ -269,6 +270,69 @@ export async function saveHomepageSectionAction(
   revalidatePath("/");
   revalidatePath("/dashboard/content/homepage");
   return { ok: true, message: "Homepage section saved and published." };
+}
+
+/**
+ * Hero slider editor (PRD §4). Structured fields, not raw JSON — a non-developer
+ * has to be able to change the headline without meeting a syntax error.
+ */
+export async function saveHeroAction(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await authorize("content.manage");
+
+  let slides: unknown = [];
+  try {
+    slides = JSON.parse(String(formData.get("slides") ?? "[]"));
+  } catch {
+    return { ok: false, message: "The slide list could not be read. Reload the page and try again." };
+  }
+
+  const parsed = heroSettingsSchema.safeParse({
+    autoplay: formData.get("autoplay") === "on",
+    intervalMs: formData.get("intervalMs"),
+    trustMicrocopy: formData.get("trustMicrocopy"),
+    highlights: formData.get("highlights"),
+    slides,
+  });
+  if (!parsed.success) return toActionState(parsed.error);
+
+  const highlights = (parsed.data.highlights ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  const page = await prisma.page.findUnique({ where: { slug: "home" }, select: { id: true } });
+  if (!page) return { ok: false, message: "Homepage record is missing. Run the seed first." };
+
+  const data = {
+    autoplay: parsed.data.autoplay,
+    intervalMs: parsed.data.intervalMs,
+    trustMicrocopy: parsed.data.trustMicrocopy,
+    highlights,
+    slides: parsed.data.slides,
+  };
+
+  await prisma.pageSection.upsert({
+    where: { pageId_key: { pageId: page.id, key: "hero" } },
+    update: { data: data as object, enabled: true },
+    create: { pageId: page.id, key: "hero", type: "hero", title: "Hero", data: data as object, position: 1 },
+  });
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "content.hero",
+    entityType: "PageSection",
+    entityId: "hero",
+    summary: `Homepage hero updated (${parsed.data.slides.length} slides)`,
+  });
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/content/homepage");
+  return { ok: true, message: "Hero saved and published." };
 }
 
 export async function deleteContentAction(

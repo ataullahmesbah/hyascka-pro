@@ -57,11 +57,11 @@ export default async function MyServicesPage() {
         {services.size ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[...services.values()].map((service) => (
-              <div key={service.slug} className="rounded-lg border border-border p-5">
+              <div key={service.slug} className="rounded-lg border border-line p-5">
                 <IconBadge name={service.icon} />
                 <p className="mt-4 font-display text-base font-semibold">{service.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{service.tagline}</p>
-                <p className="mt-3 text-xs text-muted-foreground">
+                <p className="mt-1 text-sm text-ink-muted">{service.tagline}</p>
+                <p className="mt-3 text-xs text-ink-muted">
                   {service.count} {service.count === 1 ? "engagement" : "engagements"}
                 </p>
               </div>
@@ -79,12 +79,12 @@ export default async function MyServicesPage() {
 
       <Panel title="Service requests">
         {requests.length ? (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {requests.map((request) => (
               <li key={request.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{request.title}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-muted">
                     {request.reference} · {request.service?.title ?? "General"} ·{" "}
                     {formatDate(request.createdAt)}
                   </p>
@@ -94,7 +94,7 @@ export default async function MyServicesPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-muted">
             No open requests. Message the team or use the contact form to start something new.
           </p>
         )}

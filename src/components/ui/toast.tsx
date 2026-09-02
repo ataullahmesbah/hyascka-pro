@@ -75,22 +75,22 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               key={item.id}
               role={item.kind === "error" ? "alert" : "status"}
               className={cn(
-                "pointer-events-auto flex w-full max-w-sm animate-scale-in items-start gap-3 rounded-xl border bg-card p-4 shadow-elevated",
+                "pointer-events-auto flex w-full max-w-sm animate-scale-in items-start gap-3 rounded-xl border bg-surface p-4 shadow-lg",
                 TONES[item.kind],
               )}
             >
               <Icon className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                <p className="text-sm font-semibold text-ink">{item.title}</p>
                 {item.description ? (
-                  <p className="mt-0.5 text-sm text-muted-foreground">{item.description}</p>
+                  <p className="mt-0.5 text-sm text-ink-muted">{item.description}</p>
                 ) : null}
               </div>
               <button
                 type="button"
                 onClick={() => dismiss(item.id)}
                 aria-label="Dismiss notification"
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
               >
                 <X className="h-4 w-4" />
               </button>

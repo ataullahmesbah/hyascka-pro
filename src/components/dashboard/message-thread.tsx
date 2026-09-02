@@ -45,7 +45,7 @@ export function MessageThread({
                 <span
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                    mine ? "brand-gradient text-white" : "bg-muted text-muted-foreground",
+                    mine ? "text-white" : "bg-surface-2 text-ink-muted",
                   )}
                 >
                   {initials(message.senderName)}
@@ -55,10 +55,10 @@ export function MessageThread({
                     className={cn(
                       "inline-block rounded-2xl px-4 py-2.5 text-left text-sm leading-relaxed",
                       message.isInternalNote
-                        ? "border border-warning/40 bg-warning/10 text-foreground"
+                        ? "border border-warning/40 bg-warning/10 text-ink"
                         : mine
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground",
+                          ? "bg-accent text-accent-ink"
+                          : "bg-surface-2 text-ink",
                     )}
                   >
                     {message.isInternalNote ? (
@@ -68,7 +68,7 @@ export function MessageThread({
                     ) : null}
                     <span className="whitespace-pre-wrap">{message.body}</span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-ink-muted">
                     {message.senderName} · {relativeTime(message.createdAt)}
                   </p>
                 </div>
@@ -76,20 +76,20 @@ export function MessageThread({
             );
           })
         ) : (
-          <p className="py-8 text-center text-sm text-muted-foreground">
+          <p className="py-8 text-center text-sm text-ink-muted">
             No messages yet — start the conversation below.
           </p>
         )}
         <div ref={endRef} />
       </div>
 
-      <div className="mt-5 border-t border-border pt-5">
+      <div className="mt-5 border-t border-line pt-5">
         <ActionForm action={sendMessageAction} successTitle="Message sent" resetOnSuccess>
           <input type="hidden" name="conversationId" value={conversationId} />
           <BodyField />
           <div className="flex flex-wrap items-center justify-between gap-3">
             {canPostInternal ? (
-              <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <label className="flex items-center gap-2.5 text-sm text-ink-muted">
                 <Checkbox name="isInternalNote" />
                 Internal note (staff only)
               </label>

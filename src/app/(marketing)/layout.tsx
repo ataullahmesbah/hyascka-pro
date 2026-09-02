@@ -1,14 +1,10 @@
 import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
-import { CookieConsent } from "@/components/marketing/cookie-consent";
 import { TrackingScripts } from "@/components/marketing/tracking";
-import {
-  AnnouncementBar,
-  BackToTop,
-  ContactWidget,
-  ExitIntentCta,
-  MaintenanceNoticeBar,
-} from "@/components/marketing/widgets";
+import { DeferredWidgets } from "@/components/marketing/deferred";
+import { SiteRuntime } from "@/components/marketing/site-runtime";
+import { AnnouncementBar } from "@/components/marketing/announcement";
+import { MaintenanceNoticeBar } from "@/components/marketing/widgets";
 import { JsonLd } from "@/components/ui/section";
 import { getHomepage, getNavigation, getServices } from "@/lib/content";
 import { getSettings } from "@/lib/settings";
@@ -23,10 +19,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
     organizationSchema(),
   ]);
 
-  // Note: this layout deliberately does not read cookies, so every marketing
-  // page stays statically generated (PRD §40.1). A signed-in visitor who clicks
-  // "Client Login" is redirected straight to their dashboard by middleware.
-
+  // This layout deliberately does not read cookies, so every marketing page
+  // stays statically generated. A signed-in visitor who clicks "Client Login"
+  // is redirected straight to their dashboard by middleware.
   const headerLinks = navigation
     .filter((item) => item.location === "HEADER")
     .sort((a, b) => a.position - b.position)
@@ -38,6 +33,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
     tagline: service.tagline,
     icon: service.icon,
   }));
+
+  const whatsappOn = Boolean(settings.featureFlags.whatsapp_widget && settings.contact.whatsapp);
+  const assistantOn = Boolean(settings.featureFlags.ai_assistant);
 
   return (
     <>
@@ -59,11 +57,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         />
       ) : null}
 
-      <Navbar
-        links={headerLinks}
-        services={navServices}
-        siteName={settings.brand.siteName}
-      />
+      <Navbar links={headerLinks} services={navServices} siteName={settings.brand.siteName} />
 
       <main id="main">{children}</main>
 
@@ -73,15 +67,22 @@ export default async function MarketingLayout({ children }: { children: React.Re
         newsletterEnabled={Boolean(settings.featureFlags.newsletter)}
       />
 
-      <CookieConsent />
-      <BackToTop />
-      {settings.featureFlags.whatsapp_widget ? (
-        <ContactWidget
-          whatsapp={settings.contact.whatsapp}
-          message="Hi HYASCKA — I'd like to discuss a project."
-        />
-      ) : null}
-      {settings.featureFlags.exit_intent_cta ? <ExitIntentCta /> : null}
+      <DeferredWidgets
+        whatsapp={
+          whatsappOn
+            ? {
+                phone: settings.contact.whatsapp,
+                greeting: settings.whatsapp.greeting,
+                label: settings.whatsapp.label,
+              }
+            : null
+        }
+        assistant={assistantOn ? settings.assistant : null}
+        exitIntent={Boolean(settings.featureFlags.exit_intent_cta)}
+      />
+
+      <SiteRuntime />
+
     </>
   );
 }

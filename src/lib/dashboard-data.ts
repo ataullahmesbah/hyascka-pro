@@ -9,6 +9,53 @@ import type { CurrentUser } from "@/lib/auth/session";
  * PROJECT_MANAGER only the projects it is a member of.
  */
 
+/**
+ * Twelve-week revenue and lead series for the overview charts (PRD §6.2).
+ * Aggregated in one pass rather than 12 round trips.
+ */
+export async function overviewSeries() {
+  const weeks = 12;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay() - (weeks - 1) * 7);
+
+  const [payments, leads, invoiceGroups, projectGroups] = await Promise.all([
+    prisma.payment.findMany({
+      where: { status: "VERIFIED", verifiedAt: { gte: start } },
+      select: { amount: true, verifiedAt: true },
+    }),
+    prisma.lead.findMany({ where: { createdAt: { gte: start } }, select: { createdAt: true } }),
+    prisma.invoice.groupBy({ by: ["status"], _count: true }),
+    prisma.project.groupBy({ by: ["status"], _count: true }),
+  ]);
+
+  const buckets = Array.from({ length: weeks }, (_, index) => {
+    const from = new Date(start);
+    from.setDate(start.getDate() + index * 7);
+    return {
+      from,
+      label: from.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+      revenue: 0,
+      leads: 0,
+    };
+  });
+
+  const indexFor = (date: Date) =>
+    Math.min(weeks - 1, Math.max(0, Math.floor((date.getTime() - start.getTime()) / (7 * 864e5))));
+
+  for (const payment of payments) {
+    if (payment.verifiedAt) buckets[indexFor(payment.verifiedAt)].revenue += Number(payment.amount);
+  }
+  for (const lead of leads) buckets[indexFor(lead.createdAt)].leads += 1;
+
+  return {
+    revenue: buckets.map((b) => ({ label: b.label, value: Math.round(b.revenue) })),
+    leads: buckets.map((b) => ({ label: b.label, value: b.leads })),
+    invoiceSplit: invoiceGroups.map((row) => ({ label: row.status, value: row._count })),
+    projectSplit: projectGroups.map((row) => ({ label: row.status, value: row._count })),
+  };
+}
+
 export async function staffOverview() {
   const monthStart = new Date();
   monthStart.setDate(1);

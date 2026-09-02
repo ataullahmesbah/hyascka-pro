@@ -50,11 +50,99 @@ try {
   // --- Public site ---------------------------------------------------------
   const anon = await browser.newContext();
   const page = await anon.newPage();
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
 
   for (const path of ["/", "/services", "/services/seo", "/work", "/pricing", "/blog", "/faq", "/contact", "/about"]) {
     const response = await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
     record(`public ${path}`, response?.status() === 200, `HTTP ${response?.status()}`);
   }
+
+  // --- Design system -------------------------------------------------------
+  await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(600);
+  record(
+    "site opens on the Daylight theme",
+    (await page.locator("html").getAttribute("data-theme")) === "light",
+  );
+  // The accordion is native <details>/<summary> — zero JavaScript, so there is
+  // no aria-expanded button to count.
+  record("homepage carries 20 FAQ questions", (await page.locator("#faq summary").count()) === 20);
+  record("sponsor marquee renders", await page.locator('section[aria-label="Partners and clients"]').isVisible());
+
+  // The hero slider, the scroll reveals and the announcement bar are driven by
+  // one head script that only ever sets its own data attributes — never markup
+  // React rendered — so none of them can collide with hydration.
+  record("no page errors on the homepage", pageErrors.length === 0, pageErrors[0] ?? "");
+  const slideShown = () =>
+    page.$$eval("[data-hero-slide]", (els) =>
+      els.findIndex((el) => getComputedStyle(el).display !== "none"),
+    );
+  record("hero opens on the first slide", (await slideShown()) === 0);
+  await page.locator('[data-hero-step="1"]').click();
+  await page.waitForTimeout(150);
+  record("hero slider advances", (await slideShown()) === 1);
+  await page.locator('[data-hero-go="0"]').click();
+  await page.waitForTimeout(150);
+  record("hero dots select a slide", (await slideShown()) === 0);
+
+  const reveals = await page.$$eval("[data-reveal]", (els) => ({
+    total: els.length,
+    armed: els.filter((el) => el.hasAttribute("data-armed")).length,
+  }));
+  record(
+    "below-fold sections are armed for reveal",
+    reveals.total > 0 && reveals.armed > 0,
+    `${reveals.armed}/${reveals.total} armed`,
+  );
+  record(
+    "above-fold content is never hidden by the reveal",
+    (await page.$eval("h1", (el) => getComputedStyle(el).opacity)) === "1",
+  );
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(1500);
+  record(
+    "every revealed section ends visible",
+    (await page.$$eval("[data-reveal]", (els) =>
+      els.filter((el) => getComputedStyle(el).opacity === "0").length,
+    )) === 0,
+  );
+
+  await page.locator('button[aria-label="Dismiss announcement"]').click();
+  await page.reload({ waitUntil: "domcontentloaded" });
+  record(
+    "dismissed announcement stays dismissed",
+    await page.$eval("#hy-announcement", (el) => getComputedStyle(el).display === "none"),
+  );
+
+  // Theme toggle actually switches the document theme.
+  await page.locator('button[aria-label^="Theme:"]').click();
+  await page.locator('button[role="menuitemradio"]').nth(1).click();
+  await page.waitForTimeout(400);
+  const switched = await page.locator("html").getAttribute("data-theme");
+  record("theme toggle switches theme", switched === "midnight" || switched === "network", String(switched));
+
+  // --- Public API allow-list ----------------------------------------------
+  for (const [route, expected] of [
+    ["/api/system/status", 200],
+    ["/api/reports/generate?type=finance&period=weekly&format=pdf", 401],
+    ["/api/media/upload", 401],
+  ]) {
+    const response = await page.request.get(`${BASE}${route}`);
+    record(`api ${route} → ${expected}`, response.status() === expected, `HTTP ${response.status()}`);
+  }
+
+  // --- Mobile navigation ---------------------------------------------------
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const mobilePage = await mobile.newPage();
+  await mobilePage.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+  await mobilePage.locator('button[aria-label="Open menu"]').click();
+  await mobilePage.waitForTimeout(400);
+  record("mobile drawer opens", await mobilePage.locator("#mobile-drawer").isVisible());
+  await mobilePage.locator('button[aria-label="Close menu"]').click();
+  await mobilePage.waitForTimeout(400);
+  record("mobile drawer closes", (await mobilePage.locator("#mobile-drawer").count()) === 0);
+  await mobile.close();
 
   // A logged-out visitor must never reach the dashboard.
   await page.goto(`${BASE}/dashboard`, { waitUntil: "domcontentloaded" });
@@ -103,11 +191,68 @@ try {
     "/dashboard/settings/payments",
     "/dashboard/users",
     "/dashboard/audit",
+    "/dashboard/settings/theme",
+    "/dashboard/settings/sponsors",
+    "/dashboard/settings/widgets",
+    "/dashboard/support",
+    "/dashboard/media",
+    "/dashboard/orders",
+    "/dashboard/seo",
+    "/dashboard/integrations",
+    "/dashboard/content/blog",
+    "/dashboard/finance/expenses",
+    "/dashboard/finance/transactions",
+    "/dashboard/finance/refunds",
   ]) {
     const response = await adminPage.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
     const ok = response?.status() === 200 && !adminPage.url().includes("denied=1");
     record(`admin ${path}`, ok, `HTTP ${response?.status()}`);
   }
+
+  // Every list must show seeded rows — no empty dashboard on first login.
+  for (const [path, marker] of [
+    ["/dashboard/leads", "table tbody tr"],
+    ["/dashboard/clients", "table tbody tr"],
+    ["/dashboard/finance/invoices", "table tbody tr"],
+    ["/dashboard/users", "table tbody tr"],
+  ]) {
+    await adminPage.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
+    await adminPage.waitForSelector(marker, { timeout: 10000 }).catch(() => {});
+    const rows = await adminPage.locator(marker).count();
+    record(`${path} has demo rows`, rows > 0, `${rows} rows`);
+  }
+
+  // The notification bell must open and clear its badge without a reload.
+  await adminPage.goto(`${BASE}/dashboard`, { waitUntil: "domcontentloaded" });
+  await adminPage.waitForTimeout(1200);
+  const bell = adminPage.locator('button[aria-label*="Notifications"]');
+  record("notification bell present", (await bell.count()) > 0);
+  await bell.first().click();
+  await adminPage.waitForTimeout(500);
+  record("notification dropdown opens", await adminPage.getByRole("menu").first().isVisible());
+  const markAll = adminPage.getByRole("button", { name: /mark all read/i });
+  if (await markAll.count()) {
+    await markAll.click();
+    await adminPage.waitForTimeout(1500);
+    const label = (await bell.first().getAttribute("aria-label")) ?? "";
+    record("unread badge clears without reload", !/\d/.test(label), label);
+  } else {
+    record("unread badge clears without reload", true, "already clear");
+  }
+
+  // Report generation must return a real file, not an error page.
+  for (const format of ["pdf", "xlsx"]) {
+    const response = await adminPage.request.get(
+      `${BASE}/api/reports/generate?type=finance&period=monthly&format=${format}`,
+    );
+    const body = await response.body();
+    const valid =
+      format === "pdf"
+        ? body.subarray(0, 5).toString() === "%PDF-"
+        : body.subarray(0, 2).toString() === "PK";
+    record(`report export (${format})`, response.status() === 200 && valid, `${body.length} bytes`);
+  }
+
   await adminCtx.close();
 } finally {
   await browser.close();

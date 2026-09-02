@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Mail, Phone } from "lucide-react";
 
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { LeadWorkflow } from "@/components/dashboard/lead-workflow";
+import { LeadReply, LeadWorkflow } from "@/components/dashboard/lead-workflow";
 import { StatusBadge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db";
 import { requirePermission, toActor } from "@/lib/auth/guards";
@@ -48,27 +48,38 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="space-y-5">
           <Panel title="The enquiry">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">
               {lead.message}
             </p>
           </Panel>
 
-          <Panel title="Notes" description="Internal only — never visible to the client.">
+          {editable ? (
+            <Panel title="Reply by email" description="Goes to the enquirer and is saved to the thread below.">
+              <LeadReply
+                leadId={lead.id}
+                reference={lead.reference}
+                email={lead.email}
+                name={lead.name}
+              />
+            </Panel>
+          ) : null}
+
+          <Panel title="Notes & history" description="Internal only — never visible to the client.">
             {editable ? <LeadWorkflow leadId={lead.id} owners={owners} lead={{ status: lead.status, ownerId: lead.ownerId }} /> : null}
 
             {lead.notes.length ? (
               <ul className="mt-6 space-y-4">
                 {lead.notes.map((note) => (
-                  <li key={note.id} className="rounded-lg border border-border p-4">
-                    <p className="text-sm text-muted-foreground">{note.body}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
+                  <li key={note.id} className="rounded-lg border border-line p-4">
+                    <p className="text-sm text-ink-muted">{note.body}</p>
+                    <p className="mt-2 text-xs text-ink-muted">
                       {note.author?.name ?? "System"} · {relativeTime(note.createdAt)}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-6 text-sm text-muted-foreground">No notes yet.</p>
+              <p className="mt-6 text-sm text-ink-muted">No notes yet.</p>
             )}
           </Panel>
         </div>
@@ -77,9 +88,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <Panel title="Contact">
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Email</dt>
+                <dt className="text-xs text-ink-muted">Email</dt>
                 <dd>
-                  <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline">
+                  <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-accent hover:underline">
                     <Mail className="h-3.5 w-3.5" />
                     {lead.email}
                   </a>
@@ -87,9 +98,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               </div>
               {lead.phone ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">Phone</dt>
+                  <dt className="text-xs text-ink-muted">Phone</dt>
                   <dd>
-                    <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline">
+                    <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-accent hover:underline">
                       <Phone className="h-3.5 w-3.5" />
                       {lead.phone}
                     </a>
@@ -97,19 +108,19 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 </div>
               ) : null}
               <div>
-                <dt className="text-xs text-muted-foreground">Company</dt>
+                <dt className="text-xs text-ink-muted">Company</dt>
                 <dd>{lead.company ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Interested in</dt>
+                <dt className="text-xs text-ink-muted">Interested in</dt>
                 <dd>{lead.service?.title ?? "General enquiry"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Budget</dt>
+                <dt className="text-xs text-ink-muted">Budget</dt>
                 <dd>{lead.budget ?? "Not stated"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Owner</dt>
+                <dt className="text-xs text-ink-muted">Owner</dt>
                 <dd>{lead.owner?.name ?? "Unassigned"}</dd>
               </div>
             </dl>

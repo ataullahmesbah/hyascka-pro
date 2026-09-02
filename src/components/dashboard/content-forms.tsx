@@ -146,7 +146,7 @@ export function PostEditor({ draft }: { draft: PostDraft }) {
                     type="button"
                     onClick={() => setPreview(false)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                      !preview ? "border-primary bg-primary-soft text-primary" : "border-border"
+                      !preview ? "border-accent bg-accent-soft text-accent" : "border-line"
                     }`}
                   >
                     Write
@@ -155,14 +155,14 @@ export function PostEditor({ draft }: { draft: PostDraft }) {
                     type="button"
                     onClick={() => setPreview(true)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                      preview ? "border-primary bg-primary-soft text-primary" : "border-border"
+                      preview ? "border-accent bg-accent-soft text-accent" : "border-line"
                     }`}
                   >
                     Preview
                   </button>
                 </div>
                 {preview ? (
-                  <div className="rounded-md border border-border bg-surface p-5">
+                  <div className="rounded-md border border-line bg-surface p-5">
                     <Markdown content={content || "_Nothing to preview yet._"} />
                   </div>
                 ) : (

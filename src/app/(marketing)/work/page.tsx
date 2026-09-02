@@ -39,7 +39,9 @@ export default async function WorkPage() {
       </PageHeader>
 
       <section className="section">
-        <div className="container">
+        <div className="container-x">
+          {/* The grid's cards are h3; this keeps the heading order valid. */}
+          <h2 className="sr-only">Case studies</h2>
           <WorkFilter
             industries={industries}
             slugs={studies.map((study) => ({ slug: study.slug, industry: study.industry }))}

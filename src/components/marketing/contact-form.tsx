@@ -58,7 +58,7 @@ export function ContactForm({
       <div className="rounded-2xl border border-success/35 bg-success/8 p-8 text-center">
         <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
         <h2 className="mt-4 font-display text-xl font-bold">Enquiry received</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{state.message}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">{state.message}</p>
       </div>
     );
   }
@@ -121,10 +121,10 @@ export function ContactForm({
 
       <div className="flex items-start gap-2.5">
         <Checkbox id="consent" name="consent" required className="mt-0.5" />
-        <label htmlFor="consent" className="text-sm text-muted-foreground">
+        <label htmlFor="consent" className="text-sm text-ink-muted">
           I agree that HYASCKA may store and use these details to respond to my enquiry, as described
           in the{" "}
-          <a href="/privacy" className="text-primary underline-offset-4 hover:underline">
+          <a href="/privacy" className="text-accent underline-offset-4 hover:underline">
             privacy policy
           </a>
           .
@@ -137,7 +137,7 @@ export function ContactForm({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <SubmitButton />
         {/* Trust badges near the form (PRD §39.6) */}
-        <p className="flex items-center gap-2 text-xs text-muted-foreground">
+        <p className="flex items-center gap-2 text-xs text-ink-muted">
           <ShieldCheck className="h-4 w-4 text-success" />
           SSL secured · Your details are never sold or shared
         </p>

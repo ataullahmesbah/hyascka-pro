@@ -1,5 +1,36 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+/**
+ * tailwind-merge has to be told about our custom scales.
+ *
+ * Without this it cannot tell `text-step--1` (a font size) from `text-accent-ink`
+ * (a colour) — they share the `text-` prefix — so it treats them as conflicting
+ * and silently drops one. That produced buttons rendering dark ink on the accent
+ * fill, a real contrast failure caught by the accessibility audit. Declaring the
+ * scales removes the ambiguity.
+ */
+const FONT_SIZES = [
+  "step--2", "step--1", "step-0", "step-1", "step-2", "step-3", "step-4", "step-5", "step-6",
+];
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: FONT_SIZES }],
+      "text-color": [
+        {
+          text: [
+            "ink", "ink-soft", "ink-muted", "ink-inverse",
+            "accent", "accent-hover", "accent-ink", "accent-soft", "accent-border",
+            "success", "warning", "danger", "info",
+            "bg", "bg-subtle", "surface", "surface-2", "surface-3", "line", "line-strong",
+          ],
+        },
+      ],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

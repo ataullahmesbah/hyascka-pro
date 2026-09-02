@@ -7,6 +7,8 @@ const TABS = [
   { href: "/dashboard/settings", label: "Brand" },
   { href: "/dashboard/settings/theme", label: "Theme" },
   { href: "/dashboard/settings/contact", label: "Contact" },
+  { href: "/dashboard/settings/sponsors", label: "Sponsors" },
+  { href: "/dashboard/settings/widgets", label: "Chat & WhatsApp" },
   { href: "/dashboard/settings/payments", label: "Payments" },
   { href: "/dashboard/settings/tracking", label: "Tracking" },
   { href: "/dashboard/settings/seo", label: "SEO" },
@@ -30,7 +32,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
           <Link
             key={tab.href}
             href={tab.href}
-            className="whitespace-nowrap rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            className="whitespace-nowrap rounded-full border border-line px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-2"
           >
             {tab.label}
           </Link>

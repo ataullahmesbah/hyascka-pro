@@ -1,9 +1,11 @@
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { HomepageSectionEditor } from "@/components/dashboard/content-forms";
+import { HeroEditor } from "@/components/dashboard/hero-editor";
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/guards";
 import { homepage as defaults } from "@/content/site";
+import { getHomepage } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,12 @@ const SECTION_HELP: Record<string, string> = {
 export default async function HomepageContentPage() {
   await requirePermission("content.manage");
 
-  const page = await prisma.page
-    .findUnique({ where: { slug: "home" }, include: { sections: { orderBy: { position: "asc" } } } })
-    .catch(() => null);
+  const [page, homepage] = await Promise.all([
+    prisma.page
+      .findUnique({ where: { slug: "home" }, include: { sections: { orderBy: { position: "asc" } } } })
+      .catch(() => null),
+    getHomepage(),
+  ]);
 
   const sections = page?.sections.length
     ? page.sections.map((section) => ({
@@ -59,17 +64,28 @@ export default async function HomepageContentPage() {
         </div>
       ) : null}
 
+      {/* The hero gets a proper structured editor; the rest are simple blocks. */}
+      <Panel
+        title="Hero slider"
+        description="Two or three slides rotate at the top of the homepage. Everything here is editable without touching code."
+        className="mb-5"
+      >
+        <HeroEditor content={homepage.hero} />
+      </Panel>
+
       <div className="space-y-5">
-        {sections.map((section) => (
-          <Panel key={section.key} title={section.title} description={SECTION_HELP[section.key]}>
-            <HomepageSectionEditor
-              sectionKey={section.key}
-              enabled={section.enabled}
-              data={section.data}
-              disabled={!page}
-            />
-          </Panel>
-        ))}
+        {sections
+          .filter((section) => section.key !== "hero")
+          .map((section) => (
+            <Panel key={section.key} title={section.title} description={SECTION_HELP[section.key]}>
+              <HomepageSectionEditor
+                sectionKey={section.key}
+                enabled={section.enabled}
+                data={section.data}
+                disabled={!page}
+              />
+            </Panel>
+          ))}
       </div>
     </>
   );

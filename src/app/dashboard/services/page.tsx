@@ -59,10 +59,10 @@ export default async function ServicesAdminPage() {
                     ) : (
                       <span className="font-medium">{service.title}</span>
                     )}
-                    <p className="text-xs text-muted-foreground">/services/{service.slug}</p>
+                    <p className="text-xs text-ink-muted">/services/{service.slug}</p>
                   </Td>
-                  <Td className="text-muted-foreground">{service.category?.name ?? "—"}</Td>
-                  <Td className="text-muted-foreground">
+                  <Td className="text-ink-muted">{service.category?.name ?? "—"}</Td>
+                  <Td className="text-ink-muted">
                     {service.pricingModel.replace(/_/g, " ").toLowerCase()}
                   </Td>
                   <Td className="font-medium">
@@ -70,7 +70,7 @@ export default async function ServicesAdminPage() {
                       ? formatCurrency(Number(service.startingPrice), service.currency)
                       : "Custom"}
                   </Td>
-                  <Td className="text-muted-foreground">{service._count.leads}</Td>
+                  <Td className="text-ink-muted">{service._count.leads}</Td>
                   <Td className="space-x-1.5">
                     <StatusBadge status={service.status} />
                     {service.featured ? <StatusBadge status="Featured" /> : null}

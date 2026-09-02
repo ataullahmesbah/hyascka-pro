@@ -1,112 +1,178 @@
-"use client";
-
 import * as React from "react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button";
-import { useTheme } from "@/components/ui/theme";
-import { trackEvent } from "@/components/marketing/tracking";
-import type { homepage } from "@/content/site";
 
-/** Loaded only in the browser, and only once the hero is on screen (§51.2). */
-const HeroCanvas = dynamic(() => import("@/components/marketing/hero-canvas"), { ssr: false });
+export type HeroSlide = {
+  id: string;
+  eyebrow: string;
+  headline: string;
+  /** A single word/phrase inside the headline that takes the accent colour. */
+  highlight?: string;
+  subheadline: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+  imageUrl?: string;
+};
 
-export function Hero({ content }: { content: typeof homepage.hero }) {
-  const { accent } = useTheme();
-  const [show3d, setShow3d] = React.useState(false);
-  const stageRef = React.useRef<HTMLDivElement>(null);
+export type HeroContent = {
+  autoplay: boolean;
+  intervalMs: number;
+  slides: HeroSlide[];
+  trustMicrocopy: string;
+  highlights: string[];
+};
 
-  React.useEffect(() => {
-    const node = stageRef.current;
-    if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+/**
+ * Renders the headline with exactly one accent-coloured span. Gradient headings
+ * were retired in v5 — emphasis now comes from weight and a single accent word
+ * (PRD §2), which is what fixed the "tiring to read" problem.
+ */
+function Headline({ text, highlight }: { text: string; highlight?: string }) {
+  if (!highlight || !text.includes(highlight)) return <>{text}</>;
+  const [before, ...rest] = text.split(highlight);
+  return (
+    <>
+      {before}
+      <span className="accent-text">{highlight}</span>
+      {rest.join(highlight)}
+    </>
+  );
+}
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShow3d(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "120px" },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+export function Hero({ content, visual }: { content: HeroContent; visual: React.ReactNode }) {
+  const slides = content.slides;
+  const count = slides.length;
+  if (!count) return null;
+
+  // When no slide brings its own image — the usual case — the network visual is
+  // rendered once and simply stays put. Only a mixed deck needs one pane per
+  // slide, and only then is the visual repeated.
+  const hasImages = slides.some((slide) => slide.imageUrl);
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="tech-grid pointer-events-none absolute inset-0" aria-hidden />
-      <div
-        className="pointer-events-none absolute -left-32 -top-24 h-[30rem] w-[30rem] rounded-full bg-primary/22 blur-[130px]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-24 top-40 h-[26rem] w-[26rem] rounded-full bg-accent/18 blur-[130px]"
-        aria-hidden
-      />
+    <section
+      data-hero=""
+      data-hero-count={count}
+      data-autoplay={content.autoplay ? "1" : "0"}
+      data-interval={content.intervalMs}
+      aria-roledescription={count > 1 ? "carousel" : undefined}
+      aria-label={count > 1 ? "Introduction" : undefined}
+      tabIndex={-1}
+      className="hero-surface relative overflow-hidden border-b border-line"
+    >
+      <div className="grid-texture pointer-events-none absolute inset-0" aria-hidden />
+      <div className="glow-1 -left-40 -top-32 h-[26rem] w-[26rem]" aria-hidden />
+      <div className="glow-2 -right-24 top-24 h-[22rem] w-[22rem]" aria-hidden />
 
-      <div className="container relative grid items-center gap-12 py-16 md:py-24 lg:grid-cols-[1.08fr_0.92fr] lg:gap-8 lg:py-28">
-        <div className="animate-fade-up">
-          <span className="eyebrow">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            {content.eyebrow}
-          </span>
+      <div className="container-x relative grid items-center gap-10 py-14 md:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:py-24">
+        {/* Announced as slides swap; visibility is CSS, driven by data-active. */}
+        <div aria-live="polite">
+          {slides.map((slide, index) => (
+            <div
+              key={slide.id}
+              data-hero-slide={index}
+              className="animate-fade-up"
+            >
+              <span className="eyebrow">
+                <span className="h-1.5 w-1.5 rounded-pill bg-success" />
+                {slide.eyebrow}
+              </span>
 
-          <h1 className="mt-6 text-4xl font-bold leading-[1.06] sm:text-5xl lg:text-[3.85rem]">
-            {content.headline}
-          </h1>
+              <h1 className="mt-5 max-w-[18ch] text-step-5 font-extrabold">
+                <Headline text={slide.headline} highlight={slide.highlight} />
+              </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            {content.subheadline}
-          </p>
+              <p className="mt-5 max-w-[54ch] text-step-1 leading-relaxed text-ink-soft">
+                {slide.subheadline}
+              </p>
 
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <ButtonLink
+                  href={slide.primaryCta.href}
+                  size="lg"
+                  data-track-event="cta_click"
+                  data-track-location="hero"
+                  data-track-label={slide.primaryCta.label}
+                >
+                  {slide.primaryCta.label}
+                  <ArrowRight className="h-4 w-4" />
+                </ButtonLink>
+                <ButtonLink href={slide.secondaryCta.href} variant="outline" size="lg">
+                  {slide.secondaryCta.label}
+                </ButtonLink>
+              </div>
+            </div>
+          ))}
+
+          {/* Shared across slides: the proof points never change between them. */}
           <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5">
             {content.highlights.map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <li key={item} className="flex items-center gap-2 text-step--1 text-ink-muted">
                 <Check className="h-4 w-4 shrink-0 text-success" />
                 {item}
               </li>
             ))}
           </ul>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink
-              href={content.primaryCta.href}
-              size="lg"
-              onClick={() => trackEvent("cta_click", { location: "hero", label: content.primaryCta.label })}
-            >
-              {content.primaryCta.label}
-              <ArrowRight className="h-4 w-4" />
-            </ButtonLink>
-            <ButtonLink href={content.secondaryCta.href} variant="outline" size="lg">
-              {content.secondaryCta.label}
-            </ButtonLink>
-          </div>
+          <p className="mt-5 text-step--2 text-ink-muted">{content.trustMicrocopy}</p>
 
-          <p className="mt-5 text-xs text-muted-foreground">{content.trustMicrocopy}</p>
+          {count > 1 ? (
+            <div className="mt-8 flex items-center gap-3">
+              <button
+                type="button"
+                data-hero-step="-1"
+                aria-label="Previous slide"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:border-accent-border hover:bg-surface-2 hover:text-ink"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="flex gap-1.5">
+                {slides.map((item, i) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    data-hero-go={i}
+                    aria-label={`Show slide ${i + 1}: ${item.eyebrow}`}
+                    className="group/dot flex h-6 items-center px-1"
+                  >
+                    <span className="hero-dot" />
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                data-hero-step="1"
+                aria-label="Next slide"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:border-accent-border hover:bg-surface-2 hover:text-ink"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
         </div>
 
-        <div ref={stageRef} className="relative mx-auto aspect-square w-full max-w-[30rem]">
-          <div
-            className="absolute inset-8 rounded-full bg-gradient-to-br from-primary/25 to-accent/20 blur-3xl"
-            aria-hidden
-          />
-          {/* Static mark: the fallback for reduced motion and any device where
-              WebGL fails to initialise. The canvas layers over it. */}
-          <Image
-            src="/brand/hero-fallback.png"
-            alt=""
-            width={900}
-            height={900}
-            priority
-            fetchPriority="high"
-            sizes="(max-width: 1024px) 80vw, 30rem"
-            className="relative h-full w-full animate-float object-contain motion-reduce:animate-none"
-          />
-          {show3d ? <HeroCanvas accent={accent} /> : null}
+        <div className="relative mx-auto w-full max-w-[30rem]">
+          {hasImages
+            ? slides.map((slide, index) => (
+                <div key={slide.id} data-hero-pane={index}>
+                  {slide.imageUrl ? (
+                    <Image
+                      src={slide.imageUrl}
+                      alt=""
+                      width={900}
+                      height={900}
+                      priority={index === 0}
+                      sizes="(max-width: 1024px) 80vw, 30rem"
+                      className="rounded-xl border border-line object-cover shadow-lg"
+                    />
+                  ) : (
+                    visual
+                  )}
+                </div>
+              ))
+            : visual}
         </div>
       </div>
     </section>

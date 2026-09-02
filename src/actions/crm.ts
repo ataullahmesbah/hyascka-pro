@@ -6,7 +6,9 @@ import { prisma } from "@/lib/db";
 import { authorize, canAccessClient, toActor } from "@/lib/auth/guards";
 import { audit } from "@/lib/audit";
 import { can } from "@/lib/rbac";
-import { leadUpdateSchema, toActionState, type ActionState } from "@/lib/validation";
+import { leadReplySchema, leadUpdateSchema, toActionState, type ActionState } from "@/lib/validation";
+import { emailLayout, sendEmail } from "@/lib/providers/email";
+import { getSettings } from "@/lib/settings";
 import { notify } from "@/lib/notifications";
 
 /**
@@ -133,6 +135,83 @@ export async function convertLeadAction(leadId: string): Promise<ActionState> {
   revalidatePath("/dashboard/leads");
   revalidatePath("/dashboard/clients");
   return { ok: true, message: "Client account created. They can set a password via the reset link." };
+}
+
+/**
+ * Reply to an enquiry from the dashboard (PRD §7.1). The email goes out through
+ * the same adapter as everything else, and the reply is recorded on the lead so
+ * the thread survives staff changes.
+ */
+export async function replyToLeadAction(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await authorize("leads.manage");
+
+  const parsed = leadReplySchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+  const { leadId, subject, body } = parsed.data;
+
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { id: true, name: true, email: true, reference: true, status: true },
+  });
+  if (!lead) return { ok: false, message: "That lead no longer exists." };
+
+  const settings = await getSettings();
+  const safeBody = body
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br />");
+
+  const result = await sendEmail({
+    to: lead.email,
+    replyTo: settings.contact.email,
+    subject,
+    html: emailLayout(
+      `Re: your enquiry ${lead.reference}`,
+      `<p>${safeBody}</p>
+       <p style="color:#8a93ae;font-size:13px;margin-top:20px">— ${user.name}, ${settings.brand.siteName}</p>`,
+    ),
+    text: body,
+  });
+
+  // The note is written whether or not the email left, so the thread is honest
+  // about what happened.
+  await prisma.leadNote.create({
+    data: {
+      leadId,
+      authorId: user.id,
+      body: result.ok
+        ? `Replied by email — "${subject}"\n\n${body}`
+        : `Reply FAILED to send ("${subject}"). Error: ${result.error}\n\n${body}`,
+    },
+  });
+
+  if (lead.status === "NEW") {
+    await prisma.lead.update({ where: { id: leadId }, data: { status: "CONTACTED" } });
+  }
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "lead.replied",
+    entityType: "Lead",
+    entityId: leadId,
+    summary: `Reply sent to ${lead.email} for ${lead.reference}`,
+    metadata: { delivered: result.ok },
+  });
+
+  revalidatePath(`/dashboard/leads/${leadId}`);
+  revalidatePath("/dashboard/leads");
+
+  return result.ok
+    ? { ok: true, message: `Reply sent to ${lead.email}.` }
+    : {
+        ok: false,
+        message: `Saved to the thread, but the email did not send: ${result.error}. Check the Resend settings.`,
+      };
 }
 
 export async function updateClientNotesAction(clientId: string, notes: string) {

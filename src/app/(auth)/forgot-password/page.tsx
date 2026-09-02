@@ -12,15 +12,15 @@ export default function ForgotPasswordPage() {
   return (
     <div>
       <h1 className="font-display text-2xl font-bold">Reset your password</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-muted">
         Enter the email on your account and we will send a reset link. It expires in one hour.
       </p>
       <div className="mt-7">
         <ForgotPasswordForm />
       </div>
-      <p className="mt-7 text-center text-sm text-muted-foreground">
+      <p className="mt-7 text-center text-sm text-ink-muted">
         Remembered it?{" "}
-        <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+        <Link href="/login" className="font-medium text-accent underline-offset-4 hover:underline">
           Back to sign in
         </Link>
       </p>

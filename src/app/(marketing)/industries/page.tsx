@@ -35,7 +35,8 @@ export default async function IndustriesPage() {
         <ButtonLink href="/contact">Talk to us about your sector</ButtonLink>
       </PageHeader>
       <section className="section">
-        <div className="container">
+        <div className="container-x">
+          <h2 className="sr-only">Industries we work in</h2>
           <IndustryGrid items={industries} />
         </div>
       </section>

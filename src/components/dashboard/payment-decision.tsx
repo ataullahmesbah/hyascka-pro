@@ -34,7 +34,7 @@ export function PaymentDecision({ paymentId }: { paymentId: string }) {
         <input type="hidden" name="decision" value={mode === "verify" ? "VERIFY" : "REJECT"} />
 
         {mode === "reject" ? <RejectReason /> : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-muted">
             Confirm you have matched this transaction ID in your statement. The invoice balance and
             the ledger update together.
           </p>

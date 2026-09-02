@@ -1,5 +1,6 @@
 import { DashboardHeader, Panel, StatCard } from "@/components/dashboard/page-shell";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonAnchor } from "@/components/ui/button";
+import { ReportGenerator } from "@/components/dashboard/report-generator";
 import { EmptyState, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/guards";
@@ -101,15 +102,23 @@ export default async function ReportsPage() {
         description={`Verified income and approved expenses over the last ${MONTHS} months.`}
         actions={
           <>
-            <ButtonLink href="/api/reports/export?type=invoices" variant="outline" size="sm">
-              Export invoices (CSV)
-            </ButtonLink>
-            <ButtonLink href="/api/reports/export?type=payments" variant="outline" size="sm">
-              Export payments (CSV)
-            </ButtonLink>
+            <ButtonAnchor href="/api/reports/export?type=invoices" variant="outline" size="sm">
+              Invoices (CSV)
+            </ButtonAnchor>
+            <ButtonAnchor href="/api/reports/export?type=payments" variant="outline" size="sm">
+              Payments (CSV)
+            </ButtonAnchor>
           </>
         }
       />
+
+      <Panel
+        title="Generate a report"
+        description="Daily, weekly, monthly or quarterly — as a PDF to circulate or a spreadsheet to work in."
+        className="mb-6"
+      >
+        <ReportGenerator />
+      </Panel>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label={`Income (${MONTHS}m)`} value={formatCurrency(totalIncome)} icon="TrendingUp" tone="success" />
@@ -134,7 +143,7 @@ export default async function ReportsPage() {
             <ol className="space-y-3">
               {rows.map((row) => (
                 <li key={row.key} className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-3">
-                  <span className="text-xs font-medium text-muted-foreground">{row.label}</span>
+                  <span className="text-xs font-medium text-ink-muted">{row.label}</span>
                   <span className="space-y-1.5">
                     <span className="flex items-center gap-2">
                       <span
@@ -142,7 +151,7 @@ export default async function ReportsPage() {
                         style={{ width: `${Math.max(row.income ? 2 : 0, (row.income / peak) * 100)}%` }}
                         aria-hidden
                       />
-                      <span className="text-xs tabular-nums text-muted-foreground">
+                      <span className="text-xs tabular-nums text-ink-muted">
                         {formatCurrency(row.income)}
                       </span>
                     </span>
@@ -152,7 +161,7 @@ export default async function ReportsPage() {
                         style={{ width: `${Math.max(row.expense ? 2 : 0, (row.expense / peak) * 100)}%` }}
                         aria-hidden
                       />
-                      <span className="text-xs tabular-nums text-muted-foreground">
+                      <span className="text-xs tabular-nums text-ink-muted">
                         {formatCurrency(row.expense)}
                       </span>
                     </span>
@@ -171,7 +180,7 @@ export default async function ReportsPage() {
           ) : (
             <EmptyState icon="BarChart3" title="No financial activity in this period" />
           )}
-          <p className="mt-5 flex flex-wrap gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
+          <p className="mt-5 flex flex-wrap gap-4 border-t border-line pt-4 text-xs text-ink-muted">
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-4 rounded-[4px] bg-[hsl(var(--primary))]" aria-hidden />
               Income
@@ -200,7 +209,7 @@ export default async function ReportsPage() {
                     {byMethod.map((row) => (
                       <Tr key={row.method}>
                         <Td>{row.method.replace(/_/g, " ")}</Td>
-                        <Td className="text-right text-muted-foreground">{row._count}</Td>
+                        <Td className="text-right text-ink-muted">{row._count}</Td>
                         <Td className="text-right font-medium">
                           {formatCurrency(Number(row._sum.amount ?? 0))}
                         </Td>
@@ -219,7 +228,7 @@ export default async function ReportsPage() {
               <ul className="space-y-2.5">
                 {topServices.map(([label, value]) => (
                   <li key={label} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="min-w-0 truncate text-muted-foreground">{label}</span>
+                    <span className="min-w-0 truncate text-ink-muted">{label}</span>
                     <span className="font-medium tabular-nums">{formatCurrency(value)}</span>
                   </li>
                 ))}

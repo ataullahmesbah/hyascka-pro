@@ -113,11 +113,11 @@ export default async function InvoicesPage({
                     <Td>
                       <LinkCell href={`/dashboard/finance/invoices/${invoice.id}`}>{invoice.number}</LinkCell>
                     </Td>
-                    <Td className="text-muted-foreground">{invoice.client.companyName ?? "—"}</Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(invoice.issueDate)}</Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(invoice.dueDate)}</Td>
+                    <Td className="text-ink-muted">{invoice.client.companyName ?? "—"}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(invoice.issueDate)}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(invoice.dueDate)}</Td>
                     <Td className="font-medium">{formatCurrency(Number(invoice.total), invoice.currency)}</Td>
-                    <Td className="text-muted-foreground">
+                    <Td className="text-ink-muted">
                       {formatCurrency(Number(invoice.amountPaid), invoice.currency)}
                     </Td>
                     <Td>

@@ -69,19 +69,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <Panel title="Milestones">
             <ol className="space-y-3">
               {project.milestones.map((milestone) => (
-                <li key={milestone.id} className="flex items-center gap-3 rounded-lg border border-border p-4">
+                <li key={milestone.id} className="flex items-center gap-3 rounded-lg border border-line p-4">
                   <StatusBadge status={milestone.status} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{milestone.title}</p>
                     {milestone.detail ? (
-                      <p className="text-xs text-muted-foreground">{milestone.detail}</p>
+                      <p className="text-xs text-ink-muted">{milestone.detail}</p>
                     ) : null}
                   </div>
-                  <span className="text-xs text-muted-foreground">{formatDate(milestone.dueDate)}</span>
+                  <span className="text-xs text-ink-muted">{formatDate(milestone.dueDate)}</span>
                 </li>
               ))}
               {!project.milestones.length ? (
-                <p className="text-sm text-muted-foreground">No milestones defined.</p>
+                <p className="text-sm text-ink-muted">No milestones defined.</p>
               ) : null}
             </ol>
           </Panel>
@@ -107,11 +107,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {project.members.map((member) => (
                 <li key={member.user.name} className="flex items-center justify-between gap-3 text-sm">
                   <span>{member.user.name}</span>
-                  <span className="text-xs text-muted-foreground">{member.roleLabel}</span>
+                  <span className="text-xs text-ink-muted">{member.roleLabel}</span>
                 </li>
               ))}
               {!project.members.length ? (
-                <p className="text-sm text-muted-foreground">No team members assigned.</p>
+                <p className="text-sm text-ink-muted">No team members assigned.</p>
               ) : null}
             </ul>
           </Panel>
@@ -125,7 +125,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                       href={file.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-accent hover:underline"
                     >
                       {file.name}
                     </a>
@@ -133,7 +133,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No files uploaded.</p>
+              <p className="text-sm text-ink-muted">No files uploaded.</p>
             )}
           </Panel>
 
@@ -141,14 +141,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <ul className="space-y-3">
               {project.activities.map((activity) => (
                 <li key={activity.id} className="text-sm">
-                  <p className="text-muted-foreground">{activity.detail ?? activity.action}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-ink-muted">{activity.detail ?? activity.action}</p>
+                  <p className="text-xs text-ink-muted">
                     {activity.actor?.name ?? "System"} · {relativeTime(activity.createdAt)}
                   </p>
                 </li>
               ))}
               {!project.activities.length ? (
-                <p className="text-sm text-muted-foreground">No activity recorded.</p>
+                <p className="text-sm text-ink-muted">No activity recorded.</p>
               ) : null}
             </ul>
           </Panel>

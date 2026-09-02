@@ -28,7 +28,7 @@ export function ProfileForm({
       {isClient ? (
         <>
           <p className="pt-2 text-sm font-semibold">Billing details</p>
-          <p className="-mt-3 text-xs text-muted-foreground">
+          <p className="-mt-3 text-xs text-ink-muted">
             These appear on every invoice we issue to you.
           </p>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -81,11 +81,11 @@ export function SessionList({
   const { toast } = useToast();
 
   if (!sessions.length) {
-    return <p className="text-sm text-muted-foreground">No active sessions.</p>;
+    return <p className="text-sm text-ink-muted">No active sessions.</p>;
   }
 
   return (
-    <ul className="divide-y divide-border">
+    <ul className="divide-y divide-line">
       {sessions.map((session) => {
         const mobile = /mobile|android|iphone/i.test(session.userAgent ?? "");
         const Icon = mobile ? Smartphone : Laptop;
@@ -93,13 +93,13 @@ export function SessionList({
 
         return (
           <li key={session.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
-            <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <Icon className="h-5 w-5 shrink-0 text-ink-muted" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
                 {describeAgent(session.userAgent)}
                 {isCurrent ? <span className="ml-2 text-xs text-success">· this device</span> : null}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-muted">
                 {session.ipAddress ?? "unknown IP"} · active {relativeTime(session.lastActiveAt)}
               </p>
             </div>

@@ -26,7 +26,7 @@ export default async function VerifyEmailPage({
         <>
           <CheckCircle2 className="mx-auto h-12 w-12 text-success" />
           <h1 className="mt-5 font-display text-2xl font-bold">Email verified</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-muted">
             Your address is confirmed. You can head to your dashboard.
           </p>
           <ButtonLink href="/dashboard" className="mt-7">
@@ -37,16 +37,16 @@ export default async function VerifyEmailPage({
         <>
           <XCircle className="mx-auto h-12 w-12 text-danger" />
           <h1 className="mt-5 font-display text-2xl font-bold">Link expired or invalid</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-muted">
             Verification links are valid for 24 hours and can be used once. Sign in and request a new
             one from your profile.
           </p>
           <ButtonLink href="/login" className="mt-7">
             Sign in
           </ButtonLink>
-          <p className="mt-5 text-xs text-muted-foreground">
+          <p className="mt-5 text-xs text-ink-muted">
             Still stuck?{" "}
-            <Link href="/support" className="text-primary hover:underline">
+            <Link href="/support" className="text-accent hover:underline">
               Contact support
             </Link>
           </p>

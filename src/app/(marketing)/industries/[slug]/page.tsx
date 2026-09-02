@@ -49,23 +49,23 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
       </PageHeader>
 
       <section className="section">
-        <div className="container grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-border bg-card p-7">
+        <div className="container-x grid gap-6 md:grid-cols-2">
+          <div className="rounded-xl border border-line bg-surface p-7">
             <h2 className="font-display text-xl font-bold">Where it usually breaks</h2>
             <ul className="mt-5 space-y-3">
               {industry.challenges.map((item) => (
-                <li key={item} className="flex gap-3 text-sm text-muted-foreground">
+                <li key={item} className="flex gap-3 text-sm text-ink-muted">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                   {item}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="brand-ring rounded-xl border border-border bg-card p-7">
+          <div className="rounded-xl border border-line bg-surface p-7">
             <h2 className="font-display text-xl font-bold">How we fix it</h2>
             <ul className="mt-5 space-y-3">
               {industry.solutions.map((item) => (
-                <li key={item} className="flex gap-3 text-sm text-muted-foreground">
+                <li key={item} className="flex gap-3 text-sm text-ink-muted">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                   {item}
                 </li>
@@ -75,8 +75,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
         </div>
       </section>
 
-      <section className="section border-t border-border">
-        <div className="container">
+      <section className="section border-t border-line">
+        <div className="container-x">
           <h2 className="font-display text-2xl font-bold">Services we usually start with</h2>
           <div className="mt-8">
             <ServicesGrid services={services} limit={3} />

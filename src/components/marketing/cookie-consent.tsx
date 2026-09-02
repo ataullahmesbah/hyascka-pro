@@ -51,15 +51,15 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Cookie consent"
-      className="fixed inset-x-3 bottom-3 z-[90] mx-auto max-w-3xl animate-fade-up rounded-2xl border border-border bg-card/95 p-5 shadow-elevated backdrop-blur-xl sm:inset-x-6"
+      className="fixed inset-x-3 bottom-3 z-[90] mx-auto max-w-3xl animate-fade-up rounded-2xl border border-line bg-surface/95 p-5 shadow-lg backdrop-blur-xl sm:inset-x-6"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <Cookie className="hidden h-6 w-6 shrink-0 text-primary sm:block" />
-        <p className="flex-1 text-sm leading-relaxed text-muted-foreground">
+        <Cookie className="hidden h-6 w-6 shrink-0 text-accent sm:block" />
+        <p className="flex-1 text-sm leading-relaxed text-ink-muted">
           We use essential cookies to run this site. With your consent we also use analytics and
           advertising cookies to understand what works. Declining changes nothing about what you can
           access here.{" "}
-          <Link href="/cookies" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link href="/cookies" className="font-medium text-accent underline-offset-4 hover:underline">
             Cookie policy
           </Link>
         </p>
@@ -84,7 +84,7 @@ export function CookieSettingsButton() {
         localStorage.removeItem(CONSENT_KEY);
         window.location.reload();
       }}
-      className="text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+      className="text-xs text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
     >
       Cookie settings
     </button>

@@ -46,9 +46,9 @@ export function QuoteCalculator({
   }, [scope, timeline]);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="rounded-xl border border-line bg-surface p-6">
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider">Estimate range</h2>
-      <p className="mt-2 text-xs text-muted-foreground">
+      <p className="mt-2 text-xs text-ink-muted">
         An indicative range for {serviceTitle.toLowerCase()}, not a quotation. Your proposal is priced
         after a discovery call.
       </p>
@@ -74,7 +74,7 @@ export function QuoteCalculator({
         </Field>
       </div>
 
-      <p className="brand-text mt-5 font-display text-2xl font-extrabold">
+      <p className="accent-text mt-5 font-display text-2xl font-extrabold">
         {formatCurrency(estimate.low, currency)} – {formatCurrency(estimate.high, currency)}
       </p>
 

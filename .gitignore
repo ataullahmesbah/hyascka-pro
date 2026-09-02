@@ -13,3 +13,4 @@ coverage
 .vercel
 prisma/dev.db
 /deliverables
+.tmp/

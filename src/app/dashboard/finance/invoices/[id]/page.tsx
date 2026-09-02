@@ -64,7 +64,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
                       <Td>{item.description}</Td>
                       <Td className="text-right">{item.quantity}</Td>
                       <Td className="text-right">{formatCurrency(Number(item.unitPrice), invoice.currency)}</Td>
-                      <Td className="text-right text-muted-foreground">{Number(item.taxRate)}%</Td>
+                      <Td className="text-right text-ink-muted">{Number(item.taxRate)}%</Td>
                       <Td className="text-right font-medium">
                         {formatCurrency(Number(item.total), invoice.currency)}
                       </Td>
@@ -96,14 +96,14 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
 
           <Panel title="Payments against this invoice">
             {invoice.payments.length ? (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-line">
                 {invoice.payments.map((payment) => (
                   <li key={payment.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">
                         {payment.reference} · {payment.method.replace(/_/g, " ")}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-muted">
                         TrxID {payment.trxId ?? "—"} · {formatDate(payment.createdAt, true)}
                         {payment.verifiedBy ? ` · verified by ${payment.verifiedBy.name}` : ""}
                       </p>
@@ -119,7 +119,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
+              <p className="text-sm text-ink-muted">No payments recorded yet.</p>
             )}
           </Panel>
         </div>
@@ -128,14 +128,14 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <Panel title="Billed to">
             <div className="space-y-1 text-sm">
               <p className="font-medium">{invoice.client.companyName ?? invoice.client.user.name}</p>
-              <p className="text-muted-foreground">{invoice.client.user.email}</p>
-              <p className="text-muted-foreground">
+              <p className="text-ink-muted">{invoice.client.user.email}</p>
+              <p className="text-ink-muted">
                 {[invoice.client.addressLine1, invoice.client.city, invoice.client.country]
                   .filter(Boolean)
                   .join(", ") || "—"}
               </p>
               {invoice.client.taxId ? (
-                <p className="text-muted-foreground">Tax ID: {invoice.client.taxId}</p>
+                <p className="text-ink-muted">Tax ID: {invoice.client.taxId}</p>
               ) : null}
             </div>
           </Panel>
@@ -143,18 +143,18 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <Panel title="Terms">
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Due date</dt>
+                <dt className="text-xs text-ink-muted">Due date</dt>
                 <dd>{formatDate(invoice.dueDate)}</dd>
               </div>
               {invoice.notes ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">Notes</dt>
-                  <dd className="text-muted-foreground">{invoice.notes}</dd>
+                  <dt className="text-xs text-ink-muted">Notes</dt>
+                  <dd className="text-ink-muted">{invoice.notes}</dd>
                 </div>
               ) : null}
               {invoice.voidReason ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">Void reason</dt>
+                  <dt className="text-xs text-ink-muted">Void reason</dt>
                   <dd className="text-danger">{invoice.voidReason}</dd>
                 </div>
               ) : null}
@@ -174,8 +174,8 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
 
 function Line({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
   return (
-    <div className={`flex justify-between ${emphasis ? "border-t border-border pt-2 font-semibold" : ""}`}>
-      <dt className={emphasis ? "" : "text-muted-foreground"}>{label}</dt>
+    <div className={`flex justify-between ${emphasis ? "border-t border-line pt-2 font-semibold" : ""}`}>
+      <dt className={emphasis ? "" : "text-ink-muted"}>{label}</dt>
       <dd>{value}</dd>
     </div>
   );

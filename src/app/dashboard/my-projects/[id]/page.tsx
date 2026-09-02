@@ -50,16 +50,16 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
         <Panel title="Timeline">
-          <ol className="relative space-y-5 border-l border-border pl-6">
+          <ol className="relative space-y-5 border-l border-line pl-6">
             {project.milestones.map((milestone) => (
               <li key={milestone.id}>
                 <span
-                  className={`absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full border-2 border-background ${
+                  className={`absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full border-2 border-bg ${
                     milestone.status === "COMPLETED"
                       ? "bg-success"
                       : milestone.status === "IN_PROGRESS"
-                        ? "brand-gradient"
-                        : "bg-muted"
+                        ? "bg-accent"
+                        : "bg-surface-2"
                   }`}
                   aria-hidden
                 />
@@ -68,10 +68,10 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
                   <StatusBadge status={milestone.status} />
                 </div>
                 {milestone.detail ? (
-                  <p className="mt-1 text-sm text-muted-foreground">{milestone.detail}</p>
+                  <p className="mt-1 text-sm text-ink-muted">{milestone.detail}</p>
                 ) : null}
                 {milestone.dueDate ? (
-                  <p className="mt-1 text-xs text-muted-foreground">{formatDate(milestone.dueDate)}</p>
+                  <p className="mt-1 text-xs text-ink-muted">{formatDate(milestone.dueDate)}</p>
                 ) : null}
               </li>
             ))}
@@ -88,7 +88,7 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
                       href={file.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-accent hover:underline"
                     >
                       {file.name}
                     </a>
@@ -96,7 +96,7 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No files shared yet.</p>
+              <p className="text-sm text-ink-muted">No files shared yet.</p>
             )}
           </Panel>
 
@@ -104,14 +104,14 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
             <ul className="space-y-3">
               {project.activities.map((activity) => (
                 <li key={activity.id} className="text-sm">
-                  <p className="text-muted-foreground">{activity.detail ?? activity.action}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-ink-muted">{activity.detail ?? activity.action}</p>
+                  <p className="text-xs text-ink-muted">
                     {activity.actor?.name ?? "HYASCKA"} · {relativeTime(activity.createdAt)}
                   </p>
                 </li>
               ))}
               {!project.activities.length ? (
-                <p className="text-sm text-muted-foreground">No updates yet.</p>
+                <p className="text-sm text-ink-muted">No updates yet.</p>
               ) : null}
             </ul>
           </Panel>

@@ -4,37 +4,52 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * The only button in the system. Variants are a closed set so the CMS can
- * expose them safely as options (PRD §5, §18, §47).
+ * The only button in the product.
+ *
+ * Variants are a closed set so the CMS can expose them safely, and every colour
+ * resolves through the theme tokens — which is why the same component looks
+ * correct on Daylight, Midnight and Network without a single conditional.
  */
-const variants = {
+const VARIANTS = {
   primary:
-    "brand-gradient text-white shadow-glow hover:brightness-110 active:brightness-95 border-transparent",
+    "bg-accent text-accent-ink shadow-accent hover:bg-accent-hover active:translate-y-px border border-transparent",
   secondary:
-    "bg-foreground text-background hover:bg-foreground/90 border-transparent",
+    "bg-ink text-ink-inverse hover:bg-ink/90 active:translate-y-px border border-transparent",
   outline:
-    "border-border bg-transparent hover:bg-muted text-foreground",
-  ghost: "border-transparent bg-transparent hover:bg-muted text-foreground",
-  soft: "border-transparent bg-primary-soft text-primary hover:bg-primary-soft/70",
-  danger: "border-transparent bg-danger text-white hover:bg-danger/90",
-  link: "border-transparent bg-transparent text-primary underline-offset-4 hover:underline p-0 h-auto",
+    "bg-transparent text-ink border border-line-strong hover:bg-surface-2 hover:border-accent-border active:translate-y-px",
+  ghost:
+    "bg-transparent text-ink-soft border border-transparent hover:bg-surface-2 hover:text-ink active:translate-y-px",
+  soft:
+    "bg-accent-soft text-accent border border-transparent hover:bg-accent-soft/70 active:translate-y-px",
+  danger:
+    "bg-danger text-white border border-transparent hover:bg-danger/90 active:translate-y-px",
+  link:
+    "bg-transparent text-accent border-0 p-0 h-auto underline-offset-4 hover:underline shadow-none",
 } as const;
 
-const sizes = {
-  sm: "h-9 px-3.5 text-sm gap-1.5",
-  md: "h-11 px-5 text-sm gap-2",
-  lg: "h-13 px-7 text-base gap-2.5",
-  icon: "h-10 w-10 p-0",
+const SIZES = {
+  sm: "h-9 px-3.5 text-step--1 gap-1.5 rounded-btn",
+  md: "h-[2.625rem] px-5 text-step--1 gap-2 rounded-btn",
+  lg: "h-[3.125rem] px-7 text-step-0 gap-2.5 rounded-btn",
+  icon: "h-10 w-10 p-0 rounded-btn",
+  "icon-sm": "h-9 w-9 p-0 rounded-btn",
 } as const;
 
-export type ButtonVariant = keyof typeof variants;
-export type ButtonSize = keyof typeof sizes;
+export type ButtonVariant = keyof typeof VARIANTS;
+export type ButtonSize = keyof typeof SIZES;
 
-const base =
-  "inline-flex select-none items-center justify-center whitespace-nowrap rounded-full border font-semibold transition-[transform,background-color,box-shadow,filter] duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-55 motion-reduce:hover:translate-y-0";
+const BASE =
+  "inline-flex select-none items-center justify-center whitespace-nowrap font-semibold " +
+  "transition-[background-color,border-color,box-shadow,transform,color] duration-fast ease-out " +
+  "disabled:pointer-events-none disabled:opacity-50 " +
+  "motion-reduce:active:translate-y-0";
 
-export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "md", className?: string) {
-  return cn(base, variants[variant], sizes[size], className);
+export function buttonClasses(
+  variant: ButtonVariant = "primary",
+  size: ButtonSize = "md",
+  className?: string,
+) {
+  return cn(BASE, VARIANTS[variant], SIZES[size], className);
 }
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -61,5 +76,20 @@ export function ButtonLink({
     <Link href={href} className={buttonClasses(variant, size, className)} {...props}>
       {children}
     </Link>
+  );
+}
+
+/** Anchor-flavoured button for external links and downloads. */
+export function ButtonAnchor({
+  variant = "primary",
+  size = "md",
+  className,
+  children,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: ButtonVariant; size?: ButtonSize }) {
+  return (
+    <a className={buttonClasses(variant, size, className)} {...props}>
+      {children}
+    </a>
   );
 }

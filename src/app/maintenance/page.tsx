@@ -25,7 +25,7 @@ export default async function MaintenancePage() {
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-5">
       <div className="tech-grid pointer-events-none absolute inset-0" aria-hidden />
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-96 w-[36rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-96 w-[36rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[120px]"
         aria-hidden
       />
       <div className="relative max-w-xl text-center">
@@ -37,16 +37,16 @@ export default async function MaintenancePage() {
         <h1 className="mt-5 font-display text-3xl font-bold sm:text-4xl">
           {brand.siteName} is briefly offline
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+        <p className="mt-4 text-base leading-relaxed text-ink-muted">
           {maintenance.bannerText ||
             "We are shipping an update. The site will be back shortly — nothing you have with us is affected."}
         </p>
 
         {maintenance.endAt ? <MaintenanceCountdown endAt={maintenance.endAt} /> : null}
 
-        <p className="mt-8 text-sm text-muted-foreground">
+        <p className="mt-8 text-sm text-ink-muted">
           Something urgent?{" "}
-          <a href={`mailto:${contact.supportEmail}`} className="text-primary underline-offset-4 hover:underline">
+          <a href={`mailto:${contact.supportEmail}`} className="text-accent underline-offset-4 hover:underline">
             {contact.supportEmail}
           </a>
         </p>

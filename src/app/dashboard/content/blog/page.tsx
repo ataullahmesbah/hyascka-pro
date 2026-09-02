@@ -49,11 +49,11 @@ export default async function BlogAdminPage() {
                   <Tr key={post.id}>
                     <Td>
                       <LinkCell href={`/dashboard/content/blog/${post.id}`}>{post.title}</LinkCell>
-                      <p className="text-xs text-muted-foreground">/blog/{post.slug}</p>
+                      <p className="text-xs text-ink-muted">/blog/{post.slug}</p>
                     </Td>
-                    <Td className="text-muted-foreground">{post.category?.name ?? "—"}</Td>
-                    <Td className="text-muted-foreground">{post.author?.name ?? "—"}</Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(post.updatedAt)}</Td>
+                    <Td className="text-ink-muted">{post.category?.name ?? "—"}</Td>
+                    <Td className="text-ink-muted">{post.author?.name ?? "—"}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(post.updatedAt)}</Td>
                     <Td>
                       <StatusBadge status={post.status} />
                     </Td>

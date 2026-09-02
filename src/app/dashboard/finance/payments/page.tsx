@@ -81,20 +81,20 @@ export default async function PaymentsPage({
         {pending.length ? (
           <ul className="space-y-4">
             {pending.map((payment) => (
-              <li key={payment.id} className="rounded-lg border border-border p-4">
+              <li key={payment.id} className="rounded-lg border border-line p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="font-display text-base font-semibold">
                       {formatCurrency(Number(payment.amount), payment.currency)} ·{" "}
                       {payment.method.replace(/_/g, " ")}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-ink-muted">
                       {payment.invoice.client.companyName ?? "Client"} ·{" "}
                       <LinkCell href={`/dashboard/finance/invoices/${payment.invoice.id}`}>
                         {payment.invoice.number}
                       </LinkCell>
                     </p>
-                    <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
+                    <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-ink-muted sm:grid-cols-2">
                       <div>
                         <dt className="inline font-medium">Transaction ID: </dt>
                         <dd className="inline font-mono">{payment.trxId ?? "—"}</dd>
@@ -117,7 +117,7 @@ export default async function PaymentsPage({
                         href={payment.proofUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 inline-block text-xs text-primary hover:underline"
+                        className="mt-2 inline-block text-xs text-accent hover:underline"
                       >
                         View submitted receipt
                       </a>
@@ -154,7 +154,7 @@ export default async function PaymentsPage({
                   {history.map((payment) => (
                     <Tr key={payment.id}>
                       <Td className="font-mono text-xs">{payment.reference}</Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {payment.invoice.client.companyName ?? "—"}
                       </Td>
                       <Td>
@@ -162,11 +162,11 @@ export default async function PaymentsPage({
                           {payment.invoice.number}
                         </LinkCell>
                       </Td>
-                      <Td className="text-muted-foreground">{payment.method.replace(/_/g, " ")}</Td>
+                      <Td className="text-ink-muted">{payment.method.replace(/_/g, " ")}</Td>
                       <Td className="font-medium">
                         {formatCurrency(Number(payment.amount), payment.currency)}
                       </Td>
-                      <Td className="text-muted-foreground">{payment.verifiedBy?.name ?? "—"}</Td>
+                      <Td className="text-ink-muted">{payment.verifiedBy?.name ?? "—"}</Td>
                       <Td>
                         <StatusBadge status={payment.status} />
                       </Td>

@@ -26,7 +26,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           </label>
           <Link
             href="/forgot-password"
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+            className="text-xs text-ink-muted underline-offset-4 hover:text-accent hover:underline"
           >
             Forgot password?
           </Link>

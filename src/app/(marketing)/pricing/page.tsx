@@ -66,7 +66,7 @@ export default async function PricingPage() {
       </PageHeader>
 
       <section className="section">
-        <div className="container">
+        <div className="container-x">
           <SectionHeading eyebrow="Build packages" title="Three ways to start a build" align="center" />
 
           <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -75,21 +75,21 @@ export default async function PricingPage() {
                 key={tier.key}
                 className={
                   "highlighted" in tier && tier.highlighted
-                    ? "brand-ring relative rounded-2xl border border-primary/45 bg-card p-7 shadow-glow"
-                    : "rounded-2xl border border-border bg-card p-7"
+                    ? "relative rounded-2xl border border-accent/45 bg-surface p-7 shadow-accent"
+                    : "rounded-2xl border border-line bg-surface p-7"
                 }
               >
                 {"highlighted" in tier && tier.highlighted ? (
-                  <Badge tone="primary" className="absolute -top-3 left-7">
+                  <Badge tone="accent" className="absolute -top-3 left-7">
                     Most chosen
                   </Badge>
                 ) : null}
                 <h2 className="font-display text-xl font-bold">{tier.name}</h2>
-                <p className="mt-1.5 text-sm text-muted-foreground">{tier.blurb}</p>
+                <p className="mt-1.5 text-sm text-ink-muted">{tier.blurb}</p>
                 <p className="mt-5 font-display text-3xl font-extrabold">
                   {tier.price ? (
                     <>
-                      <span className="text-base font-medium text-muted-foreground">from </span>
+                      <span className="text-base font-medium text-ink-muted">from </span>
                       {formatCurrency(tier.price)}
                     </>
                   ) : (
@@ -128,7 +128,7 @@ export default async function PricingPage() {
                           {row[tier] ? (
                             <Check className="mx-auto h-4 w-4 text-success" aria-label="Included" />
                           ) : (
-                            <Minus className="mx-auto h-4 w-4 text-muted-foreground/60" aria-label="Not included" />
+                            <Minus className="mx-auto h-4 w-4 text-ink-muted/60" aria-label="Not included" />
                           )}
                         </Td>
                       ))}
@@ -141,8 +141,8 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      <section className="section border-y border-border bg-surface-2/40">
-        <div className="container">
+      <section className="section border-y border-line bg-surface-2/40">
+        <div className="container-x">
           <SectionHeading
             eyebrow="Every service"
             title="Starting price by service"
@@ -165,12 +165,12 @@ export default async function PricingPage() {
                       <Td>
                         <a
                           href={`/services/${service.slug}`}
-                          className="font-medium underline-offset-4 hover:text-primary hover:underline"
+                          className="font-medium underline-offset-4 hover:text-accent hover:underline"
                         >
                           {service.title}
                         </a>
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {service.pricingModel.replace(/_/g, " ").toLowerCase()}
                       </Td>
                       <Td className="font-semibold">
@@ -178,7 +178,7 @@ export default async function PricingPage() {
                           ? formatCurrency(service.startingPrice, service.currency)
                           : "Custom"}
                       </Td>
-                      <Td className="text-muted-foreground">{service.timeline}</Td>
+                      <Td className="text-ink-muted">{service.timeline}</Td>
                     </Tr>
                   ))}
                 </tbody>
@@ -189,7 +189,7 @@ export default async function PricingPage() {
       </section>
 
       <section className="section">
-        <div className="container grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="container-x grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeading eyebrow="Questions" title="How pricing and engagements work" />
           <Accordion
             items={pricingFaqs.map((faq, index) => ({

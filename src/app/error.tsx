@@ -27,12 +27,12 @@ export default function ErrorBoundary({
           <AlertTriangle className="h-7 w-7" />
         </span>
         <h1 className="mt-6 font-display text-2xl font-bold">Something went wrong</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted">
           The page could not be loaded. This has been logged. Try again, and if it keeps happening,
           send us the reference below.
         </p>
         {error.digest ? (
-          <p className="mt-3 font-mono text-xs text-muted-foreground">Reference: {error.digest}</p>
+          <p className="mt-3 font-mono text-xs text-ink-muted">Reference: {error.digest}</p>
         ) : null}
         <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
           <Button onClick={reset}>Try again</Button>

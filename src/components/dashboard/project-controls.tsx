@@ -94,15 +94,15 @@ export function TaskList({
 }) {
   const [pending, startTransition] = React.useTransition();
 
-  if (!tasks.length) return <p className="text-sm text-muted-foreground">No tasks yet.</p>;
+  if (!tasks.length) return <p className="text-sm text-ink-muted">No tasks yet.</p>;
 
   return (
-    <ul className="divide-y divide-border">
+    <ul className="divide-y divide-line">
       {tasks.map((task) => (
         <li key={task.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{task.title}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-muted">
               {task.assignee ?? "Unassigned"}
               {task.dueDate ? ` · due ${formatDate(task.dueDate)}` : ""}
             </p>
@@ -121,7 +121,7 @@ export function TaskList({
                   );
                 })
               }
-              className="h-9 rounded-md border border-input bg-surface px-2.5 text-xs outline-none focus:border-primary"
+              className="h-9 rounded-md border border-line-strong bg-surface px-2.5 text-xs outline-none focus:border-accent"
             >
               {TASK_STATUSES.map((value) => (
                 <option key={value} value={value}>

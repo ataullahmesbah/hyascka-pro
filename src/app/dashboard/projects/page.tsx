@@ -98,21 +98,21 @@ export default async function ProjectsPage({
                   <Tr key={project.id}>
                     <Td>
                       <LinkCell href={`/dashboard/projects/${project.id}`}>{project.name}</LinkCell>
-                      <p className="font-mono text-xs text-muted-foreground">{project.reference}</p>
+                      <p className="font-mono text-xs text-ink-muted">{project.reference}</p>
                     </Td>
-                    <Td className="text-muted-foreground">{project.client.companyName ?? "—"}</Td>
+                    <Td className="text-ink-muted">{project.client.companyName ?? "—"}</Td>
                     <Td>
                       <div className="w-32">
-                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                          <div className="brand-gradient h-full rounded-full" style={{ width: `${project.progress}%` }} />
+                        <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                          <div className="h-full rounded-full" style={{ width: `${project.progress}%` }} />
                         </div>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
+                        <p className="mt-1 text-[11px] text-ink-muted">
                           {project.progress}% · {project._count.tasks} tasks
                         </p>
                       </div>
                     </Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(project.dueDate)}</Td>
-                    <Td className="text-muted-foreground">
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(project.dueDate)}</Td>
+                    <Td className="text-ink-muted">
                       {project.budget ? formatCurrency(Number(project.budget), project.currency) : "—"}
                     </Td>
                     <Td>

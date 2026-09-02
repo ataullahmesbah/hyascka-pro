@@ -38,32 +38,32 @@ export default async function BlogPage() {
       />
 
       <section className="section">
-        <div className="container">
+        <div className="container-x">
           {featured ? (
             <Reveal>
               <Link
                 href={`/blog/${featured.slug}`}
-                className="group grid gap-6 rounded-2xl border border-border bg-card p-7 transition-all hover:border-primary/40 hover:shadow-elevated md:grid-cols-[1.4fr_0.6fr] md:p-10"
+                className="group grid gap-6 rounded-2xl border border-line bg-surface p-7 transition-all hover:border-accent/40 hover:shadow-lg md:grid-cols-[1.4fr_0.6fr] md:p-10"
               >
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <Badge tone="primary">{featured.categoryName}</Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <Badge tone="accent">{featured.categoryName}</Badge>
+                    <span className="text-xs text-ink-muted">
                       {formatDate(featured.publishedAt)} · {featured.readMinutes} min read
                     </span>
                   </div>
                   <h2 className="mt-4 font-display text-2xl font-bold leading-snug md:text-3xl">
                     {featured.title}
                   </h2>
-                  <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                  <p className="mt-3 text-base leading-relaxed text-ink-muted">
                     {featured.excerpt}
                   </p>
-                  <span className="mt-5 inline-block text-sm font-semibold text-primary">
+                  <span className="mt-5 inline-block text-sm font-semibold text-accent">
                     Read the article →
                   </span>
                 </div>
                 <div className="hidden items-center justify-center md:flex">
-                  <span className="brand-gradient flex h-28 w-28 items-center justify-center rounded-2xl font-display text-3xl font-extrabold text-white">
+                  <span className="flex h-28 w-28 items-center justify-center rounded-2xl font-display text-3xl font-extrabold text-white">
                     {featured.readMinutes}′
                   </span>
                 </div>
@@ -76,16 +76,16 @@ export default async function BlogPage() {
               <Reveal key={post.slug} as="article" delay={(index % 3) * 60}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="group flex h-full flex-col rounded-xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated motion-reduce:hover:translate-y-0"
+                  className="group flex h-full flex-col rounded-xl border border-line bg-surface p-6 transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg motion-reduce:hover:translate-y-0"
                 >
                   <Badge tone="outline" className="w-fit">
                     {post.categoryName}
                   </Badge>
                   <h2 className="mt-4 font-display text-lg font-semibold leading-snug">{post.title}</h2>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-muted">
                     {post.excerpt}
                   </p>
-                  <p className="mt-5 text-xs text-muted-foreground">
+                  <p className="mt-5 text-xs text-ink-muted">
                     {formatDate(post.publishedAt)} · {post.readMinutes} min read
                   </p>
                 </Link>

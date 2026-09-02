@@ -69,15 +69,15 @@ export default async function SeoPage() {
       <Panel title="Site defaults" description="Used wherever a page does not set its own metadata." className="mb-6">
         <dl className="grid gap-4 sm:grid-cols-2">
           <div>
-            <dt className="text-xs text-muted-foreground">Default title</dt>
+            <dt className="text-xs text-ink-muted">Default title</dt>
             <dd className="text-sm">{settings.seo.defaultTitle}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Title template</dt>
+            <dt className="text-xs text-ink-muted">Title template</dt>
             <dd className="text-sm">{settings.seo.titleTemplate}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-xs text-muted-foreground">Default description</dt>
+            <dt className="text-xs text-ink-muted">Default description</dt>
             <dd className="text-sm">{settings.seo.defaultDescription}</dd>
           </div>
         </dl>
@@ -104,17 +104,17 @@ export default async function SeoPage() {
                 return (
                   <Tr key={`${row.type}-${row.id}`}>
                     <Td>
-                      <a href={row.path} target="_blank" rel="noreferrer" className="font-medium hover:text-primary">
+                      <a href={row.path} target="_blank" rel="noreferrer" className="font-medium hover:text-accent">
                         {row.title}
                       </a>
-                      <p className="text-xs text-muted-foreground">{row.path}</p>
+                      <p className="text-xs text-ink-muted">{row.path}</p>
                     </Td>
-                    <Td className="text-muted-foreground">{row.type}</Td>
-                    <Td className="text-muted-foreground">
+                    <Td className="text-ink-muted">{row.type}</Td>
+                    <Td className="text-ink-muted">
                       {row.metaTitle ?? "—"}
                       <span className="block text-[11px]">{row.metaTitle?.length ?? 0} chars</span>
                     </Td>
-                    <Td className="max-w-sm text-muted-foreground">
+                    <Td className="max-w-sm text-ink-muted">
                       <span className="line-clamp-2">{row.metaDescription ?? "—"}</span>
                       <span className="block text-[11px]">{row.metaDescription?.length ?? 0} chars</span>
                     </Td>

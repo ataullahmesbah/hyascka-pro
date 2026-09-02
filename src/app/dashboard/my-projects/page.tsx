@@ -30,10 +30,10 @@ export default async function MyProjectsPage() {
               action={<StatusBadge status={project.status} />}
             >
               <div className="mb-5">
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="brand-gradient h-full rounded-full" style={{ width: `${project.progress}%` }} />
+                <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+                  <div className="h-full rounded-full" style={{ width: `${project.progress}%` }} />
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-ink-muted">
                   {project.progress}% complete
                   {project.dueDate ? ` · target ${formatDate(project.dueDate)}` : ""}
                 </p>
@@ -42,11 +42,11 @@ export default async function MyProjectsPage() {
               {/* Visual timeline rather than a flat milestone list (PRD §48.2) */}
               <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {project.milestones.map((milestone) => (
-                  <li key={milestone.id} className="rounded-lg border border-border p-4">
+                  <li key={milestone.id} className="rounded-lg border border-line p-4">
                     <StatusBadge status={milestone.status} />
                     <p className="mt-2 text-sm font-medium">{milestone.title}</p>
                     {milestone.dueDate ? (
-                      <p className="mt-1 text-xs text-muted-foreground">{formatDate(milestone.dueDate)}</p>
+                      <p className="mt-1 text-xs text-ink-muted">{formatDate(milestone.dueDate)}</p>
                     ) : null}
                   </li>
                 ))}

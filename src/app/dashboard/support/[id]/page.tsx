@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
-import { TicketReply, TicketStatusControl } from "@/components/dashboard/ticket-forms";
+import { TicketAssign, TicketReply, TicketStatusControl } from "@/components/dashboard/ticket-forms";
+import { ROLE_LABELS } from "@/lib/rbac";
 import { StatusBadge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db";
 import { canAccessTicket, requireUser, toActor } from "@/lib/auth/guards";
@@ -20,7 +21,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     where: { id },
     include: {
       client: { select: { companyName: true, user: { select: { name: true, email: true } } } },
-      assignee: { select: { name: true } },
+      assignee: { select: { id: true, name: true } },
       messages: {
         where: user.role === "CLIENT" ? { isInternal: false } : {},
         orderBy: { createdAt: "asc" },
@@ -32,6 +33,14 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
   const isStaff = user.role !== "CLIENT";
   const canManage = isStaff && can(toActor(user), "support.manage");
+
+  const staff = canManage
+    ? await prisma.user.findMany({
+        where: { role: { not: "CLIENT" }, status: "ACTIVE" },
+        select: { id: true, name: true, role: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   return (
     <>
@@ -52,7 +61,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
           <ul className="space-y-4">
             {ticket.messages.map((message) => (
               <li key={message.id} className="flex gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-ink-muted">
                   {initials(message.author.name)}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -60,7 +69,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     className={
                       message.isInternal
                         ? "rounded-xl border border-warning/40 bg-warning/10 p-3.5"
-                        : "rounded-xl bg-muted/60 p-3.5"
+                        : "rounded-xl bg-surface-2/60 p-3.5"
                     }
                   >
                     {message.isInternal ? (
@@ -70,7 +79,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     ) : null}
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.body}</p>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-ink-muted">
                     {message.author.name} · {relativeTime(message.createdAt)}
                   </p>
                 </div>
@@ -78,7 +87,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             ))}
           </ul>
 
-          <div className="mt-6 border-t border-border pt-5">
+          <div className="mt-6 border-t border-line pt-5">
             <TicketReply ticketId={ticket.id} canPostInternal={canManage} />
           </div>
         </Panel>
@@ -87,24 +96,37 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
           <Panel title="Details">
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Category</dt>
+                <dt className="text-xs text-ink-muted">Category</dt>
                 <dd>{ticket.category}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Assigned to</dt>
+                <dt className="text-xs text-ink-muted">Assigned to</dt>
                 <dd>{ticket.assignee?.name ?? "Unassigned"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Contact</dt>
+                <dt className="text-xs text-ink-muted">Contact</dt>
                 <dd>{ticket.client.user.email}</dd>
               </div>
             </dl>
           </Panel>
 
           {canManage ? (
-            <Panel title="Status">
-              <TicketStatusControl ticketId={ticket.id} status={ticket.status} />
-            </Panel>
+            <>
+              <Panel title="Status">
+                <TicketStatusControl ticketId={ticket.id} status={ticket.status} />
+              </Panel>
+              <Panel title="Assignment" description="Pass this to someone else on the team.">
+                <TicketAssign
+                  ticketId={ticket.id}
+                  currentAssigneeId={ticket.assigneeId}
+                  staff={staff.map((member) => ({
+                    id: member.id,
+                    name: member.name,
+                    roleLabel: ROLE_LABELS[member.role],
+                  }))}
+                />
+              </Panel>
+            </>
           ) : null}
         </aside>
       </div>

@@ -131,6 +131,23 @@ export function articleSchema(post: {
   };
 }
 
+/** Sitelinks search box + site identity, so answer engines cite us correctly (PRD §10). */
+export function websiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "HYASCKA",
+    url: siteUrl(),
+    inLanguage: "en",
+    publisher: { "@type": "Organization", name: "HYASCKA", url: siteUrl() },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${siteUrl()}/services?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
 export function breadcrumbSchema(items: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",

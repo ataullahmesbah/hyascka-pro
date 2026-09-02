@@ -2,17 +2,17 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const tones = {
-  neutral: "bg-muted text-muted-foreground",
-  primary: "bg-primary-soft text-primary",
-  success: "bg-success/12 text-success",
-  warning: "bg-warning/15 text-warning",
-  danger: "bg-danger/12 text-danger",
-  info: "bg-info/12 text-info",
-  outline: "border border-border text-muted-foreground",
+const TONES = {
+  neutral: "bg-surface-2 text-ink-soft border-line",
+  accent: "bg-accent-soft text-accent border-transparent",
+  success: "bg-success-soft text-success border-transparent",
+  warning: "bg-warning-soft text-warning border-transparent",
+  danger: "bg-danger-soft text-danger border-transparent",
+  info: "bg-info-soft text-info border-transparent",
+  outline: "bg-transparent text-ink-muted border-line",
 } as const;
 
-export type BadgeTone = keyof typeof tones;
+export type BadgeTone = keyof typeof TONES;
 
 export function Badge({
   className,
@@ -22,8 +22,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-        tones[tone],
+        "inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-0.5 text-step--2 font-semibold",
+        TONES[tone],
         className,
       )}
       {...props}
@@ -31,28 +31,25 @@ export function Badge({
   );
 }
 
-/** Maps every workflow status in the platform to a consistent colour. */
+/** Every workflow status in the product maps to one consistent tone. */
 const STATUS_TONES: Record<string, BadgeTone> = {
-  // Content / generic
-  PUBLISHED: "success", DRAFT: "neutral", ARCHIVED: "neutral",
+  PUBLISHED: "success", DRAFT: "neutral", ARCHIVED: "neutral", FEATURED: "accent",
   ACTIVE: "success", SUSPENDED: "danger", DISABLED: "neutral", PENDING_VERIFICATION: "warning",
-  // Leads
-  NEW: "info", CONTACTED: "primary", QUALIFIED: "primary", PROPOSAL_SENT: "warning", WON: "success", LOST: "danger",
-  // Projects / tasks
-  PLANNING: "info", IN_PROGRESS: "primary", REVIEW: "warning", ON_HOLD: "warning",
-  COMPLETED: "success", CANCELLED: "danger", TODO: "neutral", DONE: "success", BLOCKED: "danger", PENDING: "neutral",
-  // Finance
+  NEW: "info", CONTACTED: "accent", QUALIFIED: "accent", PROPOSAL_SENT: "warning",
+  WON: "success", LOST: "danger",
+  PLANNING: "info", IN_PROGRESS: "accent", REVIEW: "warning", ON_HOLD: "warning",
+  COMPLETED: "success", CANCELLED: "danger", TODO: "neutral", DONE: "success",
+  BLOCKED: "danger", PENDING: "neutral",
   ISSUED: "info", PARTIALLY_PAID: "warning", PAID: "success", OVERDUE: "danger", VOID: "neutral",
   VERIFIED: "success", REJECTED: "danger", REFUNDED: "warning", SUBMITTED: "info", APPROVED: "success",
-  // Support
   OPEN: "info", RESOLVED: "success", CLOSED: "neutral",
-  // Priority
   LOW: "neutral", MEDIUM: "info", HIGH: "warning", URGENT: "danger",
+  GOOD: "success", THIN: "warning", MISSING: "danger", "TOO LONG": "warning",
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
   return (
-    <Badge tone={STATUS_TONES[status] ?? "neutral"} className={className}>
+    <Badge tone={STATUS_TONES[status.toUpperCase()] ?? "neutral"} className={className}>
       {status.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}
     </Badge>
   );

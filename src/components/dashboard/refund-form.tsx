@@ -19,7 +19,7 @@ export function RefundForm({
   const { toast } = useToast();
 
   if (!payments.length) {
-    return <p className="text-sm text-muted-foreground">There are no verified payments to refund.</p>;
+    return <p className="text-sm text-ink-muted">There are no verified payments to refund.</p>;
   }
 
   const selected = payments.find((payment) => payment.id === paymentId);

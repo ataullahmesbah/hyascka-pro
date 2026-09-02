@@ -69,11 +69,11 @@ export default async function RefundsPage() {
                           {refund.invoice.number}
                         </LinkCell>
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {refund.invoice.client.companyName ?? "—"}
                       </Td>
-                      <Td className="max-w-xs truncate text-muted-foreground">{refund.reason}</Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="max-w-xs truncate text-ink-muted">{refund.reason}</Td>
+                      <Td className="text-ink-muted">
                         {refund.createdBy?.name ?? "—"}
                         <span className="block text-xs">{formatDate(refund.createdAt)}</span>
                       </Td>

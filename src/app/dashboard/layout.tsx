@@ -33,9 +33,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <DashboardShell
       navigation={navigationFor(toActor(user))}
-      name={user.name}
-      email={user.email}
-      roleLabel={ROLE_LABELS[user.role]}
+      user={{
+        name: user.name,
+        email: user.email,
+        roleLabel: ROLE_LABELS[user.role],
+        avatarUrl: user.avatarUrl,
+      }}
       siteName={settings.brand.siteName}
       unread={unread}
       notifications={recent.map((item) => ({

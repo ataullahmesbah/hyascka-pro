@@ -2,56 +2,31 @@
 
 import * as React from "react";
 
+import { Plus, Trash2 } from "lucide-react";
+
 import {
+  saveAssistantSettings,
   saveBrandSettings,
   saveContactSettings,
   saveMaintenanceSettings,
   savePaymentMethodAction,
   saveSeoSettings,
+  saveSponsorsSettings,
   saveThemeSettings,
   saveTrackingSettings,
+  saveWhatsappSettings,
   toggleFeatureFlagAction,
   toggleIntegrationAction,
 } from "@/actions/settings";
 import { ActionForm, SubmitButton, useFieldError } from "@/components/dashboard/action-form";
-import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
+import { Checkbox, Field, Input, Select, Switch, Textarea } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { THEMES, THEME_META, type ThemeId, type ThemePolicy } from "@/lib/theme";
+import type { SponsorItem, SponsorsContent } from "@/components/marketing/sponsors";
 
-/** A single on/off control reused by feature flags and integrations. */
-function Toggle({
-  checked,
-  onChange,
-  label,
-  disabled,
-}: {
-  checked: boolean;
-  onChange: (next: boolean) => void;
-  label: string;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={cn(
-        "relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50",
-        checked ? "bg-primary" : "bg-muted",
-      )}
-    >
-      <span
-        className={cn(
-          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-          checked ? "translate-x-[1.375rem]" : "translate-x-0.5",
-        )}
-      />
-    </button>
-  );
-}
+const Toggle = Switch;
 
 export function FeatureFlagToggle({
   flagKey,
@@ -144,31 +119,241 @@ export function BrandForm({ values }: { values: Record<string, string> }) {
   );
 }
 
-export function ThemeForm({ accent, mode }: { accent: string; mode: string }) {
+export function ThemeSettingsForm({ policy }: { policy: ThemePolicy }) {
+  const [enabled, setEnabled] = React.useState<ThemeId[]>(policy.enabledThemes);
+  const [defaultTheme, setDefaultTheme] = React.useState<ThemeId>(policy.defaultTheme);
+  const [allowToggle, setAllowToggle] = React.useState(policy.allowUserToggle);
+
+  const toggleTheme = (id: ThemeId) => {
+    setEnabled((current) => {
+      const next = current.includes(id) ? current.filter((t) => t !== id) : [...current, id];
+      // Never allow an empty set — the site would have nothing to render.
+      if (!next.length) return current;
+      if (!next.includes(defaultTheme)) setDefaultTheme(next[0]);
+      return next;
+    });
+  };
+
   return (
     <ActionForm action={saveThemeSettings} successTitle="Theme saved">
-      <SelectField
-        name="accent"
-        label="Accent identity"
-        hint="Applied site-wide. Visitors cannot enter arbitrary colours."
-        defaultValue={accent}
-        options={[
-          { value: "purple", label: "Purple — premium violet/indigo" },
-          { value: "cyan", label: "Cyan — modern cyan/blue" },
-        ]}
+      {enabled.map((id) => (
+        <input key={id} type="hidden" name="enabledThemes" value={id} />
+      ))}
+      <input type="hidden" name="defaultTheme" value={defaultTheme} />
+
+      <div>
+        <p className="text-step--1 font-medium text-ink">Available themes</p>
+        <p className="mt-1 text-step--2 text-ink-muted">
+          Tick the themes visitors may switch between. The one marked default is what a
+          first-time visitor sees.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {THEMES.map((id) => {
+            const meta = THEME_META[id];
+            const isOn = enabled.includes(id);
+            const isDefault = defaultTheme === id;
+            return (
+              <div
+                key={id}
+                className={cn(
+                  "rounded-lg border p-4 transition-colors",
+                  isOn ? "border-accent-border bg-accent-soft/40" : "border-line bg-surface-2",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span
+                    className="h-8 w-8 shrink-0 rounded-md border border-line-strong"
+                    style={{ background: meta.swatch }}
+                    aria-hidden
+                  />
+                  <Switch
+                    checked={isOn}
+                    onChange={() => toggleTheme(id)}
+                    label={`Enable ${meta.label}`}
+                    disabled={isOn && enabled.length === 1}
+                  />
+                </div>
+                <p className="mt-3 text-step--1 font-semibold text-ink">{meta.label}</p>
+                <p className="mt-0.5 text-step--2 leading-snug text-ink-muted">{meta.description}</p>
+
+                <button
+                  type="button"
+                  disabled={!isOn}
+                  onClick={() => setDefaultTheme(id)}
+                  className={cn(
+                    "mt-3 w-full rounded-btn border px-2.5 py-1.5 text-step--2 font-semibold transition-colors",
+                    isDefault
+                      ? "border-accent bg-accent text-accent-ink"
+                      : "border-line-strong text-ink-soft hover:bg-surface-3 disabled:opacity-40",
+                  )}
+                >
+                  {isDefault ? "Default theme" : "Make default"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex items-start justify-between gap-4 rounded-lg border border-line p-4">
+        <div>
+          <p className="text-step--1 font-medium text-ink">Let visitors switch theme</p>
+          <p className="mt-1 text-step--2 text-ink-muted">
+            When this is off the navbar toggle disappears and every visitor sees the default
+            theme. It also hides automatically if only one theme is enabled.
+          </p>
+        </div>
+        <input type="hidden" name="allowUserToggle" value={allowToggle ? "on" : ""} />
+        <Switch
+          checked={allowToggle && enabled.length > 1}
+          onChange={setAllowToggle}
+          label="Allow visitors to switch theme"
+          disabled={enabled.length < 2}
+        />
+      </div>
+
+      <SubmitButton>Save theme policy</SubmitButton>
+    </ActionForm>
+  );
+}
+
+/** Sponsor / partner marquee editor — image or text, direction and speed. */
+export function SponsorsForm({ content }: { content: SponsorsContent }) {
+  const [items, setItems] = React.useState<SponsorItem[]>(content.items);
+
+  const update = (index: number, patch: Partial<SponsorItem>) =>
+    setItems((current) => current.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+
+  return (
+    <ActionForm action={saveSponsorsSettings} successTitle="Sponsors saved">
+      <input type="hidden" name="items" value={JSON.stringify(items)} />
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <TextField name="title" label="Strip heading" defaultValue={content.title} required />
+        <SelectField
+          name="direction"
+          label="Scroll direction"
+          defaultValue={content.direction}
+          options={[
+            { value: "left", label: "Right to left" },
+            { value: "right", label: "Left to right" },
+          ]}
+        />
+        <TextField
+          name="speed"
+          label="Loop duration (seconds)"
+          type="number"
+          hint="Lower is faster. 38 is a comfortable default."
+          defaultValue={String(content.speed)}
+        />
+        <label className="flex items-end gap-2.5 pb-3 text-step--1">
+          <Checkbox name="enabled" defaultChecked={content.enabled} />
+          Show the strip on the homepage
+        </label>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-step--1 font-medium text-ink">Sponsors ({items.length})</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setItems((current) => [
+                ...current,
+                { id: `s${Date.now().toString(36)}`, label: "", imageUrl: "", href: "" },
+              ])
+            }
+          >
+            <Plus className="h-4 w-4" />
+            Add sponsor
+          </Button>
+        </div>
+        <p className="mt-1 text-step--2 text-ink-muted">
+          Leave the logo empty to show the name as text. Logos display at 32px tall — a
+          transparent PNG or SVG around 320×80 works best.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {items.map((item, index) => (
+            <div key={item.id} className="grid gap-3 rounded-lg border border-line p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+              <Field label="Name" htmlFor={`sp-label-${item.id}`}>
+                <Input
+                  id={`sp-label-${item.id}`}
+                  value={item.label}
+                  onChange={(event) => update(index, { label: event.target.value })}
+                  placeholder="Northlane Systems"
+                />
+              </Field>
+              <Field label="Logo URL" htmlFor={`sp-img-${item.id}`}>
+                <Input
+                  id={`sp-img-${item.id}`}
+                  value={item.imageUrl ?? ""}
+                  onChange={(event) => update(index, { imageUrl: event.target.value })}
+                  placeholder="Optional"
+                />
+              </Field>
+              <Field label="Link" htmlFor={`sp-href-${item.id}`}>
+                <Input
+                  id={`sp-href-${item.id}`}
+                  value={item.href ?? ""}
+                  onChange={(event) => update(index, { href: event.target.value })}
+                  placeholder="Optional"
+                />
+              </Field>
+              <div className="flex items-end pb-1">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove ${item.label || "sponsor"}`}
+                  onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
+                >
+                  <Trash2 className="h-4 w-4 text-danger" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <SubmitButton>Save sponsor strip</SubmitButton>
+    </ActionForm>
+  );
+}
+
+export function WhatsappForm({ values }: { values: Record<string, string> }) {
+  return (
+    <ActionForm action={saveWhatsappSettings} successTitle="WhatsApp saved">
+      <TextField name="label" label="Button label" defaultValue={values.label} required />
+      <AreaField
+        name="greeting"
+        label="Pre-filled message"
+        hint="What the visitor's WhatsApp opens with. The number itself is set under Contact."
+        defaultValue={values.greeting}
       />
-      <SelectField
-        name="mode"
-        label="Default appearance"
-        hint="Visitors can still switch this for themselves."
-        defaultValue={mode}
-        options={[
-          { value: "system", label: "Follow the device setting" },
-          { value: "light", label: "Light" },
-          { value: "dark", label: "Dark" },
-        ]}
+      <SubmitButton>Save WhatsApp settings</SubmitButton>
+    </ActionForm>
+  );
+}
+
+export function AssistantForm({ values }: { values: Record<string, string> }) {
+  return (
+    <ActionForm action={saveAssistantSettings} successTitle="Assistant saved">
+      <TextField name="name" label="Assistant name" defaultValue={values.name} required />
+      <AreaField
+        name="greeting"
+        label="Opening message"
+        hint="The first thing a visitor sees when they open the chat."
+        defaultValue={values.greeting}
       />
-      <SubmitButton>Save theme</SubmitButton>
+      <AreaField
+        name="suggestions"
+        label="Suggested questions"
+        hint="One per line, up to six. Shown as tappable chips before the first message."
+        defaultValue={values.suggestions}
+      />
+      <SubmitButton>Save assistant settings</SubmitButton>
     </ActionForm>
   );
 }
@@ -237,9 +422,9 @@ export function TrackingForm({ values, hasCapiToken }: { values: Record<string, 
         <TextField name="metaPixelId" label="Meta Pixel ID" hint="Numeric." defaultValue={values.metaPixelId} />
       </div>
 
-      <div className="rounded-lg border border-border bg-surface-2/60 p-4">
+      <div className="rounded-lg border border-line bg-surface-2/60 p-4">
         <p className="text-sm font-semibold">Meta Conversions API (server-side)</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-ink-muted">
           Sent from the server so conversions survive ad blockers and tracking prevention. The token
           is stored server-side and never rendered into the page.
           {hasCapiToken ? " A token is currently stored — leave blank to keep it." : ""}
@@ -256,7 +441,7 @@ export function TrackingForm({ values, hasCapiToken }: { values: Record<string, 
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-muted">
         All browser tags load only after a visitor accepts cookies. Declining is fully supported and
         does not restrict any part of the site.
       </p>
@@ -270,9 +455,9 @@ export function MaintenanceForm({ values }: { values: Record<string, unknown> })
 
   return (
     <ActionForm action={saveMaintenanceSettings} successTitle="Maintenance settings saved">
-      <div className="rounded-lg border border-border p-4">
+      <div className="rounded-lg border border-line p-4">
         <p className="text-sm font-semibold">Stage 1 — advance notice</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-ink-muted">
           A dismissible banner across the site. Visitors keep full access.
         </p>
         <div className="mt-4 space-y-4">
@@ -307,11 +492,11 @@ export function MaintenanceForm({ values }: { values: Record<string, unknown> })
       <div
         className={cn(
           "rounded-lg border p-4 transition-colors",
-          fullMode ? "border-danger/45 bg-danger/8" : "border-border",
+          fullMode ? "border-danger/45 bg-danger/8" : "border-line",
         )}
       >
         <p className="text-sm font-semibold">Stage 2 — full maintenance mode</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-ink-muted">
           Replaces the public site with the branded maintenance page. Staff sessions bypass it and
           keep working normally.
         </p>

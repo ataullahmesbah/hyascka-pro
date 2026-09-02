@@ -2,9 +2,9 @@
 
 import * as React from "react";
 
-import { convertLeadAction, updateLeadAction } from "@/actions/crm";
+import { convertLeadAction, replyToLeadAction, updateLeadAction } from "@/actions/crm";
 import { ActionForm, ConfirmButton, SubmitButton, useFieldError } from "@/components/dashboard/action-form";
-import { Field, Select, Textarea } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 
 const STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL_SENT", "WON", "LOST"] as const;
@@ -93,6 +93,58 @@ function NoteField() {
       error={useFieldError("note")}
     >
       <Textarea id="note" name="note" rows={3} placeholder="Called — asked for a proposal by Friday." />
+    </Field>
+  );
+}
+
+
+/**
+ * Reply to the enquiry without leaving the dashboard (PRD §7.1). The message is
+ * emailed through Resend and recorded on the lead's note thread either way.
+ */
+export function LeadReply({
+  leadId,
+  reference,
+  email,
+  name,
+}: {
+  leadId: string;
+  reference: string;
+  email: string;
+  name: string;
+}) {
+  return (
+    <ActionForm action={replyToLeadAction} successTitle="Reply sent" resetOnSuccess>
+      <input type="hidden" name="leadId" value={leadId} />
+      <p className="text-step--2 text-ink-muted">
+        Sends from your configured Resend address to <strong className="text-ink">{email}</strong>,
+        and saves a copy to this lead&rsquo;s thread.
+      </p>
+      <ReplySubject defaultValue={`Re: your enquiry ${reference}`} />
+      <ReplyBody name={name} />
+      <SubmitButton pendingLabel="Sending…">Send reply</SubmitButton>
+    </ActionForm>
+  );
+}
+
+function ReplySubject({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field label="Subject" htmlFor="reply-subject" required error={useFieldError("subject")}>
+      <Input id="reply-subject" name="subject" defaultValue={defaultValue} required />
+    </Field>
+  );
+}
+
+function ReplyBody({ name }: { name: string }) {
+  return (
+    <Field label="Message" htmlFor="reply-body" required error={useFieldError("body")}>
+      <Textarea
+        id="reply-body"
+        name="body"
+        rows={7}
+        required
+        defaultValue={`Hi ${name.split(" ")[0]},\n\nThanks for getting in touch. `}
+      />
     </Field>
   );
 }

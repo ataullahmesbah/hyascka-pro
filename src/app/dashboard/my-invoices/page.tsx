@@ -61,10 +61,10 @@ export default async function MyInvoicesPage() {
                       <Td>
                         <LinkCell href={`/dashboard/my-invoices/${invoice.id}`}>{invoice.number}</LinkCell>
                       </Td>
-                      <Td className="whitespace-nowrap text-muted-foreground">{formatDate(invoice.issueDate)}</Td>
-                      <Td className="whitespace-nowrap text-muted-foreground">{formatDate(invoice.dueDate)}</Td>
+                      <Td className="whitespace-nowrap text-ink-muted">{formatDate(invoice.issueDate)}</Td>
+                      <Td className="whitespace-nowrap text-ink-muted">{formatDate(invoice.dueDate)}</Td>
                       <Td className="font-medium">{formatCurrency(Number(invoice.total), invoice.currency)}</Td>
-                      <Td className={due > 0 ? "font-semibold text-warning" : "text-muted-foreground"}>
+                      <Td className={due > 0 ? "font-semibold text-warning" : "text-ink-muted"}>
                         {formatCurrency(due, invoice.currency)}
                       </Td>
                       <Td>

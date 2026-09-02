@@ -19,9 +19,9 @@ export default async function ResetPasswordPage({
     return (
       <div>
         <h1 className="font-display text-2xl font-bold">Reset link missing</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-muted">
           This page needs the link from your reset email.{" "}
-          <Link href="/forgot-password" className="text-primary underline-offset-4 hover:underline">
+          <Link href="/forgot-password" className="text-accent underline-offset-4 hover:underline">
             Request a new one
           </Link>
           .
@@ -33,7 +33,7 @@ export default async function ResetPasswordPage({
   return (
     <div>
       <h1 className="font-display text-2xl font-bold">Choose a new password</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-muted">
         Setting a new password signs out every other session on your account.
       </p>
       <div className="mt-7">

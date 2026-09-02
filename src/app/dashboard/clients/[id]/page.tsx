@@ -81,12 +81,12 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         <div className="space-y-5">
           <Panel title="Projects">
             {client.projects.length ? (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-line">
                 {client.projects.map((project) => (
                   <li key={project.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 flex-1">
                       <LinkCell href={`/dashboard/projects/${project.id}`}>{project.name}</LinkCell>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-muted">
                         {project.progress}% complete
                         {project.dueDate ? ` · due ${formatDate(project.dueDate)}` : ""}
                       </p>
@@ -120,7 +120,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                           <Td>
                             <LinkCell href={`/dashboard/finance/invoices/${invoice.id}`}>{invoice.number}</LinkCell>
                           </Td>
-                          <Td className="text-muted-foreground">{formatDate(invoice.dueDate)}</Td>
+                          <Td className="text-ink-muted">{formatDate(invoice.dueDate)}</Td>
                           <Td className="font-medium">{formatCurrency(Number(invoice.total), invoice.currency)}</Td>
                           <Td>
                             <StatusBadge status={invoice.status} />
@@ -164,7 +164,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No tickets raised.</p>
+              <p className="text-sm text-ink-muted">No tickets raised.</p>
             )}
           </Panel>
         </aside>
@@ -176,7 +176,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dt className="text-xs text-ink-muted">{label}</dt>
       <dd className="break-words">{value}</dd>
     </div>
   );

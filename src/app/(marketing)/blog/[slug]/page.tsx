@@ -58,10 +58,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       />
 
       <article className="section">
-        <div className="container max-w-prose">
+        <div className="container-x max-w-prose">
           <Markdown content={post.content} />
 
-          <div className="mt-10 flex flex-wrap gap-2 border-t border-border pt-6">
+          <div className="mt-10 flex flex-wrap gap-2 border-t border-line pt-6">
             {post.tags.map((tag) => (
               <Badge key={tag} tone="outline">
                 #{tag}
@@ -69,9 +69,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             ))}
           </div>
 
-          <div className="mt-10 rounded-xl border border-border bg-card p-7 text-center">
+          <div className="mt-10 rounded-xl border border-line bg-surface p-7 text-center">
             <h2 className="font-display text-xl font-bold">Want this applied to your own site?</h2>
-            <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
+            <p className="mx-auto mt-2 max-w-lg text-sm text-ink-muted">
               Send us the URL and what you are trying to improve. We will tell you honestly whether it
               is worth the work.
             </p>
@@ -83,19 +83,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </article>
 
       {related.length ? (
-        <section className="section border-t border-border">
-          <div className="container">
+        <section className="section border-t border-line">
+          <div className="container-x">
             <h2 className="font-display text-2xl font-bold">Keep reading</h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {related.map((item) => (
                 <Link
                   key={item.slug}
                   href={`/blog/${item.slug}`}
-                  className="rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated motion-reduce:hover:translate-y-0"
+                  className="rounded-xl border border-line bg-surface p-5 transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg motion-reduce:hover:translate-y-0"
                 >
                   <Badge tone="outline">{item.categoryName}</Badge>
                   <h3 className="mt-3 font-display text-base font-semibold leading-snug">{item.title}</h3>
-                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{item.excerpt}</p>
+                  <p className="mt-2 line-clamp-2 text-sm text-ink-muted">{item.excerpt}</p>
                 </Link>
               ))}
             </div>

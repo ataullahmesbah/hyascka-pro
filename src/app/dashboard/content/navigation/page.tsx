@@ -47,9 +47,9 @@ export default async function NavigationPage() {
                   <tbody>
                     {links.map((link) => (
                       <Tr key={link.id}>
-                        <Td className="text-muted-foreground">{link.position}</Td>
+                        <Td className="text-ink-muted">{link.position}</Td>
                         <Td className="font-medium">{link.label}</Td>
-                        <Td className="font-mono text-xs text-muted-foreground">{link.href}</Td>
+                        <Td className="font-mono text-xs text-ink-muted">{link.href}</Td>
                         <Td>
                           <StatusBadge status={link.enabled ? "PUBLISHED" : "DRAFT"} />
                         </Td>

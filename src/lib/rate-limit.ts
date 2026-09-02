@@ -28,6 +28,7 @@ export const RATE_LIMITS = {
   message: { limit: 30, windowSeconds: 300 },
   payment: { limit: 10, windowSeconds: 3600 },
   newsletter: { limit: 3, windowSeconds: 3600 },
+  chat: { limit: 20, windowSeconds: 300 },
 } as const;
 
 export type RateLimitKey = keyof typeof RATE_LIMITS;

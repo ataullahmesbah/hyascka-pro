@@ -24,8 +24,8 @@ export function LegalPage({ content, path }: { content: LegalContent; path: stri
         description={content.intro}
       />
       <section className="section">
-        <div className="container max-w-prose">
-          <div className="prose prose-neutral max-w-none dark:prose-invert">
+        <div className="container-x max-w-prose">
+          <div className="prose-hy max-w-prose">
             {content.sections.map((section) => (
               <section key={section.heading}>
                 <h2>{section.heading}</h2>
@@ -33,9 +33,9 @@ export function LegalPage({ content, path }: { content: LegalContent; path: stri
               </section>
             ))}
           </div>
-          <p className="mt-10 rounded-xl border border-border bg-surface-2/60 p-5 text-sm text-muted-foreground">
+          <p className="mt-10 rounded-xl border border-line bg-surface-2/60 p-5 text-sm text-ink-muted">
             Questions about this policy? Email{" "}
-            <a href="mailto:legal@hyascka.com" className="text-primary hover:underline">
+            <a href="mailto:legal@hyascka.com" className="text-accent hover:underline">
               legal@hyascka.com
             </a>{" "}
             and we will respond within 30 days.

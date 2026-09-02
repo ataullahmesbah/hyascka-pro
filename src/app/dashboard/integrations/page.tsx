@@ -36,14 +36,14 @@ export default async function IntegrationsPage() {
       <div className="space-y-5">
         {Object.entries(grouped).map(([category, items]) => (
           <Panel key={category} title={category}>
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {items.map((integration) => (
                 <li key={integration.id} className="flex flex-wrap items-center gap-4 py-4 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">{integration.name}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
+                    <p className="mt-0.5 text-xs text-ink-muted">
                       Configured via{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">
+                      <code className="rounded bg-surface-2 px-1 py-0.5">
                         {ENV_HINTS[integration.key] ?? "environment variables"}
                       </code>
                     </p>
@@ -56,7 +56,7 @@ export default async function IntegrationsPage() {
         ))}
       </div>
 
-      <p className="mt-6 rounded-xl border border-border bg-surface-2/60 p-4 text-sm text-muted-foreground">
+      <p className="mt-6 rounded-xl border border-line bg-surface-2/60 p-4 text-sm text-ink-muted">
         Secrets are never entered or displayed here. They live in environment variables on the server,
         so they can never reach the browser bundle.
       </p>

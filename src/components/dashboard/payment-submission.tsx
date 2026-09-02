@@ -66,33 +66,33 @@ export function PaymentSubmission({
       </Field>
 
       {method ? (
-        <div className="rounded-lg border border-border bg-surface-2/60 p-4 text-sm">
+        <div className="rounded-lg border border-line bg-surface-2/60 p-4 text-sm">
           <p className="flex items-center gap-2 font-semibold">
-            <Info className="h-4 w-4 text-primary" />
+            <Info className="h-4 w-4 text-accent" />
             Send to
           </p>
           <dl className="mt-2.5 space-y-1.5 text-sm">
             {method.accountName ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Account name</dt>
+                <dt className="text-ink-muted">Account name</dt>
                 <dd className="text-right font-medium">{method.accountName}</dd>
               </div>
             ) : null}
             {method.accountNumber ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Number</dt>
+                <dt className="text-ink-muted">Number</dt>
                 <dd className="text-right font-mono font-medium">{method.accountNumber}</dd>
               </div>
             ) : null}
             {method.branch ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Branch</dt>
+                <dt className="text-ink-muted">Branch</dt>
                 <dd className="text-right">{method.branch}</dd>
               </div>
             ) : null}
           </dl>
           {method.instructions ? (
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{method.instructions}</p>
+            <p className="mt-3 text-xs leading-relaxed text-ink-muted">{method.instructions}</p>
           ) : null}
         </div>
       ) : null}
@@ -106,7 +106,7 @@ export function PaymentSubmission({
         Submit payment for verification
       </SubmitButton>
 
-      <p className="flex items-start gap-2 text-xs text-muted-foreground">
+      <p className="flex items-start gap-2 text-xs text-ink-muted">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
         Submitting records the payment as pending. Our finance team verifies it against our statement
         before the invoice is marked paid — you will be notified either way.

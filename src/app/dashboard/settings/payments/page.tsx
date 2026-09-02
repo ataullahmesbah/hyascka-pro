@@ -18,7 +18,7 @@ export default async function PaymentSettingsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-border bg-surface-2/60 p-4 text-sm text-muted-foreground">
+      <div className="rounded-xl border border-line bg-surface-2/60 p-4 text-sm text-ink-muted">
         Turning a method off removes it from the client payment screen immediately — no deployment
         needed. Gateway credentials are stored server-side and are never displayed back to you.
       </div>

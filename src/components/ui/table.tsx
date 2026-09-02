@@ -8,7 +8,7 @@ import { Icon } from "@/components/ui/icon";
 /** Wide tables scroll inside their own container; the page never does. */
 export function TableWrap({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <div className={cn("scrollbar-thin overflow-x-auto rounded-xl border border-border bg-card", className)}>
+    <div className={cn("scrollbar-thin overflow-x-auto rounded-xl border border-line bg-surface", className)}>
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ export function Th({ className, ...props }: React.ThHTMLAttributes<HTMLTableCell
     <th
       scope="col"
       className={cn(
-        "whitespace-nowrap border-b border-border bg-surface-2 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+        "whitespace-nowrap border-b border-line bg-surface-2 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted",
         className,
       )}
       {...props}
@@ -32,11 +32,11 @@ export function Th({ className, ...props }: React.ThHTMLAttributes<HTMLTableCell
 }
 
 export function Td({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("border-b border-border/70 px-4 py-3.5 align-middle", className)} {...props} />;
+  return <td className={cn("border-b border-line/70 px-4 py-3.5 align-middle", className)} {...props} />;
 }
 
 export function Tr({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn("transition-colors hover:bg-muted/45", className)} {...props} />;
+  return <tr className={cn("transition-colors hover:bg-surface-2/45", className)} {...props} />;
 }
 
 export function EmptyState({
@@ -51,14 +51,14 @@ export function EmptyState({
   action?: { label: string; href: string };
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-surface-2/60 px-6 py-14 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line bg-surface-2/60 px-6 py-14 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-ink-muted">
         <Icon name={icon} className="h-5 w-5" />
       </span>
       <div>
         <p className="font-display font-semibold">{title}</p>
         {description ? (
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-ink-muted">{description}</p>
         ) : null}
       </div>
       {action ? (
@@ -95,7 +95,7 @@ export function Pagination({
 
   return (
     <nav className="flex items-center justify-between gap-3 pt-4" aria-label="Pagination">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-muted">
         Page {page} of {pageCount}
       </p>
       <div className="flex gap-2">
@@ -124,7 +124,7 @@ export function Pagination({
 
 export function LinkCell({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline">
+    <Link href={href} className="font-medium text-ink underline-offset-4 hover:text-accent hover:underline">
       {children}
     </Link>
   );

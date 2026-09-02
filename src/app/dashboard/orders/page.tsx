@@ -57,11 +57,11 @@ export default async function OrdersPage() {
                       </LinkCell>
                     </Td>
                     <Td>{request.title}</Td>
-                    <Td className="text-muted-foreground">{request.service?.title ?? "—"}</Td>
+                    <Td className="text-ink-muted">{request.service?.title ?? "—"}</Td>
                     <Td>
                       <StatusBadge status={request.status} />
                     </Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(request.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(request.createdAt)}</Td>
                   </Tr>
                 ))}
               </tbody>
@@ -90,13 +90,13 @@ export default async function OrdersPage() {
                 {orders.map((order) => (
                   <Tr key={order.id}>
                     <Td className="font-mono text-xs">{order.reference}</Td>
-                    <Td className="text-muted-foreground">{order.client.companyName ?? "—"}</Td>
-                    <Td className="text-muted-foreground">{order._count.items}</Td>
+                    <Td className="text-ink-muted">{order.client.companyName ?? "—"}</Td>
+                    <Td className="text-ink-muted">{order._count.items}</Td>
                     <Td className="font-medium">{formatCurrency(Number(order.total), order.currency)}</Td>
                     <Td>
                       <StatusBadge status={order.status} />
                     </Td>
-                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(order.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-ink-muted">{formatDate(order.createdAt)}</Td>
                   </Tr>
                 ))}
               </tbody>

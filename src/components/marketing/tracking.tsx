@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Script from "next/script";
 
 import { useConsent } from "@/components/marketing/cookie-consent";
@@ -17,6 +18,24 @@ export type TrackingIds = {
 
 export function TrackingScripts({ ids }: { ids: TrackingIds }) {
   const { consent } = useConsent();
+
+  /*
+   * Delegated CTA tracking. Server-rendered links carry `data-track-event`
+   * instead of an onClick handler, which is what lets the hero and other
+   * conversion surfaces stay server components.
+   */
+  React.useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = (event.target as Element | null)?.closest?.("[data-track-event]");
+      if (!(target instanceof HTMLElement)) return;
+      const { trackEvent: name, ...rest } = target.dataset;
+      if (!name) return;
+      trackEvent(name, rest);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
   if (consent !== "granted") return null;
 
   return (

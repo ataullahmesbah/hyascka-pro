@@ -31,7 +31,7 @@ export default async function NotificationDetailPage({ params }: { params: Promi
       />
 
       <Panel>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">
           {notification.body}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">

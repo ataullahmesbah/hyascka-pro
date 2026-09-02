@@ -25,28 +25,28 @@ export default async function MessagesPage() {
 
       <Panel>
         {conversations.length ? (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {conversations.map((conversation) => {
               const latest = conversation.messages[0];
               return (
                 <li key={conversation.id}>
                   <Link
                     href={`/dashboard/messages/${conversation.id}`}
-                    className="-mx-2 flex items-start gap-4 rounded-lg px-2 py-4 transition-colors hover:bg-muted/60"
+                    className="-mx-2 flex items-start gap-4 rounded-lg px-2 py-4 transition-colors hover:bg-surface-2/60"
                   >
-                    <span className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                       {conversation.subject.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold">{conversation.subject}</span>
-                      <span className="mt-0.5 block truncate text-sm text-muted-foreground">
+                      <span className="mt-0.5 block truncate text-sm text-ink-muted">
                         {latest ? truncate(latest.body, 110) : "No messages yet."}
                       </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
+                      <span className="mt-1 block text-xs text-ink-muted">
                         {conversation.participants.map((p) => p.user.name).join(", ")}
                       </span>
                     </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-ink-muted">
                       {relativeTime(conversation.lastMessageAt)}
                     </span>
                   </Link>

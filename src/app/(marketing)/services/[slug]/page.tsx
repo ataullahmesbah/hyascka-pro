@@ -84,9 +84,9 @@ export default async function ServiceDetailPage({
       </PageHeader>
 
       <section className="section">
-        <div className="container grid gap-12 lg:grid-cols-[1.4fr_0.6fr]">
+        <div className="container-x grid gap-12 lg:grid-cols-[1.4fr_0.6fr]">
           <div>
-            <div className="prose prose-neutral max-w-none dark:prose-invert">
+            <div className="prose-hy max-w-prose">
               {service.longDescription.split("\n\n").map((paragraph) => (
                 <p key={paragraph.slice(0, 40)}>{paragraph}</p>
               ))}
@@ -98,10 +98,10 @@ export default async function ServiceDetailPage({
                 <Reveal
                   key={feature.title}
                   delay={(index % 2) * 60}
-                  className="rounded-xl border border-border bg-card p-5"
+                  className="rounded-xl border border-line bg-surface p-5"
                 >
                   <h3 className="font-display text-base font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.detail}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-muted">{feature.detail}</p>
                 </Reveal>
               ))}
             </div>
@@ -109,13 +109,13 @@ export default async function ServiceDetailPage({
             <h2 className="mt-14 font-display text-2xl font-bold">How we deliver it</h2>
             <ol className="mt-6 space-y-4">
               {service.processSteps.map((step, index) => (
-                <li key={step.title} className="flex gap-4 rounded-xl border border-border bg-card p-5">
-                  <span className="brand-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
+                <li key={step.title} className="flex gap-4 rounded-xl border border-line bg-surface p-5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                     {index + 1}
                   </span>
                   <div>
                     <h3 className="font-display text-base font-semibold">{step.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.detail}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-muted">{step.detail}</p>
                   </div>
                 </li>
               ))}
@@ -130,30 +130,30 @@ export default async function ServiceDetailPage({
                       key={pkg.name}
                       className={
                         pkg.highlighted
-                          ? "brand-ring relative rounded-xl border border-primary/45 bg-card p-6 shadow-glow"
-                          : "rounded-xl border border-border bg-card p-6"
+                          ? "relative rounded-xl border border-accent/45 bg-surface p-6 shadow-accent"
+                          : "rounded-xl border border-line bg-surface p-6"
                       }
                     >
                       {pkg.highlighted ? (
-                        <Badge tone="primary" className="absolute -top-2.5 left-6">
+                        <Badge tone="accent" className="absolute -top-2.5 left-6">
                           Most chosen
                         </Badge>
                       ) : null}
                       <h3 className="font-display text-lg font-semibold">{pkg.name}</h3>
-                      <p className="mt-1.5 text-sm text-muted-foreground">{pkg.summary}</p>
+                      <p className="mt-1.5 text-sm text-ink-muted">{pkg.summary}</p>
                       <p className="mt-4 font-display text-2xl font-bold">
                         {pkg.price
                           ? formatCurrency(pkg.price, service.currency)
                           : "Custom quote"}
                         {pkg.price && pkg.billingCycle ? (
-                          <span className="ml-1 text-sm font-normal text-muted-foreground">
+                          <span className="ml-1 text-sm font-normal text-ink-muted">
                             {pkg.billingCycle}
                           </span>
                         ) : null}
                       </p>
                       <ul className="mt-5 space-y-2.5">
                         {pkg.features.map((feature) => (
-                          <li key={feature} className="flex gap-2 text-sm text-muted-foreground">
+                          <li key={feature} className="flex gap-2 text-sm text-ink-muted">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                             {feature}
                           </li>
@@ -189,37 +189,37 @@ export default async function ServiceDetailPage({
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-            <div className="brand-ring rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-line bg-surface p-6">
               <IconBadge name={service.icon} size="lg" />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-muted">
                 {PRICING_LABEL[service.pricingModel]}
               </p>
-              <p className="brand-text font-display text-3xl font-extrabold">
+              <p className="accent-text font-display text-3xl font-extrabold">
                 {service.startingPrice
                   ? formatCurrency(service.startingPrice, service.currency)
                   : "Custom quote"}
               </p>
               {service.timeline ? (
-                <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4 text-primary" />
+                <p className="mt-4 flex items-center gap-2 text-sm text-ink-muted">
+                  <Clock className="h-4 w-4 text-accent" />
                   {service.timeline}
                 </p>
               ) : null}
               <ButtonLink href={`/contact?service=${service.slug}`} className="mt-5 w-full">
                 Request a proposal
               </ButtonLink>
-              <p className="mt-3 text-center text-xs text-muted-foreground">
+              <p className="mt-3 text-center text-xs text-ink-muted">
                 Fixed scope · No obligation
               </p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-line bg-surface p-6">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
                 What you receive
               </h2>
               <ul className="mt-4 space-y-2.5">
                 {service.deliverables.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm text-muted-foreground">
+                  <li key={item} className="flex gap-2 text-sm text-ink-muted">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                     {item}
                   </li>
@@ -228,9 +228,9 @@ export default async function ServiceDetailPage({
             </div>
 
             {service.technologies.length ? (
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl border border-line bg-surface p-6">
                 <h2 className="flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wider">
-                  <Layers className="h-4 w-4 text-primary" />
+                  <Layers className="h-4 w-4 text-accent" />
                   Tools we use
                 </h2>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -251,19 +251,19 @@ export default async function ServiceDetailPage({
       </section>
 
       {related.length ? (
-        <section className="section border-t border-border">
-          <div className="container">
+        <section className="section border-t border-line">
+          <div className="container-x">
             <SectionHeading eyebrow="Also relevant" title="Services that pair well with this" />
             <div className="mt-10 grid gap-5 sm:grid-cols-3">
               {related.map((item) => (
                 <Link
                   key={item.slug}
                   href={`/services/${item.slug}`}
-                  className="group rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated motion-reduce:hover:translate-y-0"
+                  className="group rounded-xl border border-line bg-surface p-5 transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg motion-reduce:hover:translate-y-0"
                 >
                   <IconBadge name={item.icon} size="sm" />
                   <h3 className="mt-4 font-display text-base font-semibold">{item.title}</h3>
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{item.tagline}</p>
+                  <p className="mt-1.5 line-clamp-2 text-sm text-ink-muted">{item.tagline}</p>
                 </Link>
               ))}
             </div>

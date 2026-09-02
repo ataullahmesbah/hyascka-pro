@@ -1,35 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { ArrowUp, MessageCircle, X } from "lucide-react";
+import { ArrowUp, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { trackEvent } from "@/components/marketing/tracking";
 
-/** Floating WhatsApp/chat entry point alongside the contact form (PRD §48.1). */
-export function ContactWidget({ whatsapp, message }: { whatsapp: string; message: string }) {
-  const href = `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => trackEvent("chat_widget_click")}
-      aria-label="Message us on WhatsApp"
-      className="fixed bottom-5 right-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full brand-gradient text-white shadow-glow transition-transform hover:scale-105 motion-reduce:transition-none"
-    >
-      <MessageCircle className="h-5 w-5" />
-    </a>
-  );
-}
-
 export function BackToTop() {
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 900);
+    const onScroll = () => setVisible(window.scrollY > 1200);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -40,17 +22,14 @@ export function BackToTop() {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Back to top"
-      className="fixed bottom-5 right-20 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-soft transition-colors hover:text-foreground"
+      className="fixed bottom-5 left-5 z-drawer inline-flex h-10 w-10 items-center justify-center rounded-btn border border-line-strong bg-surface text-ink-soft shadow-sm transition-colors duration-fast hover:bg-surface-2 hover:text-ink"
     >
       <ArrowUp className="h-4 w-4" />
     </button>
   );
 }
 
-/**
- * Non-intrusive scroll/exit-intent CTA, shown at most once per session
- * (PRD §39.6). Never blocks the page and is always dismissible.
- */
+/** Non-intrusive scroll/exit-intent CTA, shown at most once per session. */
 export function ExitIntentCta() {
   const [open, setOpen] = React.useState(false);
 
@@ -66,9 +45,8 @@ export function ExitIntentCta() {
       if (event.clientY <= 0 && !event.relatedTarget) trigger();
     };
     const onScroll = () => {
-      const progress =
-        window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
-      if (progress > 0.72) trigger();
+      const progress = window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
+      if (progress > 0.75) trigger();
     };
     const cleanup = () => {
       document.removeEventListener("mouseout", onMouseOut);
@@ -78,7 +56,7 @@ export function ExitIntentCta() {
     const timer = setTimeout(() => {
       document.addEventListener("mouseout", onMouseOut);
       window.addEventListener("scroll", onScroll, { passive: true });
-    }, 12000);
+    }, 15000);
 
     return () => {
       clearTimeout(timer);
@@ -90,23 +68,20 @@ export function ExitIntentCta() {
 
   return (
     <div
-      className={cn(
-        "fixed bottom-5 left-5 z-40 w-[min(22rem,calc(100vw-2.5rem))] animate-fade-up",
-        "rounded-2xl border border-border bg-card p-5 shadow-elevated",
-      )}
       role="complementary"
       aria-label="Get a proposal"
+      className="fixed bottom-5 left-5 z-drawer w-[min(21rem,calc(100vw-2.5rem))] animate-fade-up rounded-xl border border-line bg-surface p-5 shadow-lg"
     >
       <button
         type="button"
         onClick={() => setOpen(false)}
         aria-label="Dismiss"
-        className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="absolute right-3 top-3 rounded-btn p-1 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
       >
         <X className="h-4 w-4" />
       </button>
-      <p className="font-display text-base font-semibold">Before you go</p>
-      <p className="mt-1.5 text-sm text-muted-foreground">
+      <p className="text-step-0 font-semibold">Before you go</p>
+      <p className="mt-1.5 text-step--1 text-ink-soft">
         Tell us what you are trying to grow and we will send a fixed-scope proposal — usually within
         two working days.
       </p>
@@ -122,60 +97,13 @@ export function ExitIntentCta() {
   );
 }
 
-/** Dismissible campaign strip above the navbar (PRD §7). */
-export function AnnouncementBar({
-  text,
-  href,
-  linkLabel,
-  storageKey = "hyascka.announcement",
-}: {
-  text: string;
-  href?: string;
-  linkLabel?: string;
-  storageKey?: string;
-}) {
-  const [hidden, setHidden] = React.useState(true);
-
-  React.useEffect(() => {
-    setHidden(sessionStorage.getItem(storageKey) === text);
-  }, [storageKey, text]);
-
-  if (hidden) return null;
-
-  return (
-    <div className="relative brand-gradient text-white">
-      <div className="container flex items-center justify-center gap-3 py-2 text-center text-[13px] font-medium">
-        <p>
-          {text}{" "}
-          {href ? (
-            <Link href={href} className="underline underline-offset-4">
-              {linkLabel ?? "Learn more"}
-            </Link>
-          ) : null}
-        </p>
-        <button
-          type="button"
-          aria-label="Dismiss announcement"
-          onClick={() => {
-            sessionStorage.setItem(storageKey, text);
-            setHidden(true);
-          }}
-          className="absolute right-4 rounded p-1 transition-colors hover:bg-white/15"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/** Scheduled-maintenance notice: informational, never blocking (PRD §45.1). */
+/** Scheduled-maintenance notice: informational, never blocking. */
 export function MaintenanceNoticeBar({ text, endAt }: { text: string; endAt?: string | null }) {
   const [hidden, setHidden] = React.useState(false);
   if (hidden || !text) return null;
   return (
-    <div className="border-b border-warning/35 bg-warning/12 text-warning">
-      <div className="container flex items-center justify-center gap-3 py-2 text-center text-[13px] font-medium">
+    <div className={cn("border-b border-warning/35 bg-warning-soft text-warning")}>
+      <div className="container-x flex items-center justify-center gap-3 py-2 text-center text-step--2 font-medium">
         <p>
           {text}
           {endAt ? ` · Expected back by ${new Date(endAt).toLocaleString()}` : ""}

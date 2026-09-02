@@ -2,6 +2,7 @@ import { cache } from "react";
 
 import { prisma, withFallback } from "@/lib/db";
 import {
+  defaultAssistant,
   defaultBrand,
   defaultContact,
   defaultFeatureFlags,
@@ -10,9 +11,12 @@ import {
   defaultNotifications,
   defaultSeo,
   defaultSocial,
+  defaultSponsors,
   defaultTheme,
   defaultTracking,
+  defaultWhatsapp,
 } from "@/content/site";
+import { resolveThemePolicy, type ThemePolicy } from "@/lib/theme";
 
 /**
  * Every dashboard-controllable system reads through here (PRD §46). Values are
@@ -28,6 +32,9 @@ export type SiteSettings = {
   maintenance: typeof defaultMaintenance;
   notifications: typeof defaultNotifications;
   localization: typeof defaultLocalization;
+  sponsors: typeof defaultSponsors;
+  whatsapp: typeof defaultWhatsapp;
+  assistant: typeof defaultAssistant;
   featureFlags: Record<string, boolean>;
 };
 
@@ -41,6 +48,9 @@ export const SETTING_KEYS = [
   "maintenance",
   "notifications",
   "localization",
+  "sponsors",
+  "whatsapp",
+  "assistant",
 ] as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[number];
@@ -55,6 +65,9 @@ const DEFAULTS: Omit<SiteSettings, "featureFlags"> = {
   maintenance: defaultMaintenance,
   notifications: defaultNotifications,
   localization: defaultLocalization,
+  sponsors: defaultSponsors,
+  whatsapp: defaultWhatsapp,
+  assistant: defaultAssistant,
 };
 
 function defaultFlags(): Record<string, boolean> {
@@ -82,11 +95,20 @@ export const getSettings = cache(async (): Promise<SiteSettings> => {
       }
     }
     if (flags.length) {
-      merged.featureFlags = Object.fromEntries(flags.map((f) => [f.key, f.enabled]));
+      merged.featureFlags = { ...merged.featureFlags, ...Object.fromEntries(flags.map((f) => [f.key, f.enabled])) };
     }
     return merged;
   }, fallback);
 });
+
+/**
+ * The theme policy visitors are actually served, normalised so a bad settings
+ * row can never produce an unusable state (PRD §1).
+ */
+export async function getThemePolicy(): Promise<ThemePolicy> {
+  const { theme } = await getSettings();
+  return resolveThemePolicy(theme);
+}
 
 export async function getSetting<K extends SettingKey>(key: K): Promise<SiteSettings[K]> {
   const settings = await getSettings();

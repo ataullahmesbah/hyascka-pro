@@ -11,7 +11,7 @@ export function Markdown({ content, className }: { content: string; className?: 
   const blocks = content.trim().split(/\n{2,}/);
 
   return (
-    <div className={className ?? "prose prose-neutral max-w-none dark:prose-invert"}>
+    <div className={className ?? "prose-hy max-w-prose"}>
       {blocks.map((block, index) => {
         const key = `${index}-${block.slice(0, 16)}`;
 

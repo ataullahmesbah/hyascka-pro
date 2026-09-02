@@ -49,19 +49,19 @@ export default async function SecurityPage() {
 
           <Panel title="Recent security activity">
             {events.length ? (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-line">
                 {events.map((event) => (
                   <li key={event.id} className="flex flex-wrap items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{event.type}</code>
-                    <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                    <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">{event.type}</code>
+                    <span className="min-w-0 flex-1 text-xs text-ink-muted">
                       {event.detail ?? "—"}
                     </span>
-                    <span className="text-xs text-muted-foreground">{formatDate(event.createdAt, true)}</span>
+                    <span className="text-xs text-ink-muted">{formatDate(event.createdAt, true)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No security events on your account.</p>
+              <p className="text-sm text-ink-muted">No security events on your account.</p>
             )}
           </Panel>
         </div>

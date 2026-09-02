@@ -61,9 +61,9 @@ export default async function AccountsPage() {
                 {accounts.map((account) => (
                   <Tr key={account.id}>
                     <Td className="font-medium">{account.name}</Td>
-                    <Td className="text-muted-foreground">{account.type.replace(/_/g, " ")}</Td>
-                    <Td className="text-muted-foreground">{account.currency}</Td>
-                    <Td className="text-muted-foreground">{account._count.transactions}</Td>
+                    <Td className="text-ink-muted">{account.type.replace(/_/g, " ")}</Td>
+                    <Td className="text-ink-muted">{account.currency}</Td>
+                    <Td className="text-ink-muted">{account._count.transactions}</Td>
                     <Td className="text-right font-semibold">
                       {formatCurrency(balanceById.get(account.id) ?? 0, account.currency)}
                     </Td>

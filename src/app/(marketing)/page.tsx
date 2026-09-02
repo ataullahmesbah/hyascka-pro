@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Hero } from "@/components/marketing/hero";
+import { NetworkVisual } from "@/components/marketing/network-visual";
+import { Sponsors } from "@/components/marketing/sponsors";
 import {
   CapabilityRail,
   CaseStudyGrid,
@@ -11,11 +13,10 @@ import {
   SectionHeading,
   ServicesGrid,
   Testimonials,
-  TrustedBy,
   WhyUs,
 } from "@/components/marketing/sections";
 import { ButtonLink } from "@/components/ui/button";
-import { Accordion } from "@/components/ui/accordion";
+import { FaqColumns } from "@/components/ui/accordion";
 import { JsonLd } from "@/components/ui/section";
 import {
   getCaseStudies,
@@ -25,9 +26,10 @@ import {
   getServices,
   getTestimonials,
 } from "@/lib/content";
-import { faqSchema, pageMetadata } from "@/lib/seo";
+import { getSettings } from "@/lib/settings";
+import { faqSchema, pageMetadata, websiteSchema } from "@/lib/seo";
 
-// Public pages are statically generated and revalidated (PRD §40.1).
+// Statically generated, revalidated every 5 minutes; the CMS republishes on save.
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,36 +37,52 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [homepage, services, caseStudies, industries, testimonials, faqs] = await Promise.all([
-    getHomepage(),
-    getServices(),
-    getCaseStudies(),
-    getIndustries(),
-    getTestimonials(),
-    getFaqs(),
-  ]);
+  const [homepage, services, caseStudies, industries, testimonials, faqs, settings] =
+    await Promise.all([
+      getHomepage(),
+      getServices(),
+      getCaseStudies(),
+      getIndustries(),
+      getTestimonials(),
+      getFaqs(),
+      getSettings(),
+    ]);
 
-  const topFaqs = faqs.slice(0, 6);
+  // 20 questions, split into the two labelled parts the FAQ block renders.
+  const categories = [...new Set(faqs.map((faq) => faq.category))];
+  const parts = categories.slice(0, 2).map((category) => ({
+    title: category,
+    items: faqs
+      .filter((faq) => faq.category === category)
+      .slice(0, 10)
+      .map((faq, index) => ({
+        id: `faq-${category}-${index}`.replace(/\s+/g, "-").toLowerCase(),
+        question: faq.question,
+        answer: faq.answer,
+      })),
+  }));
 
   return (
     <>
-      <JsonLd data={faqSchema(topFaqs)} />
+      <JsonLd data={websiteSchema()} />
+      <JsonLd data={faqSchema(faqs)} />
 
-      <Hero content={homepage.hero} />
+      <Hero content={homepage.hero} visual={<NetworkVisual />} />
       <CapabilityRail items={homepage.capabilities} />
-      <TrustedBy names={homepage.trustedBy} />
+
+      {settings.featureFlags.sponsors_marquee ? <Sponsors content={settings.sponsors} /> : null}
 
       <section className="section" id="services">
-        <div className="container">
+        <div className="container-x">
           <SectionHeading
             eyebrow="What we do"
             title="Services built around the number you are trying to move"
             description="Engineering, search, paid media and brand — delivered as one accountable programme rather than four disconnected suppliers."
           />
-          <div className="mt-12">
+          <div className="mt-10">
             <ServicesGrid services={services} limit={6} />
           </div>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-9 flex justify-center">
             <ButtonLink href="/services" variant="outline" size="lg">
               View all {services.length} services
             </ButtonLink>
@@ -72,21 +90,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section border-y border-border bg-surface-2/40">
-        <div className="container">
+      <section className="section border-y border-line bg-bg-subtle">
+        <div className="container-x">
           <SectionHeading
             eyebrow="Why HYASCKA"
             title="Four commitments we hold ourselves to"
             description="Not positioning statements — these are written into the acceptance criteria of every engagement."
           />
-          <div className="mt-12">
+          <div className="mt-10">
             <WhyUs items={homepage.whyUs} />
           </div>
         </div>
       </section>
 
       <section className="section">
-        <div className="container">
+        <div className="container-x">
           <SectionHeading
             eyebrow="How we work"
             title="Six stages, no surprises"
@@ -97,17 +115,17 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section border-y border-border bg-surface-2/40">
-        <div className="container">
+      <section className="section border-y border-line bg-bg-subtle">
+        <div className="container-x">
           <SectionHeading
             eyebrow="Selected work"
             title="Outcomes, with the numbers attached"
             description="Every case study states what changed and how it was measured."
           />
-          <div className="mt-12">
+          <div className="mt-10">
             <CaseStudyGrid items={caseStudies} limit={2} />
           </div>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-9 flex justify-center">
             <ButtonLink href="/work" variant="outline" size="lg">
               See all case studies
             </ButtonLink>
@@ -116,61 +134,51 @@ export default async function HomePage() {
       </section>
 
       <section className="section">
-        <div className="container">
-          <SectionHeading
-            eyebrow="Industries"
-            title="Sectors where we already know the terrain"
-            description="Different markets fail in different places. These are the ones we have mapped."
-          />
-          <div className="mt-12">
-            <IndustryGrid items={industries.slice(0, 6)} />
-          </div>
-        </div>
-      </section>
-
-      <section className="section border-y border-border bg-surface-2/40">
-        <div className="container">
-          <SectionHeading
-            eyebrow="Clients"
-            title="What working with us is actually like"
-            align="center"
-          />
-          <div className="mt-12">
-            <Testimonials items={testimonials.slice(0, 3)} />
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
+        <div className="container-x">
           <SectionHeading eyebrow="By the numbers" title="Where we stand today" align="center" />
-          <div className="mt-12">
+          <div className="mt-10">
             <Metrics items={homepage.metrics} />
           </div>
         </div>
       </section>
 
-      <section className="section border-t border-border">
-        <div className="container grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+      <section className="section border-y border-line bg-bg-subtle">
+        <div className="container-x">
+          <SectionHeading
+            eyebrow="Industries"
+            title="Sectors where we already know the terrain"
+            description="Different markets fail in different places. These are the ones we have mapped."
+          />
+          <div className="mt-10">
+            <IndustryGrid items={industries.slice(0, 6)} />
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container-x">
+          <SectionHeading eyebrow="Clients" title="What working with us is actually like" align="center" />
+          <div className="mt-10">
+            <Testimonials items={testimonials.slice(0, 3)} />
+          </div>
+        </div>
+      </section>
+
+      <section className="section border-t border-line" id="faq">
+        <div className="container-x">
           <SectionHeading
             eyebrow="Questions"
-            title="The things people ask before they get in touch"
-            description="If your question is not here, ask it directly — we answer honestly, including when the answer is no."
+            title="Everything people ask before they get in touch"
+            description="Twenty honest answers, including the inconvenient ones. If yours is not here, ask it directly."
+            align="center"
           />
-          <div>
-            <Accordion
-              items={topFaqs.map((faq, index) => ({
-                id: `faq-${index}`,
-                question: faq.question,
-                answer: faq.answer,
-              }))}
-              defaultOpenId="faq-0"
-            />
-            <div className="mt-5">
-              <ButtonLink href="/faq" variant="ghost" size="sm">
-                Read all FAQs →
-              </ButtonLink>
-            </div>
+          <div className="mt-10">
+            <FaqColumns parts={parts} />
+          </div>
+          <div className="mt-8 flex justify-center">
+            <ButtonLink href="/contact" variant="outline">
+              Ask us something else
+            </ButtonLink>
           </div>
         </div>
       </section>

@@ -9,10 +9,12 @@ import {
   clientOverview,
   editorOverview,
   financeOverview,
+  overviewSeries,
   projectManagerOverview,
   staffOverview,
   supportOverview,
 } from "@/lib/dashboard-data";
+import { BarChart, RankedBars, SplitBar } from "@/components/dashboard/charts";
 import { formatCurrency, formatDate, relativeTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -52,8 +54,18 @@ export default async function DashboardOverviewPage({
 
 // ---------------------------------------------------------------------------
 
+const STATUS_TONE: Record<string, "accent" | "success" | "warning" | "danger" | "info"> = {
+  PAID: "success", ISSUED: "info", PARTIALLY_PAID: "warning", OVERDUE: "danger",
+  DRAFT: "accent", VOID: "accent",
+  IN_PROGRESS: "accent", PLANNING: "info", REVIEW: "warning",
+  ON_HOLD: "warning", COMPLETED: "success", CANCELLED: "danger",
+};
+
+const pretty = (value: string) =>
+  value.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+
 async function AdminOverview() {
-  const data = await staffOverview();
+  const [data, series] = await Promise.all([staffOverview(), overviewSeries()]);
 
   return (
     <>
@@ -104,11 +116,45 @@ async function AdminOverview() {
         <StatCard label="System" value="Operational" icon="ShieldCheck" tone="success" detail="No security alerts" />
       </div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-2">
+      {/* Charts alongside the numbers, per PRD §6.2 */}
+      <div className="mt-5 grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+        <Panel title="Revenue — last 12 weeks" description="Verified payments only, by week starting.">
+          <BarChart
+            data={series.revenue}
+            format={(value) => formatCurrency(value)}
+            caption="Weekly verified revenue"
+          />
+        </Panel>
+
+        <Panel title="Invoices by status">
+          <SplitBar
+            data={series.invoiceSplit.map((row) => ({
+              label: pretty(row.label),
+              value: row.value,
+              tone: STATUS_TONE[row.label] ?? "accent",
+            }))}
+          />
+        </Panel>
+      </div>
+
+      <div className="mt-5 grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+        <Panel title="New enquiries — last 12 weeks" description="Website and referral leads by week.">
+          <BarChart data={series.leads} caption="Leads per week" />
+        </Panel>
+
+        <Panel title="Projects by status">
+          <RankedBars
+            data={series.projectSplit.map((row) => ({ label: pretty(row.label), value: row.value }))}
+            emptyLabel="No projects yet."
+          />
+        </Panel>
+      </div>
+
+      <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <Panel
           title="Latest enquiries"
           action={
-            <Link href="/dashboard/leads" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/leads" className="text-sm font-medium text-accent hover:underline">
               All leads
             </Link>
           }
@@ -130,11 +176,11 @@ async function AdminOverview() {
                       <Td>
                         <LinkCell href={`/dashboard/leads/${lead.id}`}>{lead.name}</LinkCell>
                       </Td>
-                      <Td className="text-muted-foreground">{lead.company ?? "—"}</Td>
+                      <Td className="text-ink-muted">{lead.company ?? "—"}</Td>
                       <Td>
                         <StatusBadge status={lead.status} />
                       </Td>
-                      <Td className="text-muted-foreground">{relativeTime(lead.createdAt)}</Td>
+                      <Td className="text-ink-muted">{relativeTime(lead.createdAt)}</Td>
                     </Tr>
                   ))}
                 </tbody>
@@ -148,7 +194,7 @@ async function AdminOverview() {
         <Panel
           title="Recent payments"
           action={
-            <Link href="/dashboard/finance/payments" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/finance/payments" className="text-sm font-medium text-accent hover:underline">
               All payments
             </Link>
           }
@@ -169,9 +215,9 @@ async function AdminOverview() {
                     <Tr key={payment.id}>
                       <Td className="whitespace-nowrap">
                         <LinkCell href="/dashboard/finance/payments">{payment.reference}</LinkCell>
-                        <p className="text-xs text-muted-foreground">{payment.invoice.number}</p>
+                        <p className="text-xs text-ink-muted">{payment.invoice.number}</p>
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {payment.invoice.client.companyName ?? "—"}
                       </Td>
                       <Td className="font-medium">
@@ -194,21 +240,21 @@ async function AdminOverview() {
       <div className="mt-5">
         <Panel title="Projects approaching a deadline">
           {data.projectsDueSoon.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.projectsDueSoon.map((project) => (
                 <li key={project.id} className="flex flex-wrap items-center gap-4 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <LinkCell href={`/dashboard/projects/${project.id}`}>{project.name}</LinkCell>
-                    <p className="text-xs text-muted-foreground">{project.client.companyName ?? "—"}</p>
+                    <p className="text-xs text-ink-muted">{project.client.companyName ?? "—"}</p>
                   </div>
                   <div className="w-40">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div className="brand-gradient h-full rounded-full" style={{ width: `${project.progress}%` }} />
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                      <div className="h-full rounded-full" style={{ width: `${project.progress}%` }} />
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{project.progress}% complete</p>
+                    <p className="mt-1 text-[11px] text-ink-muted">{project.progress}% complete</p>
                   </div>
                   <StatusBadge status={project.status} />
-                  <span className="text-xs text-muted-foreground">Due {formatDate(project.dueDate)}</span>
+                  <span className="text-xs text-ink-muted">Due {formatDate(project.dueDate)}</span>
                 </li>
               ))}
             </ul>
@@ -222,7 +268,7 @@ async function AdminOverview() {
 }
 
 async function FinanceOverview() {
-  const data = await financeOverview();
+  const [data, series] = await Promise.all([financeOverview(), overviewSeries()]);
   const net = data.monthIncome - data.monthExpenses;
 
   return (
@@ -249,25 +295,40 @@ async function FinanceOverview() {
         <StatCard label="Receivable" value={formatCurrency(data.receivable)} icon="Landmark" tone="info" detail={`${data.overdueCount} overdue`} />
       </div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-2">
+      <div className="mt-5 grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+        <Panel title="Revenue — last 12 weeks" description="Verified payments only.">
+          <BarChart data={series.revenue} format={(value) => formatCurrency(value)} />
+        </Panel>
+        <Panel title="Invoices by status">
+          <SplitBar
+            data={series.invoiceSplit.map((row) => ({
+              label: pretty(row.label),
+              value: row.value,
+              tone: STATUS_TONE[row.label] ?? "accent",
+            }))}
+          />
+        </Panel>
+      </div>
+
+      <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <Panel
           title="Awaiting verification"
           description="Manual payments submitted by clients."
           action={
-            <Link href="/dashboard/finance/payments" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/finance/payments" className="text-sm font-medium text-accent hover:underline">
               Open queue
             </Link>
           }
         >
           {data.pendingPayments.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.pendingPayments.map((payment) => (
                 <li key={payment.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">
                       {payment.invoice.client.companyName ?? "Client"} · {payment.invoice.number}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-muted">
                       {payment.method.replace(/_/g, " ")} · TrxID {payment.trxId ?? "—"} ·{" "}
                       {relativeTime(payment.createdAt)}
                     </p>
@@ -286,7 +347,7 @@ async function FinanceOverview() {
         <Panel
           title="Recent invoices"
           action={
-            <Link href="/dashboard/finance/invoices" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/finance/invoices" className="text-sm font-medium text-accent hover:underline">
               All invoices
             </Link>
           }
@@ -308,7 +369,7 @@ async function FinanceOverview() {
                       <Td>
                         <LinkCell href={`/dashboard/finance/invoices/${invoice.id}`}>{invoice.number}</LinkCell>
                       </Td>
-                      <Td className="text-muted-foreground">{invoice.client.companyName ?? "—"}</Td>
+                      <Td className="text-ink-muted">{invoice.client.companyName ?? "—"}</Td>
                       <Td className="font-medium">{formatCurrency(Number(invoice.total), invoice.currency)}</Td>
                       <Td>
                         <StatusBadge status={invoice.status} />
@@ -349,15 +410,15 @@ async function ProjectManagerOverview({ userId }: { userId: string }) {
       <div className="mt-6 grid gap-5 xl:grid-cols-2">
         <Panel title="My projects">
           {data.projects.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.projects.map((project) => (
                 <li key={project.id} className="flex flex-wrap items-center gap-4 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <LinkCell href={`/dashboard/projects/${project.id}`}>{project.name}</LinkCell>
-                    <p className="text-xs text-muted-foreground">{project.client.companyName ?? "—"}</p>
+                    <p className="text-xs text-ink-muted">{project.client.companyName ?? "—"}</p>
                   </div>
                   <StatusBadge status={project.status} />
-                  <span className="text-xs text-muted-foreground">Due {formatDate(project.dueDate)}</span>
+                  <span className="text-xs text-ink-muted">Due {formatDate(project.dueDate)}</span>
                 </li>
               ))}
             </ul>
@@ -368,16 +429,16 @@ async function ProjectManagerOverview({ userId }: { userId: string }) {
 
         <Panel title="My tasks">
           {data.myTasks.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.myTasks.map((task) => (
                 <li key={task.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{task.title}</p>
-                    <p className="text-xs text-muted-foreground">{task.project.name}</p>
+                    <p className="text-xs text-ink-muted">{task.project.name}</p>
                   </div>
                   <StatusBadge status={task.priority} />
                   <StatusBadge status={task.status} />
-                  <span className="text-xs text-muted-foreground">{formatDate(task.dueDate)}</span>
+                  <span className="text-xs text-ink-muted">{formatDate(task.dueDate)}</span>
                 </li>
               ))}
             </ul>
@@ -416,21 +477,21 @@ async function EditorOverview() {
         <Panel
           title="Recently edited"
           action={
-            <Link href="/dashboard/content/blog" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/content/blog" className="text-sm font-medium text-accent hover:underline">
               All articles
             </Link>
           }
         >
           {data.recentPosts.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.recentPosts.map((post) => (
                 <li key={post.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <LinkCell href={`/dashboard/content/blog/${post.id}`}>{post.title}</LinkCell>
-                    <p className="text-xs text-muted-foreground">/blog/{post.slug}</p>
+                    <p className="text-xs text-ink-muted">/blog/{post.slug}</p>
                   </div>
                   <StatusBadge status={post.status} />
-                  <span className="text-xs text-muted-foreground">{relativeTime(post.updatedAt)}</span>
+                  <span className="text-xs text-ink-muted">{relativeTime(post.updatedAt)}</span>
                 </li>
               ))}
             </ul>
@@ -459,12 +520,12 @@ async function SupportOverview({ userId }: { userId: string }) {
       <div className="mt-6">
         <Panel title="Oldest open tickets" description="Answer these first.">
           {data.tickets.length ? (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.tickets.map((ticket) => (
                 <li key={ticket.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <LinkCell href={`/dashboard/support/${ticket.id}`}>{ticket.subject}</LinkCell>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-muted">
                       {ticket.reference} · {ticket.client.companyName ?? "Client"} ·{" "}
                       {relativeTime(ticket.createdAt)}
                     </p>
@@ -540,7 +601,7 @@ async function ClientOverview({
         <Panel
           title="Your projects"
           action={
-            <Link href="/dashboard/my-projects" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/my-projects" className="text-sm font-medium text-accent hover:underline">
               All projects
             </Link>
           }
@@ -548,15 +609,15 @@ async function ClientOverview({
           {data.recentProjects.length ? (
             <ul className="space-y-4">
               {data.recentProjects.map((project) => (
-                <li key={project.id} className="rounded-lg border border-border p-4">
+                <li key={project.id} className="rounded-lg border border-line p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <LinkCell href={`/dashboard/my-projects/${project.id}`}>{project.name}</LinkCell>
                     <StatusBadge status={project.status} />
                   </div>
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="brand-gradient h-full rounded-full" style={{ width: `${project.progress}%` }} />
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                    <div className="h-full rounded-full" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-2 text-xs text-ink-muted">
                     {project.progress}% complete
                     {project.dueDate ? ` · due ${formatDate(project.dueDate)}` : ""}
                   </p>
@@ -571,7 +632,7 @@ async function ClientOverview({
         <Panel
           title="Recent invoices"
           action={
-            <Link href="/dashboard/my-invoices" className="text-sm font-medium text-primary hover:underline">
+            <Link href="/dashboard/my-invoices" className="text-sm font-medium text-accent hover:underline">
               All invoices
             </Link>
           }
@@ -593,7 +654,7 @@ async function ClientOverview({
                       <Td>
                         <LinkCell href={`/dashboard/my-invoices/${invoice.id}`}>{invoice.number}</LinkCell>
                       </Td>
-                      <Td className="text-muted-foreground">{formatDate(invoice.dueDate)}</Td>
+                      <Td className="text-ink-muted">{formatDate(invoice.dueDate)}</Td>
                       <Td className="font-medium">{formatCurrency(Number(invoice.total), invoice.currency)}</Td>
                       <Td>
                         <StatusBadge status={invoice.status} />

@@ -71,8 +71,8 @@ export default async function ExpensesPage({
                       <Tr key={expense.id}>
                         <Td className="font-mono text-xs">{expense.reference}</Td>
                         <Td>{expense.category}</Td>
-                        <Td className="text-muted-foreground">{expense.vendor ?? "—"}</Td>
-                        <Td className="whitespace-nowrap text-muted-foreground">{formatDate(expense.spentAt)}</Td>
+                        <Td className="text-ink-muted">{expense.vendor ?? "—"}</Td>
+                        <Td className="whitespace-nowrap text-ink-muted">{formatDate(expense.spentAt)}</Td>
                         <Td className="text-right font-medium">
                           {formatCurrency(Number(expense.amount), expense.currency)}
                         </Td>
@@ -84,7 +84,7 @@ export default async function ExpensesPage({
                             {expense.status === "SUBMITTED" ? (
                               <ExpenseDecision expenseId={expense.id} />
                             ) : (
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-ink-muted">
                                 {expense.approvedBy?.name ?? "—"}
                               </span>
                             )}

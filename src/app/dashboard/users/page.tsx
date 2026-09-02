@@ -2,6 +2,10 @@ import { DashboardHeader, Panel, StatCard } from "@/components/dashboard/page-sh
 import { UserRoleControls } from "@/components/dashboard/user-controls";
 import { StatusBadge } from "@/components/ui/badge";
 import { Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
+import Link from "next/link";
+
+import { ListFilters } from "@/components/dashboard/filters";
+import { cn } from "@/lib/utils";
 import { prisma } from "@/lib/db";
 import { requirePermission, toActor } from "@/lib/auth/guards";
 import { can, ROLE_LABELS, ROLE_PERMISSIONS } from "@/lib/rbac";
@@ -9,13 +13,44 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function UsersPage() {
-  const actor = await requirePermission("users.read");
+const ROLE_ORDER = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "FINANCE",
+  "PROJECT_MANAGER",
+  "EDITOR",
+  "SUPPORT",
+  "CLIENT",
+] as const;
+
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string; q?: string }>;
+}) {
+  const [actor, query] = await Promise.all([requirePermission("users.read"), searchParams]);
+  const activeRole = (ROLE_ORDER as readonly string[]).includes(query.role ?? "")
+    ? (query.role as (typeof ROLE_ORDER)[number])
+    : "ALL";
   const canManageRoles = can(toActor(actor), "roles.manage");
   const canManageStatus = can(toActor(actor), "users.manage");
 
-  const [users, staffCount, clientCount] = await Promise.all([
+  const search = query.q?.trim();
+  const where = {
+    ...(activeRole === "ALL" ? {} : { role: activeRole }),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const [users, staffCount, clientCount, roleCounts] = await Promise.all([
     prisma.user.findMany({
+      where,
       orderBy: [{ role: "asc" }, { createdAt: "desc" }],
       select: {
         id: true,
@@ -30,7 +65,13 @@ export default async function UsersPage() {
     }),
     prisma.user.count({ where: { role: { not: "CLIENT" } } }),
     prisma.user.count({ where: { role: "CLIENT" } }),
+    prisma.user.groupBy({ by: ["role"], _count: true }),
   ]);
+
+  const countFor = (role: string) =>
+    role === "ALL"
+      ? roleCounts.reduce((sum, row) => sum + row._count, 0)
+      : (roleCounts.find((row) => row.role === role)?._count ?? 0);
 
   return (
     <>
@@ -45,7 +86,39 @@ export default async function UsersPage() {
         <StatCard label="Total" value={users.length} icon="UserCog" />
       </div>
 
-      <Panel title="Accounts" className="mb-6">
+      {/* Role tabs — a hundred clients should never bury six staff accounts. */}
+      <nav className="scrollbar-thin mb-4 flex gap-1.5 overflow-x-auto pb-1" aria-label="Filter by role">
+        {(["ALL", ...ROLE_ORDER] as const).map((role) => {
+          const active = activeRole === role;
+          const label = role === "ALL" ? "All users" : ROLE_LABELS[role as keyof typeof ROLE_LABELS];
+          return (
+            <Link
+              key={role}
+              href={role === "ALL" ? "/dashboard/users" : `/dashboard/users?role=${role}`}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-pill border px-3.5 py-1.5 text-step--1 font-medium transition-colors duration-fast",
+                active
+                  ? "border-accent bg-accent-soft text-accent"
+                  : "border-line text-ink-soft hover:bg-surface-2 hover:text-ink",
+              )}
+            >
+              {label}
+              <span className={cn("text-step--2", active ? "text-accent" : "text-ink-muted")}>
+                {countFor(role)}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <ListFilters placeholder="Search name or email…" />
+
+      <Panel
+        title={activeRole === "ALL" ? "All accounts" : `${ROLE_LABELS[activeRole as keyof typeof ROLE_LABELS]} accounts`}
+        description={`${users.length} shown`}
+        className="mb-6"
+      >
         <TableWrap className="border-0">
           <Table className="min-w-[52rem]">
             <thead>
@@ -59,23 +132,30 @@ export default async function UsersPage() {
               </tr>
             </thead>
             <tbody>
+              {!users.length ? (
+                <Tr>
+                  <Td colSpan={6} className="py-10 text-center text-ink-muted">
+                    No accounts match this filter.
+                  </Td>
+                </Tr>
+              ) : null}
               {users.map((user) => (
                 <Tr key={user.id}>
                   <Td>
                     <p className="font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-muted">
                       {user.email}
                       {user.emailVerifiedAt ? "" : " · unverified"}
                     </p>
                   </Td>
-                  <Td className="text-muted-foreground">{ROLE_LABELS[user.role]}</Td>
+                  <Td className="text-ink-muted">{ROLE_LABELS[user.role]}</Td>
                   <Td>
                     <StatusBadge status={user.status} />
                   </Td>
-                  <Td className="whitespace-nowrap text-muted-foreground">
+                  <Td className="whitespace-nowrap text-ink-muted">
                     {user.lastLoginAt ? formatDate(user.lastLoginAt) : "Never"}
                   </Td>
-                  <Td className="whitespace-nowrap text-muted-foreground">{formatDate(user.createdAt)}</Td>
+                  <Td className="whitespace-nowrap text-ink-muted">{formatDate(user.createdAt)}</Td>
                   {canManageRoles || canManageStatus ? (
                     <Td>
                       <UserRoleControls
@@ -117,14 +197,14 @@ export default async function UsersPage() {
                         {permissions.map((permission) => (
                           <code
                             key={permission}
-                            className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
+                            className="rounded bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-muted"
                           >
                             {permission}
                           </code>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-ink-muted">
                         Own records only — scoped by ownership checks on every query.
                       </span>
                     )}

@@ -46,13 +46,13 @@ export function RegisterForm() {
 
       <div className="flex items-start gap-2.5">
         <Checkbox id="acceptTerms" name="acceptTerms" required className="mt-0.5" />
-        <label htmlFor="acceptTerms" className="text-sm text-muted-foreground">
+        <label htmlFor="acceptTerms" className="text-sm text-ink-muted">
           I accept the{" "}
-          <a href="/terms" className="text-primary underline-offset-4 hover:underline">
+          <a href="/terms" className="text-accent underline-offset-4 hover:underline">
             terms of service
           </a>{" "}
           and{" "}
-          <a href="/privacy" className="text-primary underline-offset-4 hover:underline">
+          <a href="/privacy" className="text-accent underline-offset-4 hover:underline">
             privacy policy
           </a>
           .

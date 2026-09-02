@@ -42,17 +42,17 @@ export default async function ProfilePage() {
           <Panel title="Account">
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Email</dt>
+                <dt className="text-xs text-ink-muted">Email</dt>
                 <dd>{record?.email}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Role</dt>
+                <dt className="text-xs text-ink-muted">Role</dt>
                 <dd>
-                  <Badge tone="primary">{ROLE_LABELS[user.role]}</Badge>
+                  <Badge tone="accent">{ROLE_LABELS[user.role]}</Badge>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Email verified</dt>
+                <dt className="text-xs text-ink-muted">Email verified</dt>
                 <dd>
                   {record?.emailVerifiedAt ? (
                     formatDate(record.emailVerifiedAt)
@@ -62,12 +62,12 @@ export default async function ProfilePage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Member since</dt>
+                <dt className="text-xs text-ink-muted">Member since</dt>
                 <dd>{formatDate(record?.createdAt)}</dd>
               </div>
               {record?.clientProfile?.referralCode ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">Referral code</dt>
+                  <dt className="text-xs text-ink-muted">Referral code</dt>
                   <dd className="font-mono">{record.clientProfile.referralCode}</dd>
                 </div>
               ) : null}

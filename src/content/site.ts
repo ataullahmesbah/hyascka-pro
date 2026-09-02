@@ -1,3 +1,5 @@
+import type { ThemeId } from "@/lib/theme";
+
 /**
  * Default values for every dashboard-controllable setting (PRD §46).
  * Each key here maps to a `SiteSetting` row once a database is connected.
@@ -12,11 +14,14 @@ export const defaultBrand = {
     "HYASCKA is a digital service provider building fast, secure, measurable web platforms — and the search, paid media and automation programmes that grow them.",
 };
 
+/**
+ * Theme governance (PRD §1). The site ships on Daylight; the dashboard decides
+ * which themes visitors may choose between, and whether they may choose at all.
+ */
 export const defaultTheme = {
-  /** "purple" | "cyan" */
-  accent: "purple" as "purple" | "cyan",
-  /** "light" | "dark" | "system" */
-  mode: "system" as "light" | "dark" | "system",
+  defaultTheme: "light" as ThemeId,
+  enabledThemes: ["light", "midnight", "network"] as ThemeId[],
+  allowUserToggle: true,
 };
 
 export const defaultContact = {
@@ -77,12 +82,56 @@ export const defaultNotifications = {
 };
 
 export const defaultFeatureFlags = [
-  { key: "exit_intent_cta", description: "Show a single scroll/exit-intent CTA per session.", enabled: true },
+  { key: "whatsapp_widget", description: "Floating WhatsApp chat button on public pages.", enabled: true },
+  { key: "ai_assistant", description: "Gemini-powered assistant that answers from published content.", enabled: true },
+  { key: "sponsors_marquee", description: "Scrolling partner/sponsor strip on the homepage.", enabled: true },
   { key: "quote_calculator", description: "Interactive estimate calculator on service pages.", enabled: true },
-  { key: "whatsapp_widget", description: "Floating WhatsApp/Telegram contact widget.", enabled: true },
-  { key: "referral_program", description: "Client referral codes and discounts.", enabled: false },
+  { key: "exit_intent_cta", description: "Show a single scroll/exit-intent CTA per session.", enabled: false },
   { key: "newsletter", description: "Footer newsletter subscription form.", enabled: true },
+  { key: "referral_program", description: "Client referral codes and discounts.", enabled: false },
 ];
+
+/**
+ * Sponsor / partner marquee (PRD §4). Each item is an image *or* a text
+ * wordmark, so the strip works before any logo has been uploaded.
+ */
+export const defaultSponsors = {
+  enabled: true,
+  title: "Trusted by teams building for growth",
+  /** "left" | "right" */
+  direction: "left" as "left" | "right",
+  /** Seconds for one full loop — lower is faster. */
+  speed: 38,
+  items: [
+    { id: "s1", label: "Northlane Systems", imageUrl: "", href: "" },
+    { id: "s2", label: "Maison Rouge", imageUrl: "", href: "" },
+    { id: "s3", label: "Vireo Health", imageUrl: "", href: "" },
+    { id: "s4", label: "Trailpoint Logistics", imageUrl: "", href: "" },
+    { id: "s5", label: "Aurora Collective", imageUrl: "", href: "" },
+    { id: "s6", label: "Meridian Advisory", imageUrl: "", href: "" },
+    { id: "s7", label: "Skyline Estates", imageUrl: "", href: "" },
+    { id: "s8", label: "Orbit Fintech", imageUrl: "", href: "" },
+  ],
+};
+
+/** WhatsApp widget copy — the number itself lives in contact settings. */
+export const defaultWhatsapp = {
+  greeting: "Hi HYASCKA — I would like to discuss a project.",
+  label: "Chat on WhatsApp",
+};
+
+/** AI assistant copy. The API key is server-side only and never stored here. */
+export const defaultAssistant = {
+  name: "Hy",
+  greeting:
+    "Hi, I am Hy — HYASCKA's assistant. Ask me about our services, pricing, process or case studies.",
+  suggestions: [
+    "What does a website build cost?",
+    "How long does an SEO engagement take?",
+    "Which industries do you work with?",
+    "How do payments and invoices work?",
+  ],
+};
 
 export const defaultLocalization = {
   currency: "BDT",
@@ -103,13 +152,50 @@ export const homepage = {
     href: "/contact",
     linkLabel: "Start a project",
   },
+
+  /**
+   * Hero slider (PRD §4). Two to three slides, each independently editable from
+   * Dashboard → Content → Homepage. The network visualisation behind them is
+   * hand-built SVG, not an image, so it stays sharp and weighs nothing.
+   */
   hero: {
-    eyebrow: "Digital Service Provider",
-    headline: "Digital work that can be measured, not just admired.",
-    subheadline:
-      "We build fast, secure web platforms and run the search, paid media and automation programmes that turn them into pipeline. Everything we ship is instrumented, so you always know what it earned.",
-    primaryCta: { label: "Start a project", href: "/contact" },
-    secondaryCta: { label: "See our work", href: "/work" },
+    autoplay: true,
+    intervalMs: 7000,
+    slides: [
+      {
+        id: "h1",
+        eyebrow: "Digital Service Provider",
+        headline: "Digital work that can be measured.",
+        highlight: "measured",
+        subheadline:
+          "We build fast, secure web platforms and run the search, paid media and automation programmes that turn them into pipeline. Everything we ship is instrumented, so you always know what it earned.",
+        primaryCta: { label: "Start a project", href: "/contact" },
+        secondaryCta: { label: "See our work", href: "/work" },
+        imageUrl: "",
+      },
+      {
+        id: "h2",
+        eyebrow: "Engineering",
+        headline: "Sites that load before your visitor gives up.",
+        highlight: "before",
+        subheadline:
+          "A performance budget enforced in the deployment pipeline, not measured after launch. Ninety-plus Lighthouse is an acceptance criterion on every build we hand over.",
+        primaryCta: { label: "See our engineering", href: "/services/web-development" },
+        secondaryCta: { label: "Compare packages", href: "/pricing" },
+        imageUrl: "",
+      },
+      {
+        id: "h3",
+        eyebrow: "Growth",
+        headline: "Reporting you can defend upward.",
+        highlight: "defend",
+        subheadline:
+          "Server-side conversion tracking, CRM-matched lead quality and monthly reporting written in the language of revenue rather than impressions.",
+        primaryCta: { label: "Talk to us", href: "/contact" },
+        secondaryCta: { label: "Browse services", href: "/services" },
+        imageUrl: "",
+      },
+    ],
     trustMicrocopy: "Fixed-scope proposals · You own the code · No lock-in",
     highlights: [
       "90+ Lighthouse as an acceptance criterion",
@@ -117,6 +203,7 @@ export const homepage = {
       "Reporting tied to revenue, not sessions",
     ],
   },
+
   capabilities: [
     { label: "Web Development", icon: "Code2", href: "/services/web-development" },
     { label: "E-commerce", icon: "ShoppingCart", href: "/services/ecommerce-development" },
@@ -125,6 +212,7 @@ export const homepage = {
     { label: "Brand & Design", icon: "Palette", href: "/services/graphic-design" },
     { label: "AI Automation", icon: "Bot", href: "/services/ai-automation" },
   ],
+
   whyUs: [
     {
       title: "Performance is an acceptance criterion",
@@ -155,6 +243,7 @@ export const homepage = {
       span: "lg",
     },
   ],
+
   process: [
     { step: "01", title: "Discover", detail: "Goals, audience, constraints and the numbers that define success — agreed in writing before anything is designed." },
     { step: "02", title: "Strategy", detail: "Architecture, content model, channel plan and a performance budget. The decisions that are expensive to change later." },
@@ -163,20 +252,14 @@ export const homepage = {
     { step: "05", title: "Launch", detail: "DNS and SSL cutover, analytics verification, a Lighthouse pass and a written rollback plan." },
     { step: "06", title: "Grow", detail: "Measurement, experiments and iteration. The launch is the start of the engagement, not the end." },
   ],
+
   metrics: [
     { label: "Projects delivered", value: 120, suffix: "+", detail: "Across engineering, search and brand" },
     { label: "Average Lighthouse score", value: 96, suffix: "/100", detail: "On delivered public pages" },
     { label: "Client retention", value: 92, suffix: "%", detail: "Clients continuing past first engagement" },
     { label: "Avg. first response", value: 4, suffix: "h", detail: "To client messages in working hours" },
   ],
-  trustedBy: [
-    "Northlane Systems",
-    "Maison Rouge",
-    "Vireo Health",
-    "Trailpoint Logistics",
-    "Aurora Collective",
-    "Meridian Advisory",
-  ],
+
   finalCta: {
     headline: "Tell us what you are trying to grow.",
     subheadline:

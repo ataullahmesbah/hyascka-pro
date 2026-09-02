@@ -51,20 +51,25 @@ export function IconBadge({
   className,
 }: {
   name?: string | null;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) {
-  const box = { sm: "h-9 w-9 rounded-lg", md: "h-12 w-12 rounded-xl", lg: "h-14 w-14 rounded-2xl" }[size];
-  const glyph = { sm: "h-4 w-4", md: "h-5 w-5", lg: "h-6 w-6" }[size];
+  const box = {
+    xs: "h-6 w-6 rounded-sm",
+    sm: "h-9 w-9 rounded-md",
+    md: "h-11 w-11 rounded-lg",
+    lg: "h-14 w-14 rounded-xl",
+  }[size];
+  const glyph = { xs: "h-3.5 w-3.5", sm: "h-4 w-4", md: "h-[1.15rem] w-[1.15rem]", lg: "h-6 w-6" }[size];
   return (
     <span
       className={cn(
-        "brand-ring inline-flex shrink-0 items-center justify-center border border-border/70 bg-gradient-to-br from-primary/12 to-accent/10 text-primary shadow-soft backdrop-blur",
+        "inline-flex shrink-0 items-center justify-center border border-accent-border/50 bg-accent-soft text-accent",
         box,
         className,
       )}
     >
-      <Icon name={name} className={glyph} strokeWidth={1.75} aria-hidden />
+      <Icon name={name} className={glyph} strokeWidth={1.9} aria-hidden />
     </span>
   );
 }

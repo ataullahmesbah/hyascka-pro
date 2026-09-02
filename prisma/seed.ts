@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient, type Prisma } from "@prisma/client";
+
+import { seedDemoData } from "./demo-data";
 import bcrypt from "bcryptjs";
 
 import { serviceCategories, services } from "../src/content/services";
@@ -324,7 +326,6 @@ async function main() {
     { key: "whyUs", type: "bento", title: "Why HYASCKA", data: homepage.whyUs },
     { key: "process", type: "timeline", title: "Process", data: homepage.process },
     { key: "metrics", type: "metrics", title: "Metrics", data: homepage.metrics },
-    { key: "trustedBy", type: "logos", title: "Trusted by", data: homepage.trustedBy },
     { key: "finalCta", type: "cta", title: "Final CTA", data: homepage.finalCta },
   ];
 
@@ -716,6 +717,9 @@ async function main() {
       summary: "Database seeded with default catalogue, content and settings.",
     },
   });
+
+  // Fill every dashboard surface so nothing renders empty (PRD §6.8).
+  await seedDemoData(prisma);
 
   console.log("\n✅ Seed complete.");
   console.log(`   Super Admin: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);

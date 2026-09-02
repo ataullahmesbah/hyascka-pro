@@ -37,7 +37,7 @@ export default async function FaqPage() {
       </PageHeader>
 
       <section className="section">
-        <div className="container max-w-3xl">
+        <div className="container-x max-w-3xl">
           <FaqSearch items={faqs} />
         </div>
       </section>

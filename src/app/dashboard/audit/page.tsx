@@ -66,24 +66,24 @@ export default async function AuditPage({
                 <tbody>
                   {entries.map((entry) => (
                     <Tr key={entry.id}>
-                      <Td className="whitespace-nowrap text-muted-foreground">
+                      <Td className="whitespace-nowrap text-ink-muted">
                         {formatDate(entry.createdAt, true)}
                       </Td>
                       <Td>
                         <p className="text-sm">{entry.actor?.name ?? "System"}</p>
-                        <p className="text-xs text-muted-foreground">{entry.actorRole ?? "—"}</p>
+                        <p className="text-xs text-ink-muted">{entry.actorRole ?? "—"}</p>
                       </Td>
                       <Td>
-                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
+                        <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">{entry.action}</code>
                       </Td>
-                      <Td className="text-muted-foreground">
+                      <Td className="text-ink-muted">
                         {entry.entityType}
                         {entry.entityId ? (
                           <span className="block font-mono text-[11px]">{entry.entityId.slice(0, 12)}…</span>
                         ) : null}
                       </Td>
-                      <Td className="text-muted-foreground">{entry.summary}</Td>
-                      <Td className="font-mono text-xs text-muted-foreground">{entry.ipAddress ?? "—"}</Td>
+                      <Td className="text-ink-muted">{entry.summary}</Td>
+                      <Td className="font-mono text-xs text-ink-muted">{entry.ipAddress ?? "—"}</Td>
                     </Tr>
                   ))}
                 </tbody>
@@ -103,20 +103,20 @@ export default async function AuditPage({
 
       <Panel title="Recent security events" description="Failed logins, rate-limit triggers and account security changes.">
         {securityEvents.length ? (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {securityEvents.map((event) => (
               <li key={event.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{event.type}</code>
-                <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">{event.type}</code>
+                <span className="min-w-0 flex-1 text-sm text-ink-muted">
                   {event.email ?? "—"} {event.detail ? `· ${event.detail}` : ""}
                 </span>
-                <span className="font-mono text-xs text-muted-foreground">{event.ipAddress ?? "—"}</span>
-                <span className="text-xs text-muted-foreground">{formatDate(event.createdAt, true)}</span>
+                <span className="font-mono text-xs text-ink-muted">{event.ipAddress ?? "—"}</span>
+                <span className="text-xs text-ink-muted">{formatDate(event.createdAt, true)}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">No security events recorded.</p>
+          <p className="text-sm text-ink-muted">No security events recorded.</p>
         )}
       </Panel>
     </>
