@@ -193,6 +193,9 @@ export async function seedDemoData(prisma: PrismaClient) {
   if (projectCount < 6) {
     for (const [index, client] of clients.slice(3).entries()) {
       const service = services[(index + 4) % services.length];
+      // Same reasoning as the demo orders: re-running the seed must not trip
+      // over the reference it created last time.
+      await prisma.project.deleteMany({ where: { reference: ref("PRJ", index + 10) } });
       const project = await prisma.project.create({
         data: {
           reference: ref("PRJ", index + 10),

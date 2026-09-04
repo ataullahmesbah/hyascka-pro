@@ -277,12 +277,22 @@ async function main() {
     });
     const created = await prisma.blogPost.upsert({
       where: { slug: post.slug },
-      update: { title: post.title, excerpt: post.excerpt, content: post.content },
+      update: {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        coverImage: post.coverImage ?? null,
+        readMinutes: post.readMinutes,
+        publishedAt: new Date(post.publishedAt),
+        metaTitle: post.title,
+        metaDescription: post.excerpt.slice(0, 155),
+      },
       create: {
         slug: post.slug,
         title: post.title,
         excerpt: post.excerpt,
         content: post.content,
+        coverImage: post.coverImage ?? null,
         categoryId: category.id,
         authorId: editorId,
         readMinutes: post.readMinutes,
