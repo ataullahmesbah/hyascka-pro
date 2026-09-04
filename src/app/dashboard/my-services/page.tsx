@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { ButtonLink } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
@@ -81,15 +83,20 @@ export default async function MyServicesPage() {
         {requests.length ? (
           <ul className="divide-y divide-line">
             {requests.map((request) => (
-              <li key={request.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{request.title}</p>
-                  <p className="text-xs text-ink-muted">
-                    {request.reference} · {request.service?.title ?? "General"} ·{" "}
-                    {formatDate(request.createdAt)}
-                  </p>
-                </div>
-                <StatusBadge status={request.status} />
+              <li key={request.id} className="py-3 first:pt-0 last:pb-0">
+                <Link
+                  href={`/dashboard/my-services/${request.id}`}
+                  className="flex flex-wrap items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-ink">{request.title}</p>
+                    <p className="text-xs text-ink-muted">
+                      {request.reference} · {request.service?.title ?? "General"} ·{" "}
+                      {formatDate(request.createdAt)} · {request.progress}% complete
+                    </p>
+                  </div>
+                  <StatusBadge status={request.status} />
+                </Link>
               </li>
             ))}
           </ul>

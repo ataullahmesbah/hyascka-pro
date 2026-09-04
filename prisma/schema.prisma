@@ -67,6 +67,16 @@ enum RequestStatus {
   ACCEPTED
   REJECTED
   CONVERTED
+  IN_PROGRESS
+  DELIVERED
+  CANCELLED
+}
+
+/** What a row on a request's timeline represents. */
+enum RequestUpdateKind {
+  NOTE
+  STATUS
+  CANCELLATION
 }
 
 enum OrderStatus {
@@ -158,6 +168,7 @@ enum NotificationType {
   CLIENT_CREATED
   MESSAGE_RECEIVED
   PROJECT_UPDATED
+  REQUEST_UPDATED
   INVOICE_ISSUED
   PAYMENT_RECEIVED
   PAYMENT_VERIFIED
@@ -222,6 +233,7 @@ model User {
   approvedExpenses   Expense[]                 @relation("ExpenseApprover")
   createdExpenses    Expense[]                 @relation("ExpenseCreator")
   ticketsAssigned    SupportTicket[]           @relation("TicketAssignee")
+  requestUpdates     ServiceRequestUpdate[]
   ticketMessages     TicketMessage[]
   activities         ProjectActivity[]
   refundsCreated     Refund[]
@@ -486,17 +498,59 @@ model ServiceRequest {
   budget    String?
   deadline  DateTime?
   status    RequestStatus @default(SUBMITTED)
+  /** 0-100, shown to the client so "how far along is it" has an answer. */
+  progress  Int           @default(0)
+
+  /**
+   * Cancellation. A client may withdraw a request outright until staff confirm
+   * an order against it; after that they can only ask, and staff decide — which
+   * is why the request and the decision are two separate timestamps.
+   */
+  cancelRequestedAt DateTime?
+  cancelReason      String?
+  cancelledAt       DateTime?
+
+  /** Files the client attached when they asked. */
+  attachments Json?
+
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  service   Service?      @relation(fields: [serviceId], references: [id])
+  client    ClientProfile          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service   Service?               @relation(fields: [serviceId], references: [id])
   proposals Proposal[]
+  updates   ServiceRequestUpdate[]
 
   @@index([clientId])
   @@index([serviceId])
   @@index([status])
   @@index([createdAt])
+}
+
+/**
+ * One entry on a service request's shared timeline.
+ *
+ * Both sides write here — staff answering a brief, a client replying, a status
+ * change, a cancellation — so the client's dashboard and the staff view are the
+ * same conversation rather than two half-records that have to be reconciled.
+ */
+model ServiceRequestUpdate {
+  id        String            @id @default(cuid())
+  requestId String
+  authorId  String
+  kind      RequestUpdateKind @default(NOTE)
+  body      String
+  /** [{ url, name, mimeType, sizeBytes }] — images and PDFs. */
+  attachments Json?
+  /** Internal notes stay on the staff side and are never sent to the client. */
+  internal  Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  author  User           @relation(fields: [authorId], references: [id])
+
+  @@index([requestId, createdAt])
+  @@index([authorId])
 }
 
 model Proposal {

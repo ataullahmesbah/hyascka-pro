@@ -206,6 +206,7 @@ const CONTENT_GROUP: NavLink = {
 const STAFF_LINKS: Record<string, NavLink> = {
   leads: { label: "Leads & CRM", href: "/dashboard/leads", icon: "UserPlus", permission: "leads.read" },
   clients: { label: "Clients", href: "/dashboard/clients", icon: "Users", permission: "clients.read" },
+  requests: { label: "Service Requests", href: "/dashboard/requests", icon: "ClipboardList", permission: "clients.read" },
   services: { label: "Services", href: "/dashboard/services", icon: "Layers", permission: "services.read" },
   orders: { label: "Orders", href: "/dashboard/orders", icon: "ClipboardList", permission: "orders.read" },
   projects: { label: "Projects", href: "/dashboard/projects", icon: "FolderKanban", permission: "projects.read" },
@@ -244,6 +245,7 @@ const NAV_BY_ROLE: Record<Role, NavLink[]> = {
     OVERVIEW,
     STAFF_LINKS.leads,
     STAFF_LINKS.clients,
+    STAFF_LINKS.requests,
     STAFF_LINKS.services,
     STAFF_LINKS.orders,
     STAFF_LINKS.projects,
@@ -263,6 +265,7 @@ const NAV_BY_ROLE: Record<Role, NavLink[]> = {
     OVERVIEW,
     STAFF_LINKS.leads,
     STAFF_LINKS.clients,
+    STAFF_LINKS.requests,
     STAFF_LINKS.services,
     STAFF_LINKS.orders,
     STAFF_LINKS.projects,
@@ -281,12 +284,13 @@ const NAV_BY_ROLE: Record<Role, NavLink[]> = {
   PROJECT_MANAGER: [
     OVERVIEW,
     STAFF_LINKS.clients,
+    STAFF_LINKS.requests,
     STAFF_LINKS.projects,
     STAFF_LINKS.messages,
     NOTIFICATIONS,
   ],
   EDITOR: [OVERVIEW, CONTENT_GROUP, STAFF_LINKS.services, STAFF_LINKS.media, STAFF_LINKS.seo, NOTIFICATIONS],
-  SUPPORT: [OVERVIEW, STAFF_LINKS.messages, STAFF_LINKS.support, STAFF_LINKS.clients, NOTIFICATIONS],
+  SUPPORT: [OVERVIEW, STAFF_LINKS.messages, STAFF_LINKS.support, STAFF_LINKS.clients, STAFF_LINKS.requests, NOTIFICATIONS],
   CLIENT: CLIENT_NAV,
 };
 
