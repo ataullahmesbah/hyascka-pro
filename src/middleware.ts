@@ -14,6 +14,24 @@ const STAFF_ROLES = new Set([
 const AUTH_PAGES = new Set(["/login", "/register", "/forgot-password"]);
 
 /**
+ * Routes that stay reachable while the site is in full maintenance mode.
+ *
+ * Sign-in especially: staff bypass maintenance, but they can only be
+ * recognised as staff once they have a session, and they can only get one
+ * through /login. Rewriting that to the maintenance page locks everybody out
+ * of the site they just took offline, including the person who has to turn it
+ * back on.
+ */
+const MAINTENANCE_EXEMPT = new Set([
+  "/maintenance",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+]);
+
+/**
  * The only API routes reachable without a session (PRD §9). Everything else
  * returns 401 here before it can execute, on top of the per-route checks — two
  * independent layers, neither trusting the other.
@@ -62,7 +80,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (pathname !== "/maintenance" && !(claims && STAFF_ROLES.has(claims.role))) {
+  if (!MAINTENANCE_EXEMPT.has(pathname) && !(claims && STAFF_ROLES.has(claims.role))) {
     if (await maintenanceIsOn(request)) {
       return NextResponse.rewrite(new URL("/maintenance", request.url));
     }
@@ -74,7 +92,7 @@ export async function middleware(request: NextRequest) {
 async function maintenanceIsOn(request: NextRequest) {
   try {
     const response = await fetch(new URL("/api/system/status", request.url), {
-      next: { revalidate: 30 },
+      cache: "no-store",
     });
     if (!response.ok) return false;
     const data = (await response.json()) as { maintenance?: boolean };

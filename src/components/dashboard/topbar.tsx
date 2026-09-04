@@ -120,6 +120,15 @@ function NotificationBell({
     router.push(`/dashboard/notifications/${item.id}`);
   };
 
+  /** Clears the badge without pretending each message has been opened. */
+  const markAllSeen = () => {
+    setUnread(0);
+    startTransition(async () => {
+      await markAllNotificationsRead();
+      router.refresh();
+    });
+  };
+
   const markAll = () => {
     setItems((current) => current.map((i) => ({ ...i, read: true })));
     setUnread(0);
@@ -133,7 +142,14 @@ function NotificationBell({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          // Opening the panel is the visitor seeing them, so the count clears
+          // there and then. The unread dot stays on each row until it is
+          // opened, so nothing is lost — only the "you have new mail" badge.
+          if (next && unread > 0) markAllSeen();
+        }}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}

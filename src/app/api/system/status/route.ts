@@ -8,7 +8,13 @@ import { getSettings } from "@/lib/settings";
  * know whether full maintenance mode is on (PRD §45.1). Nothing private is
  * exposed here.
  */
-export const revalidate = 30;
+/*
+ * Never cached. This is the kill switch for the whole public site, so an admin
+ * ticking "take the site offline" has to see it take effect on the next
+ * request, not up to a couple of minutes later once a cached copy expires.
+ * It is one indexed read of a settings row.
+ */
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const settings = await getSettings();
@@ -17,6 +23,6 @@ export async function GET() {
       maintenance: settings.maintenance.isFullModeActive,
       endAt: settings.maintenance.endAt,
     },
-    { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" } },
+    { headers: { "Cache-Control": "no-store" } },
   );
 }

@@ -3,22 +3,18 @@
 import * as React from "react";
 
 /**
- * Every piece of interactive behaviour on the public site, in one effect.
+ * The public site's interactive behaviour, in one effect.
  *
- * Scroll reveals and the hero slider are a few dozen lines of DOM work each.
- * As React components they cost a client boundary per element and a hydration
- * pass over the biggest subtree on the page — forty boundaries on the homepage,
- * and about 14 kB of JavaScript for the hero alone. As an inline <script> they
- * were cheaper still, but they intermittently collided with hydration: React 19
- * relocates script elements during server rendering and streams hydration in
- * slices, so a script that touches server-rendered markup will sooner or later
- * land mid-hydration, and React responds by discarding the server HTML and
- * re-rendering everything.
+ * Only the hero slider lives here now. Scroll reveals used to as well, and they
+ * were the source of a hydration mismatch: marking each element as it came into
+ * view meant the client tree really did differ from the server HTML, and React
+ * recovered by throwing the server render away. They are pure CSS now (see the
+ * scroll-driven animation in globals.css), which removes the mutation rather
+ * than trying to time it.
  *
- * One client component with one effect is the compromise: the markup stays
- * server-rendered, effects are guaranteed to run after hydration, and the whole
- * page shares a single IntersectionObserver. Each block no-ops when its markup
- * is absent, so this serves every marketing route.
+ * The hero markup stays server-rendered and this only sets one attribute on the
+ * section, and only in response to a click, a key or the autoplay timer — all
+ * of which happen long after hydration.
  */
 export function SiteRuntime() {
   React.useEffect(() => {
@@ -28,77 +24,11 @@ export function SiteRuntime() {
     };
 
     add(setUpHero());
-    add(setUpReveals());
 
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 
   return null;
-}
-
-/**
- * Reveals elements as they scroll in.
- *
- * Only elements below the fold are armed — anything already on screen is never
- * hidden, which keeps the largest contentful paint off the hydration path. The
- * positions come from the observer's own first callback rather than a manual
- * `getBoundingClientRect`, because the observer waits for real layout.
- *
- * It waits for the page to actually have a layout first. Effects in the root
- * layout can run while React is still hydrating the nested route boundary, and
- * React keeps that subtree hidden meanwhile — measure then and the entire page
- * reads as a zero-height block sitting above the fold, so nothing is ever
- * armed. Roughly a quarter of cold loads landed in that window.
- */
-function setUpReveals() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
-
-  const nodes = document.querySelectorAll<HTMLElement>("[data-reveal]");
-  if (!nodes.length) return null;
-
-  const measured = new WeakSet<Element>();
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        const element = entry.target as HTMLElement;
-
-        if (!measured.has(element)) {
-          measured.add(element);
-          // Above the fold: leave it visible and stop watching it.
-          if (entry.boundingClientRect.top < window.innerHeight * 1.15) {
-            observer.unobserve(element);
-          } else {
-            element.setAttribute("data-armed", "");
-          }
-          continue;
-        }
-
-        if (!entry.isIntersecting) continue;
-        observer.unobserve(element);
-        element.setAttribute("data-shown", "");
-      }
-    },
-    { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
-  );
-
-  // Give up after ~2s of never getting a layout; every reveal simply stays
-  // visible, which is the same as the no-JavaScript rendering.
-  let frame = 0;
-  let attempts = 0;
-  const last = nodes[nodes.length - 1];
-  const start = () => {
-    if (last.getBoundingClientRect().height === 0 && attempts++ < 120) {
-      frame = requestAnimationFrame(start);
-      return;
-    }
-    nodes.forEach((node) => observer.observe(node));
-  };
-  start();
-
-  return () => {
-    cancelAnimationFrame(frame);
-    observer.disconnect();
-  };
 }
 
 /**

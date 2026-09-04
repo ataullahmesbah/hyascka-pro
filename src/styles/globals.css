@@ -282,94 +282,27 @@
 
   /* Scroll reveal — animates transform/opacity only. */
   /*
-   * Reveal is progressive enhancement, and deliberately never hides anything
-   * that is already on screen.
+   * Scroll reveal, done entirely in CSS.
    *
-   * The runtime arms only the elements below the fold, so above-fold content
-   * paints immediately: an earlier version hid everything until the observer
-   * ran, which pushed mobile LCP out by more than a second. With no JavaScript
-   * nothing is ever armed and everything stays visible.
+   * This used to be JavaScript that set a data attribute on each element as it
+   * came into view. React reported that as a hydration mismatch — the server
+   * HTML and the client tree genuinely did differ by then — and the recovery
+   * threw away the server render. A scroll-driven animation needs no DOM
+   * mutation at all, so the whole class of problem is gone.
    *
-   * The state lives in data attributes rather than class names because the
-   * runtime sets it before React hydrates. React reconciles the classes it
-   * rendered, but ignores attributes it never emitted — so this cannot turn
-   * into a hydration mismatch.
-   *
-   * No `will-change`: forty promoted layers cost a throttled phone more than
-   * the transition they were meant to smooth.
+   * Browsers without `animation-timeline` (Safari and Firefox at the time of
+   * writing) simply show the content, which is the correct fallback. Elements
+   * already on screen at load sit at the end of their range, so nothing
+   * flashes and the largest contentful paint is untouched.
    */
-  /*
-   * Hero slider. The runtime sets one attribute — data-active on the section —
-   * and these rules do the rest, so the script never touches markup React
-   * rendered and can never collide with hydration. Before the script runs (or
-   * without JavaScript) no data-active is present and the first slide shows.
-   */
-  [data-hero-slide],
-  [data-hero-pane] {
-    display: none;
-  }
-  [data-hero-slide="0"],
-  [data-hero-pane="0"] {
-    display: block;
-  }
-  [data-hero][data-active] [data-hero-slide],
-  [data-hero][data-active] [data-hero-pane] {
-    display: none;
-  }
-  [data-hero][data-active="0"] [data-hero-slide="0"],
-  [data-hero][data-active="0"] [data-hero-pane="0"],
-  [data-hero][data-active="1"] [data-hero-slide="1"],
-  [data-hero][data-active="1"] [data-hero-pane="1"],
-  [data-hero][data-active="2"] [data-hero-slide="2"],
-  [data-hero][data-active="2"] [data-hero-pane="2"],
-  [data-hero][data-active="3"] [data-hero-slide="3"],
-  [data-hero][data-active="3"] [data-hero-pane="3"],
-  [data-hero][data-active="4"] [data-hero-slide="4"],
-  [data-hero][data-active="4"] [data-hero-pane="4"],
-  [data-hero][data-active="5"] [data-hero-slide="5"],
-  [data-hero][data-active="5"] [data-hero-pane="5"] {
-    display: block;
-  }
-
-  .hero-dot {
-    display: block;
-    height: 0.375rem;
-    width: 0.625rem;
-    border-radius: var(--radius-pill);
-    background: hsl(var(--line-strong));
-    transition: width var(--dur-slow) var(--ease-out), background-color var(--dur-slow);
-  }
-  .group\/dot:hover .hero-dot {
-    background: hsl(var(--ink-muted));
-  }
-  [data-hero]:not([data-active]) [data-hero-go="0"] .hero-dot,
-  [data-hero][data-active="0"] [data-hero-go="0"] .hero-dot,
-  [data-hero][data-active="1"] [data-hero-go="1"] .hero-dot,
-  [data-hero][data-active="2"] [data-hero-go="2"] .hero-dot,
-  [data-hero][data-active="3"] [data-hero-go="3"] .hero-dot,
-  [data-hero][data-active="4"] [data-hero-go="4"] .hero-dot,
-  [data-hero][data-active="5"] [data-hero-go="5"] .hero-dot {
-    width: 1.75rem;
-    background: hsl(var(--accent));
-  }
-
-  /* Set before paint by the announcement script; see announcement.tsx. */
-  [data-announcement-dismissed] #hy-announcement {
-    display: none;
-  }
-
-  .reveal[data-armed] {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-    transition: opacity var(--dur-slow) var(--ease-out),
-      transform var(--dur-slow) var(--ease-out);
-  }
-  .reveal[data-armed][data-shown] {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .reveal[data-armed] { opacity: 1; transform: none; }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        animation: hy-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 20%;
+      }
+    }
   }
 
   .line-clamp-2 {
@@ -431,4 +364,15 @@
 @keyframes hy-float {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(0, -8px, 0); }
+}
+
+@keyframes hy-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
