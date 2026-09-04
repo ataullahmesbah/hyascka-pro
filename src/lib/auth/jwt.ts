@@ -7,6 +7,14 @@ import type { Role } from "@prisma/client";
  */
 export const SESSION_COOKIE = "hyascka_session";
 
+/**
+ * Readable companion to the session cookie, holding only "someone is signed
+ * in". It exists so the navbar can offer Dashboard instead of Sign in without
+ * the server reading cookies on every public page — which would make them all
+ * dynamic. It grants nothing: authorisation always re-reads the real session.
+ */
+export const AUTH_HINT_COOKIE = "hyascka_auth";
+
 export const SESSION_MAX_AGE_DAYS = Number(process.env.SESSION_MAX_AGE_DAYS ?? 7);
 export const SESSION_MAX_AGE = SESSION_MAX_AGE_DAYS * 24 * 60 * 60;
 

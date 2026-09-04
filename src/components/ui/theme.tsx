@@ -48,7 +48,13 @@ if(canToggle){
 }
 d.setAttribute('data-theme',t);
 d.style.colorScheme=(t==='light')?'light':'dark';
-}catch(e){}})();`;
+}catch(e){}
+try{
+  // Signed-in state, before paint, so the navbar never flashes the wrong
+  // button. The cookie is a boolean hint only — see AUTH_HINT_COOKIE.
+  d.setAttribute('data-auth',/(?:^|; )hyascka_auth=1/.test(document.cookie)?'in':'out');
+}catch(e){}
+})();`;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }
 

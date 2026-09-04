@@ -7,6 +7,7 @@ import { randomBytes } from "crypto";
 import { prisma, isDatabaseConfigured } from "@/lib/db";
 import { hashToken } from "@/lib/auth/tokens";
 import {
+  AUTH_HINT_COOKIE,
   SESSION_COOKIE,
   SESSION_MAX_AGE,
   signSessionToken,
@@ -62,6 +63,23 @@ export async function createSession(args: CreateSessionArgs) {
     maxAge: SESSION_MAX_AGE,
   });
 
+  /*
+   * A readable companion carrying nothing but "someone is signed in".
+   *
+   * The session cookie is HttpOnly, so the browser cannot tell the navbar
+   * whether to offer "Sign in" or "Dashboard". Reading the session on the
+   * server would work but would make every public page dynamic and lose static
+   * rendering. This holds no identity, no role and no token — it is a boolean,
+   * and every authorisation decision still re-reads the real session.
+   */
+  store.set(AUTH_HINT_COOKIE, "1", {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+
   return record.id;
 }
 
@@ -69,6 +87,7 @@ export async function destroySession() {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   store.delete(SESSION_COOKIE);
+  store.delete(AUTH_HINT_COOKIE);
   if (!token || !isDatabaseConfigured()) return;
 
   const claims = await verifySessionToken(token);

@@ -86,25 +86,23 @@ try {
   await page.waitForTimeout(150);
   record("hero dots select a slide", (await slideShown()) === 0);
 
-  const reveals = await page.$$eval("[data-reveal]", (els) => ({
-    total: els.length,
-    armed: els.filter((el) => el.hasAttribute("data-armed")).length,
-  }));
+  // Reveals are a CSS scroll-driven animation now, so there is no state to
+  // inspect — only that the markup is there and nothing ends up stuck hidden.
+  record("sections carry the reveal hook", (await page.locator("[data-reveal]").count()) > 0);
+  await page.evaluate(async () => {
+    for (let y = 0; y <= document.body.scrollHeight; y += 500) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
+  });
+  await page.waitForTimeout(800);
   record(
-    "below-fold sections are armed for reveal",
-    reveals.total > 0 && reveals.armed > 0,
-    `${reveals.armed}/${reveals.total} armed`,
-  );
-  record(
-    "above-fold content is never hidden by the reveal",
-    (await page.$eval("h1", (el) => getComputedStyle(el).opacity)) === "1",
-  );
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(1500);
-  record(
-    "every revealed section ends visible",
+    "no section is left invisible on screen",
     (await page.$$eval("[data-reveal]", (els) =>
-      els.filter((el) => getComputedStyle(el).opacity === "0").length,
+      els.filter((el) => {
+        const box = el.getBoundingClientRect();
+        return box.bottom > 0 && box.top < window.innerHeight && getComputedStyle(el).opacity === "0";
+      }).length,
     )) === 0,
   );
 

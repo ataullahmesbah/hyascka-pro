@@ -201,11 +201,18 @@ export function Navbar({
         {/* ---- Actions ---- */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <ButtonLink href="/login" variant="outline" size="sm" className="hidden sm:inline-flex">
-            Client Login
-          </ButtonLink>
+          {/* Both render; the pre-paint script decides which one is shown, so
+              the markup stays static and there is no flash of the wrong one. */}
+          <div className="hidden sm:block">
+            <ButtonLink href="/login" variant="outline" size="sm" data-auth-out="">
+              Sign in
+            </ButtonLink>
+            <ButtonLink href="/dashboard" variant="outline" size="sm" data-auth-in="">
+              Dashboard
+            </ButtonLink>
+          </div>
           <ButtonLink href="/contact" size="sm" className="hidden lg:inline-flex">
-            Start a project
+            Get a quote
           </ButtonLink>
           <button
             ref={triggerRef}
@@ -295,10 +302,25 @@ export function Navbar({
 
             <div className="shrink-0 space-y-3 border-t border-line p-4">
               <ButtonLink href="/contact" size="lg" className="w-full">
-                Start a project
+                Get a quote
               </ButtonLink>
-              <ButtonLink href="/login" variant="outline" size="lg" className="w-full">
-                Client Login
+              <ButtonLink
+                href="/login"
+                variant="outline"
+                size="lg"
+                data-auth-out=""
+                className="w-full"
+              >
+                Sign in
+              </ButtonLink>
+              <ButtonLink
+                href="/dashboard"
+                variant="outline"
+                size="lg"
+                data-auth-in=""
+                className="w-full justify-center"
+              >
+                Dashboard
               </ButtonLink>
               <div className="flex items-center justify-between rounded-lg border border-line px-4 py-2.5">
                 <span className="text-step--1 text-ink-soft">Appearance</span>
