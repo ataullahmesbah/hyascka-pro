@@ -101,10 +101,22 @@ export async function createTicketAction(
   const parsed = ticketSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return toActionState(parsed.error);
 
+  // A ticket may name the request it is about, but only one the caller owns —
+  // an id in a form proves nothing.
+  let requestId: string | null = null;
+  if (parsed.data.requestId) {
+    const owned = await prisma.serviceRequest.findFirst({
+      where: { id: parsed.data.requestId, clientId: user.clientProfileId },
+      select: { id: true },
+    });
+    requestId = owned?.id ?? null;
+  }
+
   const ticket = await prisma.supportTicket.create({
     data: {
       reference: reference("TKT"),
       clientId: user.clientProfileId,
+      requestId,
       subject: parsed.data.subject,
       category: parsed.data.category,
       priority: parsed.data.priority,

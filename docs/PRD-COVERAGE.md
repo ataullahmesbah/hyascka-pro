@@ -32,7 +32,7 @@ Where each requirement lives, and what was deliberately deferred.
 | 26 | Audit and security log | `src/lib/audit.ts`, `src/app/dashboard/audit` |
 | 27–28 | Free-tier-first infrastructure and provider adapters | `src/lib/providers/**`, `docs/DEPLOYMENT.md` |
 | 29–30 | Sidebars | `src/lib/rbac.ts` (`navigationFor`) |
-| 32 | Testing strategy | `tests/smoke.mjs` (E2E + authorization); see gaps below |
+| 32 | Testing strategy | `tests/smoke.mjs` (E2E + authorization), `tests/lifecycle.mjs` (request → ticket → invoice); see gaps below |
 | 33 | Acceptance criteria | Verified by `tests/smoke.mjs` and the guards it exercises |
 | 34 | Project structure | See README |
 | 37 | Non-negotiable engineering rules | Enforced in guards, finance actions and the CSP |

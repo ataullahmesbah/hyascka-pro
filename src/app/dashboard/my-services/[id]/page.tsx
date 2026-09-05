@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { CancelRequestForm } from "@/components/dashboard/cancel-request-form";
 import { RequestThread } from "@/components/dashboard/request-thread";
+import { TicketForm } from "@/components/dashboard/ticket-forms";
 import { ButtonLink } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { readAttachments } from "@/lib/attachments";
@@ -153,6 +154,13 @@ export default async function MyServiceRequestPage({
               </ul>
             </Panel>
           ) : null}
+
+          <Panel
+            title="Something wrong?"
+            description="Raise a ticket and it arrives already attached to this piece of work."
+          >
+            <TicketForm requestId={request.id} requestTitle={request.title} />
+          </Panel>
 
           <Panel title="Need to stop this?">
             {request.cancelRequestedAt && !request.cancelledAt ? (

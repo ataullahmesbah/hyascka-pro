@@ -121,6 +121,8 @@ export const ticketSchema = z.object({
   category: z.string().trim().max(60).default("GENERAL"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
   body: z.string().trim().min(10, "Describe the issue.").max(4000),
+  /** Set when the ticket is raised from a specific service request. */
+  requestId: z.string().optional().or(z.literal("")),
 });
 
 export const serviceRequestSchema = z.object({
@@ -146,6 +148,7 @@ export const invoiceSchema = z.object({
   items: z
     .array(
       z.object({
+        serviceId: z.string().trim().max(40).optional().or(z.literal("")),
         description: z.string().trim().min(2).max(200),
         quantity: z.coerce.number().int().positive().max(9999),
         unitPrice: z.coerce.number().nonnegative().max(100_000_000),

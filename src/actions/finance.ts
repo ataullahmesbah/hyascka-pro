@@ -52,6 +52,20 @@ export async function createInvoiceAction(
   });
   if (!client) return { ok: false, message: "That client no longer exists." };
 
+  // A line may name one of our services. Only ids that really exist are stored,
+  // so a tampered form cannot point an invoice line at an arbitrary record.
+  const requestedServiceIds = [...new Set(input.items.map((item) => item.serviceId).filter(Boolean))] as string[];
+  const knownServiceIds = new Set(
+    requestedServiceIds.length
+      ? (
+          await prisma.service.findMany({
+            where: { id: { in: requestedServiceIds } },
+            select: { id: true },
+          })
+        ).map((service) => service.id)
+      : [],
+  );
+
   // Totals are computed server-side. A price submitted by the browser is never
   // trusted (PRD §20).
   let subtotal = 0;
@@ -65,6 +79,7 @@ export async function createInvoiceAction(
     discountTotal += item.discount;
     taxTotal += tax;
     return {
+      serviceId: item.serviceId && knownServiceIds.has(item.serviceId) ? item.serviceId : null,
       description: item.description,
       quantity: item.quantity,
       unitPrice: new Prisma.Decimal(item.unitPrice),

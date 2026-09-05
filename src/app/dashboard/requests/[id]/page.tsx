@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
@@ -28,6 +29,10 @@ export default async function RequestDetailPage({
       updates: {
         orderBy: { createdAt: "asc" },
         include: { author: { select: { name: true, role: true } } },
+      },
+      tickets: {
+        orderBy: { createdAt: "desc" },
+        select: { id: true, reference: true, subject: true, status: true },
       },
     },
   });
@@ -112,6 +117,27 @@ export default async function RequestDetailPage({
               </div>
             </dl>
           </Panel>
+
+          {request.tickets.length ? (
+            <Panel title={`Tickets about this (${request.tickets.length})`}>
+              <ul className="space-y-2">
+                {request.tickets.map((ticket) => (
+                  <li key={ticket.id}>
+                    <Link
+                      href={`/dashboard/support/${ticket.id}`}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 text-step--1 transition-colors hover:border-accent-border hover:bg-surface-2"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-ink">{ticket.subject}</span>
+                        <span className="text-step--2 text-ink-muted">{ticket.reference}</span>
+                      </span>
+                      <StatusBadge status={ticket.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
 
           {request.cancelRequestedAt && !request.cancelledAt ? (
             <Panel title="Cancellation requested">

@@ -8,10 +8,13 @@ export const dynamic = "force-dynamic";
 export default async function NewInvoicePage() {
   await requirePermission("invoice.issue");
 
-  const clients = await prisma.clientProfile.findMany({
-    orderBy: { companyName: "asc" },
-    select: { id: true, companyName: true, user: { select: { name: true, email: true } } },
-  });
+  const [clients, services] = await Promise.all([
+    prisma.clientProfile.findMany({
+      orderBy: { companyName: "asc" },
+      select: { id: true, companyName: true, user: { select: { name: true, email: true } } },
+    }),
+    prisma.service.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+  ]);
 
   return (
     <>
@@ -26,6 +29,7 @@ export default async function NewInvoicePage() {
           label: client.companyName ?? client.user.name,
           email: client.user.email,
         }))}
+        services={services}
       />
     </>
   );

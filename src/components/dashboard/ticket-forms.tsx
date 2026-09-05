@@ -18,9 +18,22 @@ const CATEGORIES = ["GENERAL", "BILLING", "TECHNICAL", "ACCOUNT", "FEEDBACK"];
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 const STATUSES = ["OPEN", "PENDING", "RESOLVED", "CLOSED"] as const;
 
-export function TicketForm() {
+export function TicketForm({
+  requestId,
+  requestTitle,
+}: {
+  /** Set when the ticket is raised from a service, so staff know which one. */
+  requestId?: string;
+  requestTitle?: string;
+} = {}) {
   return (
     <ActionForm action={createTicketAction} successTitle="Ticket opened" resetOnSuccess>
+      {requestId ? <input type="hidden" name="requestId" value={requestId} /> : null}
+      {requestTitle ? (
+        <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-step--2 text-ink-soft">
+          About <strong className="text-ink">{requestTitle}</strong>
+        </p>
+      ) : null}
       <SubjectField />
       <CategoryField />
       <PriorityField />

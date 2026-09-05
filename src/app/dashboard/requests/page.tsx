@@ -1,3 +1,4 @@
+import { CustomRequestForm } from "@/components/dashboard/custom-request-form";
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, LinkCell, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
@@ -9,6 +10,18 @@ export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
   await requireAnyPermission(["clients.manage", "projects.manage"]);
+
+  const [clients, services] = await Promise.all([
+    prisma.clientProfile.findMany({
+      orderBy: { companyName: "asc" },
+      select: { id: true, companyName: true, user: { select: { name: true, email: true } } },
+    }),
+    prisma.service.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+  ]);
 
   const requests = await prisma.serviceRequest.findMany({
     orderBy: { updatedAt: "desc" },
@@ -38,7 +51,18 @@ export default async function RequestsPage() {
         </div>
       ) : null}
 
-      <Panel>
+      <Panel
+        title="All requests"
+        action={
+          <CustomRequestForm
+            clients={clients.map((client) => ({
+              id: client.id,
+              label: client.companyName ?? client.user?.name ?? client.user?.email ?? "Client",
+            }))}
+            services={services}
+          />
+        }
+      >
         {requests.length ? (
           <TableWrap className="border-0">
             <Table className="min-w-[46rem]">

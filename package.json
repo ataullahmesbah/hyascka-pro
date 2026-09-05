@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "test:smoke": "node tests/smoke.mjs",
+    "test:lifecycle": "node tests/lifecycle.mjs",
     "db:reset": "prisma db push --force-reset && npm run db:seed"
   },
   "prisma": {

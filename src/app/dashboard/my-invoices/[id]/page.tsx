@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
+import { Download } from "lucide-react";
+
+import { ButtonAnchor } from "@/components/ui/button";
 import { PaymentSubmission } from "@/components/dashboard/payment-submission";
 import { StatusBadge } from "@/components/ui/badge";
 import { Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
@@ -17,7 +20,7 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
   const invoice = await prisma.invoice.findFirst({
     where: { id, clientId },
     include: {
-      items: true,
+      items: { include: { service: { select: { title: true } } } },
       payments: { orderBy: { createdAt: "desc" } },
     },
   });
@@ -48,7 +51,15 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
         title={`Invoice ${invoice.number}`}
         description={`Issued ${formatDate(invoice.issueDate)} · due ${formatDate(invoice.dueDate)}`}
         breadcrumbs={[{ label: "Invoices", href: "/dashboard/my-invoices" }, { label: invoice.number }]}
-        actions={<StatusBadge status={invoice.status} />}
+        actions={
+          <>
+            <StatusBadge status={invoice.status} />
+            <ButtonAnchor href={`/api/invoices/${invoice.id}/pdf`} variant="outline" size="sm" download>
+              <Download className="h-4 w-4" />
+              Download PDF
+            </ButtonAnchor>
+          </>
+        }
       />
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
@@ -58,6 +69,7 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
               <Table className="min-w-[32rem]">
                 <thead>
                   <tr>
+                    <Th>Service</Th>
                     <Th>Description</Th>
                     <Th className="text-right">Qty</Th>
                     <Th className="text-right">Unit price</Th>
@@ -67,6 +79,7 @@ export default async function ClientInvoicePage({ params }: { params: Promise<{ 
                 <tbody>
                   {invoice.items.map((item) => (
                     <Tr key={item.id}>
+                      <Td className="text-ink-muted">{item.service?.title ?? "—"}</Td>
                       <Td>{item.description}</Td>
                       <Td className="text-right">{item.quantity}</Td>
                       <Td className="text-right">{formatCurrency(Number(item.unitPrice), invoice.currency)}</Td>

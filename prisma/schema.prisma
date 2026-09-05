@@ -440,6 +440,7 @@ model Service {
   @@index([status, featured])
   @@index([position])
   @@index([createdAt])
+  invoiceItems     InvoiceItem[]
 }
 
 model ServiceFeature {
@@ -520,6 +521,7 @@ model ServiceRequest {
   service   Service?               @relation(fields: [serviceId], references: [id])
   proposals Proposal[]
   updates   ServiceRequestUpdate[]
+  tickets   SupportTicket[]
 
   @@index([clientId])
   @@index([serviceId])
@@ -794,6 +796,8 @@ model Invoice {
 model InvoiceItem {
   id          String  @id @default(cuid())
   invoiceId   String
+  /** What this line is for, so an invoice says which service it bills. */
+  serviceId   String?
   description String
   quantity    Int     @default(1)
   unitPrice   Decimal @db.Decimal(12, 2)
@@ -801,9 +805,11 @@ model InvoiceItem {
   taxRate     Decimal @default(0) @db.Decimal(5, 2)
   total       Decimal @db.Decimal(12, 2)
 
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
 
   @@index([invoiceId])
+  @@index([serviceId])
 }
 
 model Payment {
@@ -989,6 +995,12 @@ model SupportTicket {
   id         String       @id @default(cuid())
   reference  String       @unique
   clientId   String
+  /**
+   * The service request this ticket is about, when it is about one. A client
+   * complaining after delivery is complaining about something specific, and
+   * staff should not have to guess which engagement from the subject line.
+   */
+  requestId  String?
   subject    String
   category   String       @default("GENERAL")
   priority   Priority     @default(MEDIUM)
@@ -998,9 +1010,11 @@ model SupportTicket {
   updatedAt  DateTime     @updatedAt
 
   client   ClientProfile   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  request  ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
   assignee User?           @relation("TicketAssignee", fields: [assigneeId], references: [id])
   messages TicketMessage[]
 
+  @@index([requestId])
   @@index([clientId])
   @@index([status])
   @@index([assigneeId])

@@ -11,14 +11,23 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { formatCurrency } from "@/lib/utils";
 
-type Line = { description: string; quantity: number; unitPrice: number; discount: number; taxRate: number };
+type Line = {
+  serviceId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  taxRate: number;
+};
 
-const EMPTY: Line = { description: "", quantity: 1, unitPrice: 0, discount: 0, taxRate: 0 };
+const EMPTY: Line = { serviceId: "", description: "", quantity: 1, unitPrice: 0, discount: 0, taxRate: 0 };
 
 export function InvoiceBuilder({
   clients,
+  services,
 }: {
   clients: { id: string; label: string; email: string }[];
+  services: { id: string; title: string }[];
 }) {
   const [lines, setLines] = React.useState<Line[]>([{ ...EMPTY }]);
   const [currency, setCurrency] = React.useState("BDT");
@@ -81,7 +90,34 @@ export function InvoiceBuilder({
             <div className="space-y-4">
               {lines.map((line, index) => (
                 <div key={index} className="grid gap-3 rounded-lg border border-line p-4 sm:grid-cols-12">
-                  <div className="sm:col-span-5">
+                  <div className="sm:col-span-4">
+                    <label htmlFor={`service-${index}`} className="text-xs font-medium text-ink-muted">
+                      Service
+                    </label>
+                    <Select
+                      id={`service-${index}`}
+                      value={line.serviceId}
+                      onChange={(event) => {
+                        const serviceId = event.target.value;
+                        const service = services.find((item) => item.id === serviceId);
+                        update(index, {
+                          serviceId,
+                          // Fill an empty description from the service so the client
+                          // sees what they are paying for without extra typing.
+                          description: line.description || service?.title || "",
+                        });
+                      }}
+                      className="mt-1"
+                    >
+                      <option value="">No specific service</option>
+                      {services.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.title}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="sm:col-span-8">
                     <label htmlFor={`desc-${index}`} className="text-xs font-medium text-ink-muted">
                       Description
                     </label>
@@ -96,7 +132,7 @@ export function InvoiceBuilder({
                   <NumberCell
                     id={`qty-${index}`}
                     label="Qty"
-                    span="sm:col-span-1"
+                    span="sm:col-span-2"
                     value={line.quantity}
                     min={1}
                     onChange={(value) => update(index, { quantity: value })}
@@ -104,26 +140,26 @@ export function InvoiceBuilder({
                   <NumberCell
                     id={`price-${index}`}
                     label="Unit price"
-                    span="sm:col-span-2"
+                    span="sm:col-span-3"
                     value={line.unitPrice}
                     onChange={(value) => update(index, { unitPrice: value })}
                   />
                   <NumberCell
                     id={`disc-${index}`}
                     label="Discount"
-                    span="sm:col-span-2"
+                    span="sm:col-span-3"
                     value={line.discount}
                     onChange={(value) => update(index, { discount: value })}
                   />
                   <NumberCell
                     id={`tax-${index}`}
                     label="Tax %"
-                    span="sm:col-span-1"
+                    span="sm:col-span-2"
                     value={line.taxRate}
                     max={100}
                     onChange={(value) => update(index, { taxRate: value })}
                   />
-                  <div className="flex items-end sm:col-span-1">
+                  <div className="flex items-end sm:col-span-2">
                     <Button
                       variant="ghost"
                       size="icon"

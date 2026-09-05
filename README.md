@@ -72,6 +72,7 @@ database — those fail loudly rather than pretending to work.
 | `npm run db:reset` | Drop, recreate and reseed (destructive) |
 | `npm run db:studio` | Prisma Studio |
 | `npm run test:smoke` | End-to-end smoke test against a running server |
+| `npm run test:lifecycle` | End-to-end test of the request → ticket → invoice lifecycle |
 
 Smoke test (needs a built app running and a seeded database):
 
