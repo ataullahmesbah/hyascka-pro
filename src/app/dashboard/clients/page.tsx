@@ -1,8 +1,10 @@
 import { DashboardHeader } from "@/components/dashboard/page-shell";
+import { ShareDocumentForm } from "@/components/dashboard/client-work-forms";
 import { ListFilters } from "@/components/dashboard/filters";
 import { EmptyState, LinkCell, Pagination, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
-import { requirePermission } from "@/lib/auth/guards";
+import { requirePermission, toActor } from "@/lib/auth/guards";
+import { can } from "@/lib/rbac";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ export default async function ClientsPage({
   const query = await searchParams;
   const page = Math.max(1, Number(query.page ?? 1));
   const search = query.q?.trim();
+  const canShare = can(toActor(user), "clients.manage");
 
   // A PROJECT_MANAGER only ever sees the clients it is assigned to (PRD §42.5).
   const scope =
@@ -62,7 +65,20 @@ export default async function ClientsPage({
 
   return (
     <>
-      <DashboardHeader title="Clients" description="Accounts, delivery volume and outstanding balances." />
+      <DashboardHeader
+        title="Clients"
+        description="Accounts, delivery volume and outstanding balances."
+        actions={
+          canShare ? (
+            <ShareDocumentForm
+              clients={clients.map((client) => ({
+                id: client.id,
+                label: client.companyName ?? client.user?.name ?? client.user?.email ?? "Client",
+              }))}
+            />
+          ) : null
+        }
+      />
       <ListFilters placeholder="Search company, name or email…" />
 
       {clients.length ? (

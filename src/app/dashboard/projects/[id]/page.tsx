@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { DashboardHeader, Panel, StatCard } from "@/components/dashboard/page-shell";
@@ -25,6 +26,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       milestones: { orderBy: { position: "asc" } },
       tasks: { orderBy: [{ status: "asc" }, { dueDate: "asc" }], include: { assignee: { select: { name: true } } } },
       files: { orderBy: { createdAt: "desc" } },
+      tickets: {
+        orderBy: { createdAt: "desc" },
+        select: { id: true, reference: true, subject: true, status: true },
+      },
       activities: {
         orderBy: { createdAt: "desc" },
         take: 12,
@@ -136,6 +141,24 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <p className="text-sm text-ink-muted">No files uploaded.</p>
             )}
           </Panel>
+
+          {project.tickets.length ? (
+            <Panel title={`Tickets about this (${project.tickets.length})`}>
+              <ul className="space-y-2">
+                {project.tickets.map((ticket) => (
+                  <li key={ticket.id}>
+                    <Link
+                      href={`/dashboard/support/${ticket.id}`}
+                      className="flex flex-wrap items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-step--1">{ticket.subject}</span>
+                      <StatusBadge status={ticket.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
 
           <Panel title="Activity">
             <ul className="space-y-3">

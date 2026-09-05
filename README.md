@@ -73,6 +73,7 @@ database — those fail loudly rather than pretending to work.
 | `npm run db:studio` | Prisma Studio |
 | `npm run test:smoke` | End-to-end smoke test against a running server |
 | `npm run test:lifecycle` | End-to-end test of the request → ticket → invoice lifecycle |
+| `npm run test:portal` | End-to-end test of the client portal: enquiry → quote → invoice, and user management |
 
 Smoke test (needs a built app running and a seeded database):
 

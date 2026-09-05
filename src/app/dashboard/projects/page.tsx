@@ -1,9 +1,11 @@
 import { DashboardHeader } from "@/components/dashboard/page-shell";
+import { CreateProjectForm } from "@/components/dashboard/client-work-forms";
 import { ListFilters } from "@/components/dashboard/filters";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, LinkCell, Pagination, Table, TableWrap, Td, Th, Tr } from "@/components/ui/table";
 import { prisma } from "@/lib/db";
-import { requirePermission } from "@/lib/auth/guards";
+import { requirePermission, toActor } from "@/lib/auth/guards";
+import { can } from "@/lib/rbac";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +41,22 @@ export default async function ProjectsPage({
       : {}),
   };
 
+  const canCreate = can(toActor(user), "projects.manage");
+  const [clients, services, openRequests] = canCreate
+    ? await Promise.all([
+        prisma.clientProfile.findMany({
+          orderBy: { companyName: "asc" },
+          select: { id: true, companyName: true, user: { select: { name: true, email: true } } },
+        }),
+        prisma.service.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+        prisma.serviceRequest.findMany({
+          where: { status: { notIn: ["CONVERTED", "CANCELLED", "REJECTED"] } },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, reference: true, title: true, clientId: true },
+        }),
+      ])
+    : [[], [], []];
+
   const [projects, total] = await Promise.all([
     prisma.project.findMany({
       where,
@@ -69,6 +87,22 @@ export default async function ProjectsPage({
           user.role === "PROJECT_MANAGER"
             ? "Projects you are assigned to."
             : "Delivery across every client engagement."
+        }
+        actions={
+          canCreate ? (
+            <CreateProjectForm
+              clients={clients.map((client) => ({
+                id: client.id,
+                label: client.companyName ?? client.user?.name ?? client.user?.email ?? "Client",
+              }))}
+              services={services}
+              requests={openRequests.map((request) => ({
+                id: request.id,
+                clientId: request.clientId,
+                label: `${request.reference} — ${request.title}`,
+              }))}
+            />
+          ) : null
         }
       />
       <ListFilters

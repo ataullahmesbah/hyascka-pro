@@ -112,11 +112,22 @@ export async function createTicketAction(
     requestId = owned?.id ?? null;
   }
 
+  // Same rule for a project: it must be one of theirs.
+  let projectId: string | null = null;
+  if (parsed.data.projectId) {
+    const owned = await prisma.project.findFirst({
+      where: { id: parsed.data.projectId, clientId: user.clientProfileId },
+      select: { id: true },
+    });
+    projectId = owned?.id ?? null;
+  }
+
   const ticket = await prisma.supportTicket.create({
     data: {
       reference: reference("TKT"),
       clientId: user.clientProfileId,
       requestId,
+      projectId,
       subject: parsed.data.subject,
       category: parsed.data.category,
       priority: parsed.data.priority,

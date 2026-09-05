@@ -24,6 +24,7 @@ const AUTH_PAGES = new Set(["/login", "/register", "/forgot-password"]);
  */
 const MAINTENANCE_EXEMPT = new Set([
   "/maintenance",
+  "/session-ended",
   "/login",
   "/register",
   "/forgot-password",
@@ -76,6 +77,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // /session-ended is deliberately absent from AUTH_PAGES: it exists to delete
+  // a cookie whose session is gone, so it must not be bounced to the dashboard
+  // on the strength of that same cookie — that is the loop it breaks.
   if (claims && AUTH_PAGES.has(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }

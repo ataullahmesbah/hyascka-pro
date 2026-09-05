@@ -20,18 +20,25 @@ const STATUSES = ["OPEN", "PENDING", "RESOLVED", "CLOSED"] as const;
 
 export function TicketForm({
   requestId,
+  projectId,
+  aboutTitle,
   requestTitle,
 }: {
   /** Set when the ticket is raised from a service, so staff know which one. */
   requestId?: string;
+  /** Or from a project, for work already under way. */
+  projectId?: string;
+  aboutTitle?: string;
   requestTitle?: string;
 } = {}) {
+  const about = aboutTitle ?? requestTitle;
   return (
     <ActionForm action={createTicketAction} successTitle="Ticket opened" resetOnSuccess>
       {requestId ? <input type="hidden" name="requestId" value={requestId} /> : null}
-      {requestTitle ? (
+      {projectId ? <input type="hidden" name="projectId" value={projectId} /> : null}
+      {about ? (
         <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-step--2 text-ink-soft">
-          About <strong className="text-ink">{requestTitle}</strong>
+          About <strong className="text-ink">{about}</strong>
         </p>
       ) : null}
       <SubjectField />

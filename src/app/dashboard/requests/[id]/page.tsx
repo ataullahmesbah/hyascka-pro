@@ -4,12 +4,13 @@ import { notFound } from "next/navigation";
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { RequestStatusForm } from "@/components/dashboard/request-status-form";
 import { RequestThread } from "@/components/dashboard/request-thread";
+import { QuoteForm, RequestFinanceActions } from "@/components/dashboard/quote-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { readAttachments } from "@/lib/attachments";
 import { requireAnyPermission } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db";
 import { toThreadEntries } from "@/lib/request-thread";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,30 @@ export default async function RequestDetailPage({
       tickets: {
         orderBy: { createdAt: "desc" },
         select: { id: true, reference: true, subject: true, status: true },
+      },
+      invoices: {
+        orderBy: { issueDate: "desc" },
+        select: {
+          id: true,
+          number: true,
+          status: true,
+          total: true,
+          amountPaid: true,
+          currency: true,
+          payments: {
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              reference: true,
+              method: true,
+              trxId: true,
+              amount: true,
+              currency: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+        },
       },
     },
   });
@@ -85,6 +110,79 @@ export default async function RequestDetailPage({
         </div>
 
         <aside className="space-y-5">
+          <Panel
+            title="Price"
+            description="What we are charging, and where the client stands on it."
+          >
+            <QuoteForm
+              requestId={request.id}
+              amount={request.quotedAmount ? Number(request.quotedAmount) : null}
+              currency={request.quoteCurrency}
+              note={request.quoteNote}
+            />
+
+            {request.quotedAt ? (
+              <p className="mt-4 border-t border-line pt-3 text-step--2 text-ink-muted">
+                Quoted {formatDate(request.quotedAt, true)}
+                {request.acceptedAt
+                  ? ` · accepted ${formatDate(request.acceptedAt, true)}`
+                  : request.declinedAt
+                    ? ` · declined ${formatDate(request.declinedAt, true)}`
+                    : " · awaiting the client's answer"}
+                {request.confirmedAt ? ` · confirmed ${formatDate(request.confirmedAt)}` : ""}
+              </p>
+            ) : null}
+
+            <div className="mt-4">
+              <RequestFinanceActions
+                requestId={request.id}
+                accepted={Boolean(request.acceptedAt)}
+                confirmed={Boolean(request.confirmedAt)}
+                invoiced={request.invoices.length > 0}
+              />
+            </div>
+          </Panel>
+
+          {request.invoices.length ? (
+            <Panel title="Billing">
+              <ul className="space-y-3">
+                {request.invoices.map((invoice) => (
+                  <li key={invoice.id} className="rounded-lg border border-line p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Link
+                        href={`/dashboard/finance/invoices/${invoice.id}`}
+                        className="text-step--1 font-medium text-accent hover:underline"
+                      >
+                        {invoice.number}
+                      </Link>
+                      <StatusBadge status={invoice.status} />
+                    </div>
+                    <p className="mt-1 text-step--2 text-ink-muted">
+                      {formatCurrency(Number(invoice.total), invoice.currency)} ·{" "}
+                      {formatCurrency(Number(invoice.amountPaid), invoice.currency)} paid
+                    </p>
+                    {invoice.payments.length ? (
+                      <ul className="mt-2 space-y-1 border-t border-line pt-2">
+                        {invoice.payments.map((payment) => (
+                          <li key={payment.id} className="flex flex-wrap items-center gap-2 text-step--2">
+                            <span className="text-ink-soft">
+                              {formatCurrency(Number(payment.amount), payment.currency)}
+                            </span>
+                            <span className="text-ink-muted">{payment.method.replace(/_/g, " ")}</span>
+                            <span className="font-mono text-ink-muted">{payment.trxId ?? "—"}</span>
+                            <StatusBadge status={payment.status} />
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 text-step--2 text-ink-muted">No payment submitted yet.</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
+
           <Panel title="Status">
             <RequestStatusForm
               requestId={request.id}

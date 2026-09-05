@@ -10,6 +10,7 @@ import { leadReplySchema, leadUpdateSchema, toActionState, type ActionState } fr
 import { emailLayout, sendEmail } from "@/lib/providers/email";
 import { getSettings } from "@/lib/settings";
 import { notify } from "@/lib/notifications";
+import { reference } from "@/lib/utils";
 
 /**
  * Every action below starts with authentication, then a permission check, then
@@ -81,9 +82,63 @@ export async function convertLeadAction(leadId: string): Promise<ActionState> {
   const lead = await prisma.lead.findUnique({ where: { id: leadId } });
   if (!lead) return { ok: false, message: "That lead no longer exists." };
 
-  const existing = await prisma.user.findUnique({ where: { email: lead.email }, select: { id: true } });
+  /**
+   * An enquiry from someone who already has an account used to dead-end here.
+   * It should not: attach the enquiry to their portal as a service request, so
+   * the work is visible to them instead of living only in this lead.
+   */
+  const existing = await prisma.user.findUnique({
+    where: { email: lead.email },
+    select: { id: true, clientProfile: { select: { id: true } } },
+  });
   if (existing) {
-    return { ok: false, message: "An account already exists for that email address." };
+    if (!existing.clientProfile) {
+      return { ok: false, message: "That email belongs to a staff account, so it cannot be a client." };
+    }
+    if (lead.requestId) {
+      return { ok: false, message: "This enquiry is already in that client's portal." };
+    }
+
+    const request = await prisma.serviceRequest.create({
+      data: {
+        reference: reference("REQ"),
+        clientId: existing.clientProfile.id,
+        serviceId: lead.serviceId,
+        title: lead.company ? `${lead.company} — enquiry` : "New enquiry",
+        brief: lead.message,
+        budget: lead.budget,
+        isCustom: !lead.serviceId,
+        status: "IN_REVIEW",
+      },
+      select: { id: true, reference: true },
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { clientId: existing.clientProfile.id, requestId: request.id, status: "QUALIFIED" },
+    });
+
+    await notify({
+      userId: existing.id,
+      type: "REQUEST_UPDATED",
+      title: `Your enquiry is in your portal — ${request.reference}`,
+      body: "You can follow its status, send us files and message us about it there.",
+      href: `/dashboard/my-services/${request.id}`,
+    });
+
+    await audit({
+      actorId: user.id,
+      actorRole: user.role,
+      action: "lead.attached",
+      entityType: "Lead",
+      entityId: leadId,
+      summary: `Enquiry ${lead.reference} attached to an existing client portal`,
+      metadata: { requestId: request.id },
+    });
+
+    revalidatePath("/dashboard/leads");
+    revalidatePath("/dashboard/requests");
+    return { ok: true, message: `Added to their portal as ${request.reference}.` };
   }
 
   // A random, unusable password: the client sets their own via password reset.

@@ -1,6 +1,9 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
+import { SESSION_COOKIE } from "@/lib/auth/jwt";
 
 import { getCurrentUser, type CurrentUser } from "@/lib/auth/session";
 import { can, canAny, type Actor, type Permission } from "@/lib/rbac";
@@ -23,10 +26,22 @@ export function toActor(user: CurrentUser): Actor {
   };
 }
 
-/** Page-level guard: redirects to login. Use in Server Components only. */
+/**
+ * Page-level guard: redirects to login. Use in Server Components only.
+ *
+ * When a session cookie is still present but the session behind it is gone —
+ * revoked because the account was suspended or its role changed — we route
+ * through /session-ended so the cookie is actually deleted. Sending them
+ * straight to /login would bounce off the middleware, which trusts the cookie,
+ * and loop.
+ */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const store = await cookies();
+    if (store.get(SESSION_COOKIE)) redirect("/session-ended?reason=ended");
+    redirect("/login");
+  }
   return user;
 }
 

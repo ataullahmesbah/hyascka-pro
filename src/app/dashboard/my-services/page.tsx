@@ -2,19 +2,20 @@ import Link from "next/link";
 
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { ButtonLink } from "@/components/ui/button";
+import { ClientRequestForm } from "@/components/dashboard/client-request-form";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/table";
 import { IconBadge } from "@/components/ui/icon";
 import { prisma } from "@/lib/db";
 import { requireClient } from "@/lib/client-guard";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function MyServicesPage() {
   const { clientId } = await requireClient();
 
-  const [projects, requests] = await Promise.all([
+  const [projects, requests, catalogue] = await Promise.all([
     prisma.project.findMany({
       where: { clientId },
       orderBy: { createdAt: "desc" },
@@ -25,7 +26,17 @@ export default async function MyServicesPage() {
       orderBy: { createdAt: "desc" },
       include: { service: { select: { title: true } } },
     }),
+    prisma.service.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
   ]);
+
+  // Custom work gets its own section: it is the part a client cannot look up
+  // on the services page, so it needs to be legible on its own.
+  const catalogueRequests = requests.filter((request) => !request.isCustom);
+  const customRequests = requests.filter((request) => request.isCustom);
 
   const services = new Map<
     string,
@@ -49,9 +60,12 @@ export default async function MyServicesPage() {
         title="My services"
         description="What we are delivering for you, and anything you have requested."
         actions={
-          <ButtonLink href="/services" variant="outline" size="sm" target="_blank">
-            Browse all services
-          </ButtonLink>
+          <>
+            <ButtonLink href="/services" variant="outline" size="sm" target="_blank">
+              Browse all services
+            </ButtonLink>
+            <ClientRequestForm services={catalogue} />
+          </>
         }
       />
 
@@ -79,33 +93,78 @@ export default async function MyServicesPage() {
         )}
       </Panel>
 
-      <Panel title="Service requests">
-        {requests.length ? (
-          <ul className="divide-y divide-line">
-            {requests.map((request) => (
-              <li key={request.id} className="py-3 first:pt-0 last:pb-0">
-                <Link
-                  href={`/dashboard/my-services/${request.id}`}
-                  className="flex flex-wrap items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-ink">{request.title}</p>
-                    <p className="text-xs text-ink-muted">
-                      {request.reference} · {request.service?.title ?? "General"} ·{" "}
-                      {formatDate(request.createdAt)} · {request.progress}% complete
-                    </p>
-                  </div>
-                  <StatusBadge status={request.status} />
-                </Link>
-              </li>
-            ))}
-          </ul>
+      <Panel title="Service requests" className="mb-5">
+        {catalogueRequests.length ? (
+          <RequestList requests={catalogueRequests} />
         ) : (
           <p className="text-sm text-ink-muted">
-            No open requests. Message the team or use the contact form to start something new.
+            Nothing open right now. Use “Request a service” above to start something.
+          </p>
+        )}
+      </Panel>
+
+      <Panel
+        title="Custom work"
+        description="Work you described to us rather than picking from the catalogue."
+      >
+        {customRequests.length ? (
+          <RequestList requests={customRequests} />
+        ) : (
+          <p className="text-sm text-ink-muted">
+            Nothing custom yet. Choose “Something else — custom work” when you request a service.
           </p>
         )}
       </Panel>
     </>
+  );
+}
+
+type RequestRow = {
+  id: string;
+  reference: string;
+  title: string;
+  status: string;
+  progress: number;
+  createdAt: Date;
+  quotedAmount: unknown;
+  quoteCurrency: string;
+  acceptedAt: Date | null;
+  service: { title: string } | null;
+};
+
+/** One line per request, with the bit the client actually looks for: the price. */
+function RequestList({ requests }: { requests: RequestRow[] }) {
+  return (
+    <ul className="divide-y divide-line">
+      {requests.map((request) => (
+        <li key={request.id} className="py-3 first:pt-0 last:pb-0">
+          <Link
+            href={`/dashboard/my-services/${request.id}`}
+            className="flex flex-wrap items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-ink">{request.title}</p>
+              <p className="text-xs text-ink-muted">
+                {request.reference} · {request.service?.title ?? "Custom"} ·{" "}
+                {formatDate(request.createdAt)} · {request.progress}% complete
+              </p>
+            </div>
+            {request.quotedAmount ? (
+              <span
+                className={
+                  request.acceptedAt
+                    ? "text-sm font-semibold tabular text-ink"
+                    : "text-sm font-semibold tabular text-accent"
+                }
+              >
+                {formatCurrency(Number(request.quotedAmount), request.quoteCurrency)}
+                {request.acceptedAt ? "" : " — awaiting you"}
+              </span>
+            ) : null}
+            <StatusBadge status={request.status} />
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

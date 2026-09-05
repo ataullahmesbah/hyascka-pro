@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { DashboardHeader, Panel, StatCard } from "@/components/dashboard/page-shell";
+import { TicketForm } from "@/components/dashboard/ticket-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db";
 import { requireClient } from "@/lib/client-guard";
@@ -79,6 +80,13 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
         </Panel>
 
         <aside className="space-y-5">
+          <Panel
+            title="Something wrong?"
+            description="Raise a ticket and it arrives already attached to this project."
+          >
+            <TicketForm projectId={project.id} aboutTitle={project.name} />
+          </Panel>
+
           <Panel title="Shared files">
             {project.files.length ? (
               <ul className="space-y-2.5">

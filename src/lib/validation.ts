@@ -123,6 +123,8 @@ export const ticketSchema = z.object({
   body: z.string().trim().min(10, "Describe the issue.").max(4000),
   /** Set when the ticket is raised from a specific service request. */
   requestId: z.string().optional().or(z.literal("")),
+  /** Or from a live project. */
+  projectId: z.string().optional().or(z.literal("")),
 });
 
 export const serviceRequestSchema = z.object({
@@ -142,6 +144,7 @@ export const leadUpdateSchema = z.object({
 
 export const invoiceSchema = z.object({
   clientId: z.string().min(1, "Choose a client."),
+  requestId: z.string().trim().max(40).optional().or(z.literal("")),
   dueDate: z.string().min(4, "Choose a due date."),
   currency: z.string().length(3).default("BDT"),
   notes: optionalText(1000),

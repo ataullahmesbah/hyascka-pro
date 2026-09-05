@@ -42,7 +42,19 @@ export async function changeUserRoleAction(
     }
   }
 
-  await prisma.user.update({ where: { id: userId }, data: { role } });
+  /*
+   * A role change ends the target's sessions. Permissions are read from the
+   * session on every request, so leaving them signed in would let a demoted
+   * account keep working under its old access until it happened to sign out —
+   * and a promoted one would not see its new access at all.
+   */
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { role } }),
+    prisma.session.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
 
   await audit({
     actorId: actor.id,
@@ -60,7 +72,10 @@ export async function changeUserRoleAction(
   });
 
   revalidatePath("/dashboard/users");
-  return { ok: true, message: `${target.email} is now ${role.replace(/_/g, " ").toLowerCase()}.` };
+  return {
+    ok: true,
+    message: `${target.email} is now ${role.replace(/_/g, " ").toLowerCase()}, and has been signed out everywhere.`,
+  };
 }
 
 /** Suspension is non-destructive: records are retained (PRD §9). */
@@ -111,7 +126,13 @@ export async function changeUserStatusAction(
   });
 
   revalidatePath("/dashboard/users");
-  return { ok: true, message: `${target.email} is now ${status.toLowerCase().replace(/_/g, " ")}.` };
+  return {
+    ok: true,
+    message:
+      status === "ACTIVE"
+        ? `${target.email} is active again and can sign in.`
+        : `${target.email} is now ${status.toLowerCase()} and has been signed out everywhere.`,
+  };
 }
 
 export async function updateProfileAction(

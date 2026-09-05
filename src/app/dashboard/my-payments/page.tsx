@@ -13,7 +13,16 @@ export default async function MyPaymentsPage() {
   const payments = await prisma.payment.findMany({
     where: { invoice: { clientId } },
     orderBy: { createdAt: "desc" },
-    include: { invoice: { select: { id: true, number: true } } },
+    include: {
+      invoice: {
+        select: {
+          id: true,
+          number: true,
+          request: { select: { id: true, title: true } },
+          items: { select: { service: { select: { title: true } } } },
+        },
+      },
+    },
   });
 
   const verified = payments
@@ -37,11 +46,12 @@ export default async function MyPaymentsPage() {
       <Panel>
         {payments.length ? (
           <TableWrap className="border-0">
-            <Table className="min-w-[44rem]">
+            <Table className="min-w-[52rem]">
               <thead>
                 <tr>
                   <Th>Reference</Th>
                   <Th>Invoice</Th>
+                  <Th>For</Th>
                   <Th>Method</Th>
                   <Th>Transaction ID</Th>
                   <Th>Amount</Th>
@@ -57,6 +67,15 @@ export default async function MyPaymentsPage() {
                       <LinkCell href={`/dashboard/my-invoices/${payment.invoice.id}`}>
                         {payment.invoice.number}
                       </LinkCell>
+                    </Td>
+                    <Td className="text-ink-muted">
+                      {payment.invoice.request ? (
+                        <LinkCell href={`/dashboard/my-services/${payment.invoice.request.id}`}>
+                          {payment.invoice.request.title}
+                        </LinkCell>
+                      ) : (
+                        payment.invoice.items.find((item) => item.service)?.service?.title ?? "—"
+                      )}
                     </Td>
                     <Td className="text-ink-muted">{payment.method.replace(/_/g, " ")}</Td>
                     <Td className="font-mono text-xs text-ink-muted">{payment.trxId ?? "—"}</Td>

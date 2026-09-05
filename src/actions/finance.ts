@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
@@ -103,6 +104,7 @@ export async function createInvoiceAction(
       total: new Prisma.Decimal(total),
       currency: input.currency,
       notes: input.notes || null,
+      requestId: input.requestId || null,
       items: { create: items },
     },
     select: { id: true, number: true },
@@ -566,4 +568,109 @@ export async function approveExpenseAction(expenseId: string, approve: boolean) 
   });
 
   revalidatePath("/dashboard/finance/expenses");
+}
+
+
+/**
+ * Bill a confirmed request in one step.
+ *
+ * The amount comes from the quote the client already accepted — not from the
+ * browser, and not retyped by hand, so what they agreed to is what they are
+ * charged. The invoice stays linked to the request, which is how a payment can
+ * later say which service it was for (PRD v5.2 §3.5).
+ */
+export async function invoiceRequestAction(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await authorize("invoice.issue");
+
+  const parsed = z
+    .object({
+      requestId: z.string().min(1),
+      dueDays: z.coerce.number().int().min(1).max(365).default(14),
+    })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+  const { requestId, dueDays } = parsed.data;
+
+  const request = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    select: {
+      id: true,
+      reference: true,
+      title: true,
+      clientId: true,
+      serviceId: true,
+      quotedAmount: true,
+      quoteCurrency: true,
+      acceptedAt: true,
+      cancelledAt: true,
+      client: { select: { userId: true } },
+    },
+  });
+  if (!request) return { ok: false, message: "That request no longer exists." };
+  if (request.cancelledAt) return { ok: false, message: "That request has been cancelled." };
+  if (!request.quotedAmount || !request.acceptedAt) {
+    return { ok: false, message: "Quote it and let the client accept before invoicing." };
+  }
+
+  const amount = Number(request.quotedAmount);
+  const dueDate = new Date(Date.now() + dueDays * 864e5);
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      number: reference("INV"),
+      clientId: request.clientId,
+      requestId: request.id,
+      status: "ISSUED",
+      issuedAt: new Date(),
+      dueDate,
+      subtotal: new Prisma.Decimal(amount),
+      discount: new Prisma.Decimal(0),
+      tax: new Prisma.Decimal(0),
+      total: new Prisma.Decimal(amount),
+      currency: request.quoteCurrency,
+      notes: `For ${request.reference} — ${request.title}`,
+      items: {
+        create: [
+          {
+            serviceId: request.serviceId,
+            description: request.title,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(amount),
+            discount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            total: new Prisma.Decimal(amount),
+          },
+        ],
+      },
+    },
+    select: { id: true, number: true },
+  });
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "invoice.issued",
+    entityType: "Invoice",
+    entityId: invoice.id,
+    summary: `Invoice ${invoice.number} issued from ${request.reference}`,
+    metadata: { requestId: request.id, amount },
+  });
+
+  if (request.client.userId) {
+    await notify({
+      userId: request.client.userId,
+      type: "INVOICE_ISSUED",
+      title: `Invoice ${invoice.number} for ${request.title}`,
+      body: `${amount.toFixed(2)} ${request.quoteCurrency}, due ${dueDate.toDateString()}.`,
+      href: `/dashboard/my-invoices/${invoice.id}`,
+    });
+  }
+
+  revalidatePath(`/dashboard/requests/${request.id}`);
+  revalidatePath(`/dashboard/my-services/${request.id}`);
+  revalidatePath("/dashboard/finance/invoices");
+  return { ok: true, message: `Invoice ${invoice.number} issued.`, data: { id: invoice.id } };
 }

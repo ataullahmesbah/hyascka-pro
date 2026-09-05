@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; reset?: string }>;
+  searchParams: Promise<{ next?: string; reset?: string; reason?: string }>;
 }) {
   const query = await searchParams;
 
@@ -21,6 +21,13 @@ export default async function LoginPage({
       <p className="mt-2 text-sm text-ink-muted">
         Access your projects, invoices, payments and messages.
       </p>
+
+      {query.reason === "ended" ? (
+        <p className="mt-5 rounded-lg border border-warning/35 bg-warning-soft p-3.5 text-sm text-warning">
+          Your session has ended. This happens when an administrator changes your
+          role or the status of your account. Sign in again to continue.
+        </p>
+      ) : null}
 
       {query.reset === "1" ? (
         <p className="mt-5 rounded-lg border border-success/35 bg-success/8 p-3.5 text-sm text-success">

@@ -2,9 +2,9 @@
 
 import { prisma, isDatabaseConfigured } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
-import { requestContext } from "@/lib/auth/session";
+import { getCurrentUser, requestContext } from "@/lib/auth/session";
 import { audit, securityEvent } from "@/lib/audit";
-import { notifyRoles } from "@/lib/notifications";
+import { notify, notifyRoles } from "@/lib/notifications";
 import { enqueue } from "@/lib/providers/jobs";
 import { emailLayout, sendEmail } from "@/lib/providers/email";
 import { sendTelegram } from "@/lib/providers/telegram";
@@ -60,9 +60,37 @@ export async function submitContactForm(
     ? await prisma.service.findUnique({ where: { slug: input.serviceSlug }, select: { id: true, title: true } })
     : null;
 
+  /**
+   * An enquiry from someone already signed in is not just a lead — it is that
+   * client asking us for work. It opens a service request in their portal at
+   * the same moment it reaches the team, so they can watch its status instead
+   * of waiting on an inbox. Anonymous enquiries behave exactly as before.
+   */
+  const viewer = await getCurrentUser().catch(() => null);
+  const clientId =
+    viewer && viewer.role === "CLIENT" && viewer.clientProfileId ? viewer.clientProfileId : null;
+
+  const request = clientId
+    ? await prisma.serviceRequest.create({
+        data: {
+          reference: reference("REQ"),
+          clientId,
+          serviceId: service?.id ?? null,
+          title: service?.title ? `${service.title} — enquiry` : "New enquiry",
+          brief: input.message,
+          budget: input.budget || null,
+          isCustom: !service,
+          status: "SUBMITTED",
+        },
+        select: { id: true, reference: true },
+      })
+    : null;
+
   const lead = await prisma.lead.create({
     data: {
       reference: reference("LEAD"),
+      clientId,
+      requestId: request?.id ?? null,
       name: input.name,
       email: input.email,
       phone: input.phone || null,
@@ -70,12 +98,22 @@ export async function submitContactForm(
       budget: input.budget || null,
       serviceId: service?.id ?? null,
       message: input.message,
-      source: "website",
+      source: clientId ? "portal" : "website",
       ipAddress,
       userAgent,
     },
     select: { id: true, reference: true },
   });
+
+  if (request && viewer) {
+    await notify({
+      userId: viewer.id,
+      type: "REQUEST_UPDATED",
+      title: `We have your request — ${request.reference}`,
+      body: `${service?.title ?? "Your enquiry"} is now in your portal. Track its status there.`,
+      href: `/dashboard/my-services/${request.id}`,
+    });
+  }
 
   await audit({
     action: "lead.created",
@@ -150,8 +188,10 @@ export async function submitContactForm(
 
   return {
     ok: true,
-    message: `Thank you — your enquiry is with us. Reference ${lead.reference}. We reply within one business day.`,
-    data: { reference: lead.reference },
+    message: request
+      ? `Thank you — this is now in your dashboard as ${request.reference}. We reply within one business day.`
+      : `Thank you — your enquiry is with us. Reference ${lead.reference}. We reply within one business day.`,
+    data: { reference: request?.reference ?? lead.reference, requestId: request?.id ?? null },
   };
 }
 

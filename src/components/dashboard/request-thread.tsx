@@ -43,8 +43,8 @@ function AttachmentChip({ file }: { file: Attachment }) {
   );
 }
 
-/** Upload control shared by both sides of the thread. */
-function AttachmentPicker({
+/** Upload control shared by both sides of the thread, and by the request form. */
+export function AttachmentPicker({
   files,
   onChange,
 }: {

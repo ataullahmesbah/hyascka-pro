@@ -4,6 +4,7 @@ import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { CancelRequestForm } from "@/components/dashboard/cancel-request-form";
 import { RequestThread } from "@/components/dashboard/request-thread";
 import { TicketForm } from "@/components/dashboard/ticket-forms";
+import { QuoteDecision } from "@/components/dashboard/quote-forms";
 import { ButtonLink } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { readAttachments } from "@/lib/attachments";
@@ -47,11 +48,33 @@ export default async function MyServiceRequestPage({
   });
   if (!request) notFound();
 
+  // Only what this request was billed for. A client asking "what did I pay for
+  // this?" should not be shown their other invoices.
   const invoices = await prisma.invoice.findMany({
-    where: { clientId, status: { in: ["ISSUED", "PARTIALLY_PAID", "OVERDUE"] } },
-    orderBy: { issuedAt: "desc" },
-    select: { id: true, number: true, total: true, currency: true, status: true, dueDate: true },
-    take: 3,
+    where: { clientId, requestId: request.id, status: { not: "DRAFT" } },
+    orderBy: { issueDate: "desc" },
+    select: {
+      id: true,
+      number: true,
+      total: true,
+      amountPaid: true,
+      currency: true,
+      status: true,
+      dueDate: true,
+      payments: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          method: true,
+          trxId: true,
+          amount: true,
+          currency: true,
+          status: true,
+          createdAt: true,
+          rejectionReason: true,
+        },
+      },
+    },
   });
 
   const brief = readAttachments(request.attachments);
@@ -129,28 +152,80 @@ export default async function MyServiceRequestPage({
         </div>
 
         <aside className="space-y-5">
+          {request.quotedAmount && request.quotedAt ? (
+            <Panel title="Our price" description="Accept it and we will get started.">
+              <QuoteDecision
+                requestId={request.id}
+                amount={Number(request.quotedAmount)}
+                currency={request.quoteCurrency}
+                note={request.quoteNote}
+                acceptedAt={request.acceptedAt ? request.acceptedAt.toISOString() : null}
+                declinedAt={request.declinedAt ? request.declinedAt.toISOString() : null}
+              />
+            </Panel>
+          ) : null}
+
           {invoices.length ? (
-            <Panel title="Payment">
+            <Panel title="Payment" description="What this work was billed, and what you have paid.">
               <ul className="space-y-3">
-                {invoices.map((invoice) => (
-                  <li key={invoice.id} className="rounded-lg border border-line p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-step--1 font-medium">{invoice.number}</span>
-                      <StatusBadge status={invoice.status} />
-                    </div>
-                    <p className="mt-1 text-step--1 text-ink-soft">
-                      {formatCurrency(Number(invoice.total), invoice.currency)}
-                      {invoice.dueDate ? ` · due ${formatDate(invoice.dueDate)}` : ""}
-                    </p>
-                    <ButtonLink
-                      href={`/dashboard/my-invoices/${invoice.id}`}
-                      size="sm"
-                      className="mt-3 w-full justify-center"
-                    >
-                      Pay this invoice
-                    </ButtonLink>
-                  </li>
-                ))}
+                {invoices.map((invoice) => {
+                  const outstanding = Number(invoice.total) - Number(invoice.amountPaid);
+                  return (
+                    <li key={invoice.id} className="rounded-lg border border-line p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-step--1 font-medium">{invoice.number}</span>
+                        <StatusBadge status={invoice.status} />
+                      </div>
+                      <p className="mt-1 text-step--1 text-ink-soft">
+                        {formatCurrency(Number(invoice.total), invoice.currency)}
+                        {invoice.dueDate ? ` · due ${formatDate(invoice.dueDate)}` : ""}
+                      </p>
+
+                      {invoice.payments.length ? (
+                        <ul className="mt-3 space-y-2 border-t border-line pt-3">
+                          {invoice.payments.map((payment) => (
+                            <li key={payment.id}>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-step--2 font-medium">
+                                  {formatCurrency(Number(payment.amount), payment.currency)}
+                                </span>
+                                <span className="text-step--2 text-ink-muted">
+                                  {payment.method.replace(/_/g, " ")}
+                                </span>
+                                <StatusBadge status={payment.status} />
+                              </div>
+                              <p className="text-step--2 text-ink-muted">
+                                TrxID {payment.trxId ?? "—"} · {formatDate(payment.createdAt, true)}
+                              </p>
+                              {payment.rejectionReason ? (
+                                <p className="text-step--2 text-danger">{payment.rejectionReason}</p>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+
+                      {outstanding > 0 && !["VOID", "PAID"].includes(invoice.status) ? (
+                        <ButtonLink
+                          href={`/dashboard/my-invoices/${invoice.id}`}
+                          size="sm"
+                          className="mt-3 w-full justify-center"
+                        >
+                          Pay {formatCurrency(outstanding, invoice.currency)}
+                        </ButtonLink>
+                      ) : (
+                        <ButtonLink
+                          href={`/dashboard/my-invoices/${invoice.id}`}
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full justify-center"
+                        >
+                          View invoice
+                        </ButtonLink>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </Panel>
           ) : null}
