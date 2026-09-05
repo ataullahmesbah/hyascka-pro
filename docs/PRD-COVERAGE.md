@@ -78,6 +78,25 @@ Where each requirement lives, and what was deliberately deferred.
 | 11 | Styling controlled globally, not per page | `src/styles/tokens.css` → `tailwind.config.ts` |
 | 12 | Demo data on every previously blank surface, editable afterwards | `prisma/demo-data.ts` |
 
+## Part IV — v5.2
+
+| Requirement | Where |
+|---|---|
+| Maintenance mode that does not lock staff out, and says plainly that staff bypass it | `src/middleware.ts` (`MAINTENANCE_EXEMPT`), `dashboard/settings/maintenance` |
+| Kill switch applies immediately rather than after a cache window | `src/app/api/system/status/route.ts` |
+| Scroll reveal with no hydration mismatch | `src/styles/globals.css` (`animation-timeline: view()`) |
+| Unread badge clears when the panel is opened | `src/components/dashboard/topbar.tsx` |
+| Navbar shows Dashboard once signed in, without making public pages dynamic | `AUTH_HINT_COOKIE`, `ThemeScript`, `[data-auth]` rules |
+| Service request timeline shared by staff and client, with internal notes | `src/actions/requests.ts`, `src/components/dashboard/request-thread.tsx` |
+| Status and progress a client can see; notification on every change | `dashboard/requests/[id]`, `dashboard/my-services/[id]` |
+| Client cancellation, outright before an order and by request after | `requestCancellationAction` |
+| Attachments (image or PDF) on requests and replies, both sides | `src/lib/attachments.ts` |
+| Staff raising a bespoke request against a client | `createCustomRequestAction` |
+| Blog body syntax: h2-h6, images, highlight callouts, lists | `src/components/ui/markdown.tsx` |
+| Twenty articles with covers, published two days apart | `src/content/marketing.ts`, `public/blog/` |
+| Per-slide hero artwork, world map with the HYASCKA marker | `world-map.tsx`, `network-visual.tsx`, `metric-visual.tsx` |
+| Process section rebuilt; engagement steps and commitments added | `src/components/marketing/sections.tsx` |
+
 ## Deliberate deviations
 
 **Authentication.** The PRD names Auth.js or Better Auth. This build uses a first-party
@@ -102,9 +121,13 @@ These are scoped but not built, and are the natural next iteration:
 - **Test depth.** `tests/smoke.mjs` covers the critical paths, the design system and the
   authorization boundaries in 67 checks. Unit tests for finance calculations and status
   transitions, and integration tests for the notification workflows, are not written yet.
-- **Mobile performance.** Desktop is 100 on all five main pages. Mobile performance
-  measures 92–98 depending on the run; the homepage is the page that sometimes lands
-  below 95, and its remaining cost is React hydration under Lighthouse's 4× CPU throttle.
+- **Mobile performance.** Desktop measures 99–100. Mobile measures 91 on the
+  homepage and 93–95 elsewhere. The homepage gave up a few points to the two new
+  sections and the hero map; the remaining cost is React hydration under
+  Lighthouse's 4× CPU throttle in a shared container.
+- **Payments.** A client submits a payment against an invoice and staff verify it,
+  which generates the invoice record they can download. The gateway redirect and
+  webhook are still not implemented — the manual flow is complete.
 - **Gateway payments.** The SSLCommerz adapter is configurable and toggleable, but the
   redirect and webhook handlers are not implemented — the manual flow is complete.
 - **Proposals and orders.** Read views exist; the offer → acceptance → order lifecycle is

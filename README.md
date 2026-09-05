@@ -2,15 +2,16 @@
 
 A premium agency website **and** the business platform behind it: public marketing site,
 CMS, client portal, CRM, projects, finance, payments, messaging, notifications and
-role-based dashboards — built to the HYASCKA PRD, v5.0.
+role-based dashboards — built to the HYASCKA PRD, v5.2.
 
 ```
 Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma
 ```
 
-Three themes, chosen by the visitor or locked by an admin. Measured on the five main
-pages with Lighthouse 12: **desktop 100 / 100 / 100 / 100**; mobile **92–98**
-performance with accessibility, best practices and SEO at **100**.
+Three themes and five typefaces, chosen by the visitor or locked by an admin.
+Measured with Lighthouse 12: **desktop 99–100** across the board; mobile **91** on
+the homepage and **93–95** elsewhere, with accessibility, best practices and SEO at
+**100** throughout.
 
 New to the project? `docs/ENV-SETUP.md` walks through what to install, every environment
 variable, and where to get each value.
