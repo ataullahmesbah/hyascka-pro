@@ -267,6 +267,55 @@ export const homepage = {
     { step: "06", title: "Grow", detail: "Measurement, experiments and iteration. The launch is the start of the engagement, not the end." },
   ],
 
+  /** How an engagement starts — the friction-reducing band before the CTA. */
+  engagement: [
+    {
+      step: "01",
+      title: "A 30-minute call",
+      detail:
+        "You describe the problem. We say whether we are the right people for it, and what it would take. No deck, no pitch.",
+      icon: "MessageSquare",
+    },
+    {
+      step: "02",
+      title: "A fixed proposal",
+      detail:
+        "Scope in outcomes, an explicit list of what is not included, your dependencies with dates, and one number. Usually within three working days.",
+      icon: "FileText",
+    },
+    {
+      step: "03",
+      title: "Kickoff inside a week",
+      detail:
+        "A named contact, a staging URL from day one, and a written update every week whether the news is good or not.",
+      icon: "Rocket",
+    },
+  ],
+
+  /** Commitments we are prepared to be held to. */
+  commitments: [
+    {
+      title: "Fixed scope, fixed price",
+      detail: "The number in the proposal is the number on the invoice.",
+      icon: "ShieldCheck",
+    },
+    {
+      title: "You own everything",
+      detail: "Code, accounts, data and domains are yours from day one.",
+      icon: "Lock",
+    },
+    {
+      title: "90+ Lighthouse, or we fix it",
+      detail: "Performance is an acceptance criterion, not an aspiration.",
+      icon: "Zap",
+    },
+    {
+      title: "No lock-in",
+      detail: "Leave whenever you like and take the whole thing with you.",
+      icon: "Undo2",
+    },
+  ],
+
   metrics: [
     { label: "Projects delivered", value: 120, suffix: "+", detail: "Across engineering, search and brand" },
     { label: "Average Lighthouse score", value: 96, suffix: "/100", detail: "On delivered public pages" },

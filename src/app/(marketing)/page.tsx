@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 
 import { Hero } from "@/components/marketing/hero";
+import { MetricVisual } from "@/components/marketing/metric-visual";
 import { NetworkVisual } from "@/components/marketing/network-visual";
+import { WorldMap } from "@/components/marketing/world-map";
 import { Sponsors } from "@/components/marketing/sponsors";
 import {
   CapabilityRail,
@@ -9,6 +12,8 @@ import {
   FinalCta,
   IndustryGrid,
   Metrics,
+  Commitments,
+  EngagementSteps,
   ProcessTimeline,
   SectionHeading,
   ServicesGrid,
@@ -67,7 +72,10 @@ export default async function HomePage() {
       <JsonLd data={websiteSchema()} />
       <JsonLd data={faqSchema(faqs)} />
 
-      <Hero content={homepage.hero} visual={<NetworkVisual />} />
+      <Hero
+        content={homepage.hero}
+        visuals={[<WorldMap key="map" />, <NetworkVisual key="globe" />, <MetricVisual key="metrics" />]}
+      />
       <CapabilityRail items={homepage.capabilities} />
 
       {settings.featureFlags.sponsors_marquee ? <Sponsors content={settings.sponsors} /> : null}
@@ -112,6 +120,40 @@ export default async function HomePage() {
             align="center"
           />
           <ProcessTimeline steps={homepage.process} />
+        </div>
+      </section>
+
+      {/* The two questions a prospect has after "can they do it": how do we
+          start, and what am I committing to. */}
+      <section className="section border-y border-line bg-bg-subtle">
+        <div className="container-x">
+          <SectionHeading
+            eyebrow="Getting started"
+            title="Three steps from here to underway"
+            description="No procurement theatre. A call, a proposal you can act on, and a start date."
+            align="center"
+          />
+          <EngagementSteps steps={homepage.engagement} />
+          <div className="mt-8 flex justify-center">
+            <ButtonLink href="/contact" size="lg">
+              Book the call
+              <ArrowRight className="h-4 w-4" />
+            </ButtonLink>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container-x">
+          <SectionHeading
+            eyebrow="What you can hold us to"
+            title="Four commitments, in writing"
+            description="Every one of these is in the contract, not just on this page."
+            align="center"
+          />
+          <div className="mt-10">
+            <Commitments items={homepage.commitments} />
+          </div>
         </div>
       </section>
 

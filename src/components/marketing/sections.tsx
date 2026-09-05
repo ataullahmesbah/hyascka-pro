@@ -94,39 +94,82 @@ export function WhyUs({ items }: { items: typeof homepage.whyUs }) {
 /** Narrative timeline — alternating on desktop, single column on mobile. */
 export function ProcessTimeline({ steps }: { steps: typeof homepage.process }) {
   return (
-    <ol className="relative mt-12 space-y-4 md:space-y-0">
-      <span
-        className="absolute left-[1.4rem] top-3 hidden h-[calc(100%-2rem)] w-px bg-gradient-to-b from-accent/50 via-line to-transparent md:left-1/2 md:block"
-        aria-hidden
-      />
+    <div className="mt-10">
+      {/*
+        A board rather than a zig-zag timeline. The alternating layout looked
+        like a decoration and read badly on a phone, where every card ended up
+        in one column anyway; six numbered cards on a rail say the same thing
+        and can be scanned in one pass.
+      */}
+      <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {steps.map((step, index) => (
+          <Reveal as="li" key={step.step} delay={(index % 3) * 60}>
+            <div className="group relative h-full overflow-hidden rounded-xl border border-line bg-surface p-6 transition-colors hover:border-accent-border">
+              {/* The rail: filled for the stage you are reading. */}
+              <span
+                className="absolute inset-x-0 top-0 h-0.5 bg-accent/70"
+                style={{ width: `${((index + 1) / steps.length) * 100}%` }}
+                aria-hidden
+              />
+              <div className="flex items-baseline gap-3">
+                <span className="font-display text-step-3 font-bold tabular text-accent/35 transition-colors group-hover:text-accent/60">
+                  {step.step}
+                </span>
+                <h3 className="font-display text-step-1 font-semibold">{step.title}</h3>
+              </div>
+              <p className="mt-3 text-step--1 leading-relaxed text-ink-soft">{step.detail}</p>
+            </div>
+          </Reveal>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** How an engagement starts — three steps and what each one costs you. */
+export function EngagementSteps({ steps }: { steps: typeof homepage.engagement }) {
+  return (
+    <div className="mt-10 grid gap-4 md:grid-cols-3">
       {steps.map((step, index) => (
-        <Reveal as="li" key={step.step} delay={index * 50} className="md:grid md:grid-cols-2 md:gap-12 md:py-4">
-          <div
-            className={cn(
-              "card relative p-5",
-              index % 2 === 0
-                ? "md:col-start-1 md:mr-10 md:text-right"
-                : "md:col-start-2 md:ml-10",
-            )}
-          >
-            <span className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-pill bg-accent-soft text-step--2 font-bold text-accent md:hidden">
-              {step.step}
-            </span>
-            <h3 className="text-step-1 font-semibold">{step.title}</h3>
+        <Reveal key={step.step} delay={index * 60}>
+          <div className="relative h-full rounded-xl border border-line bg-surface p-6">
+            <div className="flex items-center gap-3">
+              <IconBadge name={step.icon} size="sm" />
+              <span className="text-step--2 font-semibold tracking-wide text-ink-muted">
+                STEP {step.step}
+              </span>
+            </div>
+            <h3 className="mt-4 font-display text-step-1 font-semibold">{step.title}</h3>
             <p className="mt-2 text-step--1 leading-relaxed text-ink-soft">{step.detail}</p>
-            <span
-              className={cn(
-                "absolute top-6 hidden h-8 w-8 items-center justify-center rounded-pill border-4 border-bg bg-accent text-step--2 font-bold text-accent-ink md:flex",
-                index % 2 === 0 ? "-right-[3.25rem]" : "-left-[3.25rem]",
-              )}
-              aria-hidden
-            >
-              {step.step}
-            </span>
+            {index < steps.length - 1 ? (
+              <ArrowRight
+                className="absolute -right-2.5 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-line-strong md:block"
+                aria-hidden
+              />
+            ) : null}
           </div>
         </Reveal>
       ))}
-    </ol>
+    </div>
+  );
+}
+
+/** Four promises, stated plainly enough to be held to. */
+export function Commitments({ items }: { items: typeof homepage.commitments }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((item, index) => (
+        <Reveal key={item.title} delay={(index % 4) * 50}>
+          <div className="flex h-full gap-3.5 rounded-xl border border-line bg-surface p-5">
+            <IconBadge name={item.icon} size="sm" />
+            <div>
+              <h3 className="font-display text-step-0 font-semibold">{item.title}</h3>
+              <p className="mt-1.5 text-step--1 leading-relaxed text-ink-soft">{item.detail}</p>
+            </div>
+          </div>
+        </Reveal>
+      ))}
+    </div>
   );
 }
 

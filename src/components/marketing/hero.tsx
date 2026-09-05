@@ -41,15 +41,22 @@ function Headline({ text, highlight }: { text: string; highlight?: string }) {
   );
 }
 
-export function Hero({ content, visual }: { content: HeroContent; visual: React.ReactNode }) {
+export function Hero({
+  content,
+  visuals,
+}: {
+  content: HeroContent;
+  /** One per slide. Fewer than there are slides and the last one repeats. */
+  visuals: React.ReactNode[];
+}) {
   const slides = content.slides;
   const count = slides.length;
   if (!count) return null;
 
-  // When no slide brings its own image — the usual case — the network visual is
-  // rendered once and simply stays put. Only a mixed deck needs one pane per
-  // slide, and only then is the visual repeated.
-  const hasImages = slides.some((slide) => slide.imageUrl);
+  // Each slide gets its own pane, so the artwork changes with the message
+  // rather than one globe sitting through all three. A slide with an uploaded
+  // image uses that; otherwise it falls back to the visual for its position.
+  const visualFor = (index: number) => visuals[Math.min(index, visuals.length - 1)] ?? null;
 
   return (
     <section
@@ -153,26 +160,24 @@ export function Hero({ content, visual }: { content: HeroContent; visual: React.
           ) : null}
         </div>
 
-        <div className="relative mx-auto w-full max-w-[30rem]">
-          {hasImages
-            ? slides.map((slide, index) => (
-                <div key={slide.id} data-hero-pane={index}>
-                  {slide.imageUrl ? (
-                    <Image
-                      src={slide.imageUrl}
-                      alt=""
-                      width={900}
-                      height={900}
-                      priority={index === 0}
-                      sizes="(max-width: 1024px) 80vw, 30rem"
-                      className="rounded-xl border border-line object-cover shadow-lg"
-                    />
-                  ) : (
-                    visual
-                  )}
-                </div>
-              ))
-            : visual}
+        <div className="relative mx-auto w-full max-w-[34rem]">
+          {slides.map((slide, index) => (
+            <div key={slide.id} data-hero-pane={index}>
+              {slide.imageUrl ? (
+                <Image
+                  src={slide.imageUrl}
+                  alt=""
+                  width={900}
+                  height={900}
+                  priority={index === 0}
+                  sizes="(max-width: 1024px) 80vw, 30rem"
+                  className="rounded-xl border border-line object-cover shadow-lg"
+                />
+              ) : (
+                visualFor(index)
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>
