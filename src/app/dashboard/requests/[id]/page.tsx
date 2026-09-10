@@ -4,7 +4,11 @@ import { notFound } from "next/navigation";
 import { DashboardHeader, Panel } from "@/components/dashboard/page-shell";
 import { RequestStatusForm } from "@/components/dashboard/request-status-form";
 import { RequestThread } from "@/components/dashboard/request-thread";
-import { QuoteForm, RequestFinanceActions } from "@/components/dashboard/quote-forms";
+import {
+  CloseRequestControl,
+  QuoteForm,
+  RequestFinanceActions,
+} from "@/components/dashboard/quote-forms";
 import { StatusBadge } from "@/components/ui/badge";
 import { readAttachments } from "@/lib/attachments";
 import { requireAnyPermission } from "@/lib/auth/guards";
@@ -182,6 +186,16 @@ export default async function RequestDetailPage({
               </ul>
             </Panel>
           ) : null}
+
+          <Panel title="Sign-off" description="The last word on this piece of work.">
+            <CloseRequestControl
+              requestId={request.id}
+              progress={request.progress}
+              status={request.status}
+              closedAt={request.closedAt ? request.closedAt.toISOString() : null}
+              closeNote={request.closeNote}
+            />
+          </Panel>
 
           <Panel title="Status">
             <RequestStatusForm

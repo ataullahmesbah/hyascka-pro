@@ -30,6 +30,7 @@ const STAFF_STATUSES = [
   "CONVERTED",
   "IN_PROGRESS",
   "DELIVERED",
+  "CLOSED",
   "CANCELLED",
 ] as const;
 
@@ -128,6 +129,19 @@ export async function postRequestUpdateAction(
   const context = await loadRequestFor(user.id, requestId);
   if (!context) return { ok: false, message: "That request is not available." };
 
+  /*
+   * Closing is the last word. The final check happens before it, so once a
+   * request is closed the client has nothing left to raise against it — they
+   * open a new request instead. Staff keep writing, because the record of what
+   * happened does not stop mattering when the work does.
+   */
+  if (context.request.closedAt && context.isOwner) {
+    return {
+      ok: false,
+      message: "This work is closed. Start a new request if you need something else.",
+    };
+  }
+
   // Only staff can leave a note the client will never see.
   const isInternal = internal && context.isStaff;
 
@@ -171,6 +185,23 @@ export async function setRequestStatusAction(
   const parsed = statusSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return toActionState(parsed.error);
   const { requestId, status, progress, note } = parsed.data;
+
+  /*
+   * Closing is its own decision, with its own preconditions and its own effect
+   * on what the client may do. Letting the status dropdown move a request in
+   * or out of CLOSED would route around all of that.
+   */
+  const current = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    select: { closedAt: true },
+  });
+  if (!current) return { ok: false, message: "That request no longer exists." };
+  if (current.closedAt) {
+    return { ok: false, message: "This work is closed. Reopen it before changing its status." };
+  }
+  if (status === "CLOSED") {
+    return { ok: false, message: "Use Sign-off to close this, so the client is told properly." };
+  }
 
   const request = await prisma.serviceRequest.update({
     where: { id: requestId },
@@ -236,6 +267,7 @@ export async function requestCancellationAction(
       clientId: true,
       status: true,
       confirmedAt: true,
+      closedAt: true,
     },
   });
   if (!request || request.clientId !== user.clientProfileId) {
@@ -246,19 +278,33 @@ export async function requestCancellationAction(
   }
 
   /*
-   * Before we confirm the work, the client may simply withdraw it. Once it is
-   * confirmed they can only ask, and we decide — so this must turn on whether
-   * *this* request was confirmed, not on whether the client happens to have
-   * some other order open.
+   * Cancelling belongs to the window before the order is confirmed. After that
+   * the work is under way and has been paid for or invoiced, so it is not
+   * something a client can undo on their own — they raise a ticket and we
+   * settle it together. Leaving the option on let a delivered job be cancelled
+   * from the portal, which is what this guard exists to stop.
    */
-  const confirmed = Boolean(request.confirmedAt) || request.status === "CONVERTED";
+  if (request.closedAt) {
+    return { ok: false, message: "This work is closed and can no longer be cancelled." };
+  }
+  if (
+    request.confirmedAt ||
+    ["CONVERTED", "IN_PROGRESS", "DELIVERED", "CLOSED"].includes(request.status)
+  ) {
+    return {
+      ok: false,
+      message:
+        "This work is already under way. Raise a ticket about it and we will sort it out with you.",
+    };
+  }
 
   await prisma.serviceRequest.update({
     where: { id: requestId },
     data: {
       cancelRequestedAt: new Date(),
       cancelReason: reason,
-      ...(confirmed ? {} : { status: "CANCELLED", cancelledAt: new Date() }),
+      status: "CANCELLED",
+      cancelledAt: new Date(),
     },
   });
 
@@ -267,17 +313,13 @@ export async function requestCancellationAction(
       requestId,
       authorId: user.id,
       kind: "CANCELLATION",
-      body: confirmed
-        ? `Cancellation requested: ${reason}`
-        : `Request withdrawn by the client: ${reason}`,
+      body: `Request withdrawn by the client: ${reason}`,
     },
   });
 
   await notifyRoles(["SUPER_ADMIN", "ADMIN", "PROJECT_MANAGER"], {
     type: "REQUEST_UPDATED",
-    title: confirmed
-      ? `${request.reference}: cancellation requested`
-      : `${request.reference}: withdrawn by the client`,
+    title: `${request.reference}: withdrawn by the client`,
     body: reason.slice(0, 160),
     href: `/dashboard/requests/${request.id}`,
   });
@@ -288,17 +330,12 @@ export async function requestCancellationAction(
     action: "request.cancel",
     entityType: "ServiceRequest",
     entityId: requestId,
-    summary: confirmed ? "Cancellation requested" : "Request withdrawn",
+    summary: "Request withdrawn before the work was confirmed",
   });
 
   revalidatePath(`/dashboard/my-services/${requestId}`);
   revalidatePath(`/dashboard/requests/${requestId}`);
-  return {
-    ok: true,
-    message: confirmed
-      ? "We have your cancellation request — someone will come back to you."
-      : "That request has been withdrawn.",
-  };
+  return { ok: true, message: "That request has been withdrawn." };
 }
 
 /** Staff creating a bespoke request against a client, so it lands in their portal. */
@@ -632,4 +669,126 @@ export async function createClientRequestAction(
     message: `${request.reference} is with us. You can follow it here.`,
     data: { id: request.id },
   };
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Closing a piece of work
+ *
+ * Delivery is not the end of it — the final check with the client happens
+ * between delivery and closing. Closing records that this happened, and from
+ * that point the request is settled: the client raises nothing further against
+ * it, and anything new is a new request. Staff can reopen, because a close
+ * applied to the wrong request should not be a dead end.
+ * ------------------------------------------------------------------------- */
+
+export async function closeRequestAction(
+  _prev: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await authorizeAny(["clients.manage", "projects.manage"]);
+
+  const parsed = z
+    .object({
+      requestId: z.string().min(1),
+      note: z.string().trim().max(2000).optional().or(z.literal("")),
+    })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return toActionState(parsed.error);
+  const { requestId, note } = parsed.data;
+
+  const existing = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, status: true, progress: true, closedAt: true, cancelledAt: true },
+  });
+  if (!existing) return { ok: false, message: "That request no longer exists." };
+  if (existing.closedAt) return { ok: false, message: "This is already closed." };
+  if (existing.cancelledAt) return { ok: false, message: "That request was cancelled." };
+
+  // Closing says the work is finished and checked. Both must be true first, or
+  // the status stops meaning anything to the client reading it.
+  if (existing.progress < 100) {
+    return { ok: false, message: "Set progress to 100% before closing this." };
+  }
+  if (!["DELIVERED", "CONVERTED"].includes(existing.status)) {
+    return { ok: false, message: "Mark it delivered before closing it." };
+  }
+
+  const request = await prisma.serviceRequest.update({
+    where: { id: requestId },
+    data: {
+      closedAt: new Date(),
+      closeNote: note || null,
+      status: "CLOSED",
+      progress: 100,
+      updates: {
+        create: {
+          authorId: user.id,
+          kind: "STATUS",
+          body: note
+            ? `Closed — delivered and signed off. ${note}`
+            : "Closed — delivered and signed off.",
+        },
+      },
+    },
+    select: { id: true, reference: true, title: true, clientId: true },
+  });
+
+  await notifyCounterparty(
+    request,
+    true,
+    `"${request.title}" is complete and now closed. Thank you — open a new request any time.`,
+  );
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "request.closed",
+    entityType: "ServiceRequest",
+    entityId: request.id,
+    summary: `${request.reference} closed`,
+  });
+
+  revalidatePath(`/dashboard/requests/${request.id}`);
+  revalidatePath(`/dashboard/my-services/${request.id}`);
+  return { ok: true, message: `${request.reference} is closed.` };
+}
+
+export async function reopenRequestAction(requestId: string): Promise<ActionState> {
+  const user = await authorizeAny(["clients.manage", "projects.manage"]);
+
+  const existing = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, closedAt: true },
+  });
+  if (!existing) return { ok: false, message: "That request no longer exists." };
+  if (!existing.closedAt) return { ok: false, message: "That request is not closed." };
+
+  const request = await prisma.serviceRequest.update({
+    where: { id: requestId },
+    data: {
+      closedAt: null,
+      closeNote: null,
+      status: "DELIVERED",
+      updates: {
+        create: { authorId: user.id, kind: "STATUS", body: "Reopened by the team." },
+      },
+    },
+    select: { id: true, reference: true, title: true, clientId: true },
+  });
+
+  await notifyCounterparty(request, true, `"${request.title}" has been reopened.`);
+
+  await audit({
+    actorId: user.id,
+    actorRole: user.role,
+    action: "request.reopened",
+    entityType: "ServiceRequest",
+    entityId: request.id,
+    summary: `${request.reference} reopened`,
+  });
+
+  revalidatePath(`/dashboard/requests/${request.id}`);
+  revalidatePath(`/dashboard/my-services/${request.id}`);
+  return { ok: true, message: `${request.reference} is open again.` };
 }

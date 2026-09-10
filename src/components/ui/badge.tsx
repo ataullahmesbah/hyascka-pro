@@ -43,6 +43,8 @@ const STATUS_TONES: Record<string, BadgeTone> = {
   ISSUED: "info", PARTIALLY_PAID: "warning", PAID: "success", OVERDUE: "danger", VOID: "neutral",
   VERIFIED: "success", REJECTED: "danger", REFUNDED: "warning", SUBMITTED: "info", APPROVED: "success",
   OPEN: "info", RESOLVED: "success", CLOSED: "neutral",
+  IN_REVIEW: "info", OFFER_SENT: "warning", ACCEPTED: "accent", CONVERTED: "accent",
+  DELIVERED: "success",
   LOW: "neutral", MEDIUM: "info", HIGH: "warning", URGENT: "danger",
   GOOD: "success", THIN: "warning", MISSING: "danger", "TOO LONG": "warning",
 };

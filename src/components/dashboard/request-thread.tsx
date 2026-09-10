@@ -154,11 +154,16 @@ export function RequestThread({
   entries,
   canPostInternal = false,
   placeholder = "Write a reply…",
+  readOnly = false,
+  readOnlyNote,
 }: {
   requestId: string;
   entries: ThreadEntry[];
   canPostInternal?: boolean;
   placeholder?: string;
+  /** Closed work keeps its thread as a record, but nobody adds to it. */
+  readOnly?: boolean;
+  readOnlyNote?: string;
 }) {
   const [files, setFiles] = React.useState<Attachment[]>([]);
 
@@ -207,6 +212,11 @@ export function RequestThread({
         ))}
       </ol>
 
+      {readOnly ? (
+        <p className="rounded-lg border border-line bg-surface-2 p-4 text-center text-step--1 text-ink-soft">
+          {readOnlyNote ?? "This conversation is closed."}
+        </p>
+      ) : (
       <ActionForm action={postRequestUpdateAction} successTitle="Sent" resetOnSuccess>
         <input type="hidden" name="requestId" value={requestId} />
         <input type="hidden" name="attachments" value={JSON.stringify(files)} />
@@ -222,6 +232,7 @@ export function RequestThread({
         ) : null}
         <SubmitButton>Send</SubmitButton>
       </ActionForm>
+      )}
     </div>
   );
 }

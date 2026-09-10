@@ -24,6 +24,7 @@ const STATUS_COPY: Record<string, string> = {
   DELIVERED: "Delivered. Tell us below if anything needs another pass.",
   CONVERTED: "This is now a project — see Projects for the detail.",
   REJECTED: "We were not able to take this on.",
+  CLOSED: "Complete and signed off. Thank you — open a new request any time.",
   CANCELLED: "This request has been cancelled.",
 };
 
@@ -78,7 +79,20 @@ export default async function MyServiceRequestPage({
   });
 
   const brief = readAttachments(request.attachments);
-  const cancellable = !["CONVERTED", "CANCELLED", "REJECTED"].includes(request.status);
+  const closed = Boolean(request.closedAt);
+
+  /*
+   * Cancelling is only for the window before we confirm the order. Once the
+   * work is under way — let alone delivered — it is not something to undo from
+   * a portal, so the panel goes away entirely rather than offering a button
+   * that would be refused.
+   */
+  const cancellable =
+    !closed &&
+    !request.confirmedAt &&
+    !["CONVERTED", "IN_PROGRESS", "DELIVERED", "CLOSED", "CANCELLED", "REJECTED"].includes(
+      request.status,
+    );
 
   return (
     <>
@@ -142,11 +156,20 @@ export default async function MyServiceRequestPage({
             ) : null}
           </Panel>
 
-          <Panel title="Conversation" description="Ask a question, send a file, or tell us something changed.">
+          <Panel
+            title="Conversation"
+            description={
+              closed
+                ? "This work is closed, so the conversation is now a record of it."
+                : "Ask a question, send a file, or tell us something changed."
+            }
+          >
             <RequestThread
               requestId={request.id}
               entries={toThreadEntries(request.updates, false)}
               placeholder="Write to the team…"
+              readOnly={closed}
+              readOnlyNote="This work is complete and closed. Start a new request if you need something else."
             />
           </Panel>
         </div>
@@ -230,28 +253,20 @@ export default async function MyServiceRequestPage({
             </Panel>
           ) : null}
 
-          <Panel
-            title="Something wrong?"
-            description="Raise a ticket and it arrives already attached to this piece of work."
-          >
-            <TicketForm requestId={request.id} requestTitle={request.title} />
-          </Panel>
+          {closed ? null : (
+            <Panel
+              title="Something wrong?"
+              description="Raise a ticket and it arrives already attached to this piece of work."
+            >
+              <TicketForm requestId={request.id} requestTitle={request.title} />
+            </Panel>
+          )}
 
-          <Panel title="Need to stop this?">
-            {request.cancelRequestedAt && !request.cancelledAt ? (
-              <p className="text-step--1 text-ink-soft">
-                You asked to cancel on {formatDate(request.cancelRequestedAt)}. Someone will come
-                back to you in the conversation.
-              </p>
-            ) : cancellable ? (
+          {cancellable ? (
+            <Panel title="Need to stop this?">
               <CancelRequestForm requestId={request.id} />
-            ) : (
-              <p className="text-step--1 text-ink-soft">
-                This request can no longer be cancelled here. Raise a ticket from Support and we
-                will sort it out with you.
-              </p>
-            )}
-          </Panel>
+            </Panel>
+          ) : null}
         </aside>
       </div>
     </>

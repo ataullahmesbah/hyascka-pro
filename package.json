@@ -17,6 +17,7 @@
     "test:smoke": "node tests/smoke.mjs",
     "test:lifecycle": "node tests/lifecycle.mjs",
     "test:portal": "node tests/portal.mjs",
+    "test:signoff": "node tests/signoff.mjs",
     "db:reset": "prisma db push --force-reset && npm run db:seed"
   },
   "prisma": {

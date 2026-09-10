@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, FileText, X } from "lucide-react";
+import { Check, FileText, Lock, X } from "lucide-react";
 
 import {
   ActionForm,
@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import {
+  closeRequestAction,
   confirmRequestAction,
   quoteRequestAction,
+  reopenRequestAction,
   respondToQuoteAction,
 } from "@/actions/requests";
 import { invoiceRequestAction } from "@/actions/finance";
@@ -208,6 +210,119 @@ export function QuoteDecision({
           </div>
         )
       ) : null}
+    </div>
+  );
+}
+
+
+/**
+ * Signing a piece of work off.
+ *
+ * Closing is deliberately gated on delivery and 100% progress: it tells the
+ * client the final check is done and nothing further is expected from them, so
+ * it must not be reachable while either is still open. Reopening exists so a
+ * close on the wrong request is a mistake, not a dead end.
+ */
+export function CloseRequestControl({
+  requestId,
+  progress,
+  status,
+  closedAt,
+  closeNote,
+}: {
+  requestId: string;
+  progress: number;
+  status: string;
+  closedAt: string | null;
+  closeNote: string | null;
+}) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [open, setOpen] = React.useState(false);
+
+  if (closedAt) {
+    return (
+      <div>
+        <p className="flex items-start gap-2 text-step--1 text-ink-soft">
+          <Lock className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+          <span>
+            Closed. The client can read this but cannot message, raise a ticket or cancel
+            against it.
+          </span>
+        </p>
+        {closeNote ? (
+          <p className="mt-2 rounded-lg bg-surface-2 p-3 text-step--2 text-ink-soft">{closeNote}</p>
+        ) : null}
+        <div className="mt-4">
+          <ConfirmButton
+            label="Reopen"
+            confirmLabel="Reopen this work?"
+            onConfirm={async () => {
+              const result = await reopenRequestAction(requestId);
+              toast({
+                kind: result.ok ? "success" : "error",
+                title: result.ok ? "Reopened" : "Could not reopen",
+                description: result.message,
+              });
+              if (result.ok) router.refresh();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const ready = progress >= 100 && ["DELIVERED", "CONVERTED"].includes(status);
+
+  if (!ready) {
+    return (
+      <p className="text-step--1 text-ink-soft">
+        Deliver this and set progress to 100% before you can close it.
+        {progress < 100 ? ` Currently ${progress}%.` : ""}
+      </p>
+    );
+  }
+
+  return open ? (
+    <ActionForm
+      action={async (state, formData) => {
+        const result = await closeRequestAction(state, formData);
+        if (result.ok) {
+          setOpen(false);
+          router.refresh();
+        }
+        return result;
+      }}
+      successTitle="Closed"
+    >
+      <input type="hidden" name="requestId" value={requestId} />
+      <Field
+        label="Closing note"
+        htmlFor={`close-note-${requestId}`}
+        hint="Optional. The client sees this as the last word on the work."
+      >
+        <Textarea id={`close-note-${requestId}`} name="note" rows={3} />
+      </Field>
+      <div className="flex flex-wrap gap-2">
+        <SubmitButton pendingLabel="Closing…">
+          <Lock className="h-4 w-4" />
+          Close this work
+        </SubmitButton>
+        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          Back
+        </Button>
+      </div>
+    </ActionForm>
+  ) : (
+    <div>
+      <p className="text-step--1 text-ink-soft">
+        Delivered and at 100%. Closing settles it: the client can still read everything, but
+        cannot message, raise a ticket or cancel against it afterwards.
+      </p>
+      <Button size="sm" className="mt-4" onClick={() => setOpen(true)}>
+        <Lock className="h-4 w-4" />
+        Close this work
+      </Button>
     </div>
   );
 }

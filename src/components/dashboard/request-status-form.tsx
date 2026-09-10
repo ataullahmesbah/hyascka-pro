@@ -11,6 +11,7 @@ const STATUSES = [
   { value: "ACCEPTED", label: "Accepted" },
   { value: "IN_PROGRESS", label: "Working on it" },
   { value: "DELIVERED", label: "Delivered" },
+  { value: "CLOSED", label: "Closed — signed off" },
   { value: "CONVERTED", label: "Converted to a project" },
   { value: "REJECTED", label: "Rejected" },
   { value: "CANCELLED", label: "Cancelled" },

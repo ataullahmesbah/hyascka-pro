@@ -69,6 +69,7 @@ enum RequestStatus {
   CONVERTED
   IN_PROGRESS
   DELIVERED
+  CLOSED
   CANCELLED
 }
 
@@ -550,6 +551,13 @@ model ServiceRequest {
    * Set when staff confirm the work after the client accepted.
    */
   confirmedAt   DateTime?
+  /**
+   * Signed off and finished. Closing is the last word on a piece of work: the
+   * final check happens before it, so a closed request is read-only for the
+   * client — no new messages, tickets or cancellations against it.
+   */
+  closedAt      DateTime?
+  closeNote     String?
   /**
    * True for work a client described themselves rather than picking from the catalogue.
    */

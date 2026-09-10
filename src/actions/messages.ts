@@ -107,8 +107,16 @@ export async function createTicketAction(
   if (parsed.data.requestId) {
     const owned = await prisma.serviceRequest.findFirst({
       where: { id: parsed.data.requestId, clientId: user.clientProfileId },
-      select: { id: true },
+      select: { id: true, closedAt: true },
     });
+    // Closed work is settled — a ticket against it would reopen a conversation
+    // that was signed off. The client opens a new request instead.
+    if (owned?.closedAt) {
+      return {
+        ok: false,
+        message: "That work is closed. Start a new request if you need something else.",
+      };
+    }
     requestId = owned?.id ?? null;
   }
 
