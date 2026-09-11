@@ -118,9 +118,12 @@ forms, which ship less client JavaScript and work without hydration.
 
 These are scoped but not built, and are the natural next iteration:
 
-- **Test depth.** `tests/smoke.mjs` covers the critical paths, the design system and the
-  authorization boundaries in 67 checks. Unit tests for finance calculations and status
-  transitions, and integration tests for the notification workflows, are not written yet.
+- **Test depth.** Four end-to-end suites cover the critical paths, the design system,
+  the authorization boundaries and the client lifecycle: `smoke` (66 checks),
+  `portal` (20), `signoff` (14) and `lifecycle` (12). Unit tests for the finance
+  calculations, and integration tests for the notification workflows, are not written
+  yet. Signing in is rate limited to five attempts per five minutes, so the suites are
+  run one at a time rather than back to back.
 - **Mobile performance.** Desktop measures 99–100. Mobile measures 91 on the
   homepage and 93–95 elsewhere. The homepage gave up a few points to the two new
   sections and the hero map; the remaining cost is React hydration under
@@ -130,6 +133,8 @@ These are scoped but not built, and are the natural next iteration:
   webhook are still not implemented — the manual flow is complete.
 - **Gateway payments.** The SSLCommerz adapter is configurable and toggleable, but the
   redirect and webhook handlers are not implemented — the manual flow is complete.
-- **Proposals and orders.** Read views exist; the offer → acceptance → order lifecycle is
-  not yet an editable workflow.
+- **Orders.** The offer → acceptance → confirmation → invoice lifecycle runs on the
+  service request itself: staff quote, the client accepts or declines, staff confirm and
+  bill the accepted amount, then close the work. The separate `Proposal` and `Order`
+  records still have read views only, and are not yet part of that flow.
 - **Multi-language.** English only; the localisation setting exists as a placeholder.
