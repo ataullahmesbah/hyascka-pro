@@ -112,7 +112,18 @@ export function ProcessTimeline({ steps }: { steps: typeof homepage.process }) {
                 aria-hidden
               />
               <div className="flex items-baseline gap-3">
-                <span className="font-display text-step-3 font-bold tabular text-accent/35 transition-colors group-hover:text-accent/60">
+                {/*
+                  * Decoration, not content: this is an <ol>, so the order is
+                  * already conveyed, and the heading beside it carries the
+                  * meaning. Hiding it stops a screen reader announcing "zero
+                  * one" ahead of every step. It stays faint, but at an opacity
+                  * that still clears contrast for text this size — at 35% it
+                  * measured 1.8:1, which is decoration nobody can read.
+                  */}
+                <span
+                  aria-hidden="true"
+                  className="font-display text-step-3 font-bold tabular text-accent/65 transition-colors group-hover:text-accent/90"
+                >
                   {step.step}
                 </span>
                 <h3 className="font-display text-step-1 font-semibold">{step.title}</h3>

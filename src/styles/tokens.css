@@ -137,8 +137,13 @@
   --line: 250 16% 18%;
   --line-strong: 250 15% 26%;
 
-  --accent: 258 92% 68%;
-  --accent-hover: 258 92% 74%;
+  /*
+   * Bright enough to carry small text on --accent-soft. At 68% that pairing
+   * measured 4.05:1 — under the 4.5 a badge or a pill label needs — which is
+   * how every accent-coloured chip on the site failed in this theme.
+   */
+  --accent: 258 92% 74%;
+  --accent-hover: 258 92% 80%;
   --accent-ink: 258 60% 8%;
   --accent-soft: 258 45% 18%;
   --accent-border: 258 60% 34%;

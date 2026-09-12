@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope, Plus_Jakarta_Sans, Poppins } from "next/font/google";
-import { GeistSans } from "geist/font/sans";
+import localFont from "next/font/local";
 
 import "@/styles/globals.css";
 
@@ -51,6 +51,21 @@ const manrope = Manrope({
   display: "swap",
   preload: false,
 });
+/*
+ * Geist is loaded from the file rather than through `geist/font/sans`, which
+ * hard-codes `preload: true`. Importing that package put a 68 KB preload on the
+ * critical path of every page, for a family nobody had selected — and because
+ * it registers at import time, not at render time, leaving its class off the
+ * document did not remove it.
+ */
+const geist = localFont({
+  src: "./fonts/Geist-Variable.woff2",
+  variable: "--font-geist-sans",
+  display: "swap",
+  preload: false,
+  weight: "100 900",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+});
 
 /** Maps a stored font id to the custom property that carries its family. */
 const FONT_VARIABLE: Record<FontId, string> = {
@@ -61,9 +76,26 @@ const FONT_VARIABLE: Record<FontId, string> = {
   geist: "--font-geist-sans",
 };
 
-const fontClassNames = [plusJakarta, inter, poppins, manrope, GeistSans]
-  .map((font) => font.variable)
-  .join(" ");
+/** The class that defines each family's custom property, by stored id. */
+const FONT_CLASS: Record<FontId, string> = {
+  "plus-jakarta": plusJakarta.variable,
+  inter: inter.variable,
+  poppins: poppins.variable,
+  manrope: manrope.variable,
+  geist: geist.variable,
+};
+
+/**
+ * Only the two families actually in use are put on the document.
+ *
+ * Rendering all five classes pulled all five into the page: next/font emits a
+ * font's `<link rel="preload">` when its class appears in the tree, and the
+ * `geist` package hard-codes preload, so a 68 KB family nobody had selected sat
+ * on the critical path of every page. Two classes means two font files.
+ */
+function fontClassNames(fonts: { headingFont: FontId; bodyFont: FontId }) {
+  return [...new Set([FONT_CLASS[fonts.headingFont], FONT_CLASS[fonts.bodyFont]])].join(" ");
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo, brand } = await getSettings();
@@ -103,7 +135,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="en"
       suppressHydrationWarning
       data-theme={policy.defaultTheme}
-      className={fontClassNames}
+      className={fontClassNames(fonts)}
       // The whole design system reads --font-display and --font-body; pointing
       // them at the chosen families here is the only place a font is decided.
       style={

@@ -490,13 +490,19 @@
   50% { transform: translate3d(0, -8px, 0); }
 }
 
+/*
+ * The entrance moves, it does not fade.
+ *
+ * Fading from opacity 0 meant every card below the fold was transparent until
+ * scrolled to, so its text blended with the page background — an audit reads
+ * that as failing contrast, and anything that does not scroll never sees the
+ * content at all. A slide reads the same and leaves the text opaque throughout.
+ */
 @keyframes hy-reveal {
   from {
-    opacity: 0;
     transform: translate3d(0, 14px, 0);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }

@@ -9,9 +9,8 @@ Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma
 ```
 
 Three themes and five typefaces, chosen by the visitor or locked by an admin.
-Measured with Lighthouse 12: **desktop 99–100** across the board; mobile **91** on
-the homepage and **93–95** elsewhere, with accessibility, best practices and SEO at
-**100** throughout.
+Measured with Lighthouse 12: **desktop 100** across the board, mobile **93–97**, with
+accessibility, best practices and SEO at **100** on every page.
 
 New to the project? `docs/ENV-SETUP.md` walks through what to install, every environment
 variable, and where to get each value.

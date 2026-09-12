@@ -124,10 +124,11 @@ These are scoped but not built, and are the natural next iteration:
   calculations, and integration tests for the notification workflows, are not written
   yet. Signing in is rate limited to five attempts per five minutes, so the suites are
   run one at a time rather than back to back.
-- **Mobile performance.** Desktop measures 99–100. Mobile measures 91 on the
-  homepage and 93–95 elsewhere. The homepage gave up a few points to the two new
-  sections and the hero map; the remaining cost is React hydration under
-  Lighthouse's 4× CPU throttle in a shared container.
+- **Mobile performance.** Desktop measures 100 on every page. Mobile measures
+  93–97, with accessibility, best practices and SEO at 100 throughout. The
+  remaining cost is LCP: around 2.6s under Lighthouse's 1.6 Mbps / 4× CPU
+  throttle, almost all of it the web font, which cannot paint the hero text any
+  sooner without dropping the family the design is built on.
 - **Payments.** A client submits a payment against an invoice and staff verify it,
   which generates the invoice record they can download. The gateway redirect and
   webhook are still not implemented — the manual flow is complete.

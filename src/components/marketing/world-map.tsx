@@ -85,9 +85,13 @@ function dotField() {
       const highlighted = PINS.some(
         (pin) => Math.abs(pin.lon - lon) < 14 && Math.abs(pin.lat - lat) < 10,
       );
-      const r = highlighted ? 3.4 : 2.6;
-      const path = `M${Math.round(x)} ${Math.round(y)}m-${r} 0a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 -${r * 2} 0`;
-      (highlighted ? near : far).push(path);
+      /*
+       * A dot is a zero-length segment with a round cap, not an arc. Both draw
+       * the same circle; "M123 45h.01" is about a fifth of the characters an
+       * arc pair costs, and this path is written twice into every response —
+       * once as markup and once into the flight payload.
+       */
+      (highlighted ? near : far).push(`M${Math.round(x)} ${Math.round(y)}h.01`);
     }
   }
   return { near: near.join(""), far: far.join("") };
@@ -114,8 +118,22 @@ export function WorldMap({ className }: { className?: string }) {
 
       <rect width={W} height={H} fill="url(#wm-glow)" />
 
-      <path d={far} fill="hsl(var(--ink-muted))" fillOpacity="0.42" />
-      <path d={near} fill="hsl(var(--accent))" fillOpacity="0.75" />
+      <path
+        d={far}
+        fill="none"
+        stroke="hsl(var(--ink-muted))"
+        strokeOpacity="0.42"
+        strokeWidth="5.2"
+        strokeLinecap="round"
+      />
+      <path
+        d={near}
+        fill="none"
+        stroke="hsl(var(--accent))"
+        strokeOpacity="0.75"
+        strokeWidth="6.8"
+        strokeLinecap="round"
+      />
 
       {/* Routes from home to everywhere else. */}
       {PINS.filter((pin) => !pin.home).map((pin) => {
