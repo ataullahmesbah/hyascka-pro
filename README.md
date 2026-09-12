@@ -82,7 +82,7 @@ npm run build && npm start &
 npm run test:smoke -- http://localhost:3000
 ```
 
-67 checks: the public pages render, the site opens on the light theme and the toggle
+66 checks: the public pages render, the site opens on the light theme and the toggle
 switches it, the homepage carries its 20 FAQ questions, the hero slider and the scroll
 reveals behave, the announcement bar stays dismissed, the API allow-list holds, a
 logged-out visitor cannot reach the dashboard, a CLIENT session is blocked from
