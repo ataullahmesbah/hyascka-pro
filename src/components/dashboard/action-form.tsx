@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 
@@ -56,17 +57,30 @@ export function ActionForm({
   className,
   successTitle = "Saved",
   resetOnSuccess = false,
+  successHref,
 }: {
   action: Action;
   children: React.ReactNode;
   className?: string;
   successTitle?: string;
   resetOnSuccess?: boolean;
+  /** Where to go once the save succeeds — usually the list this row belongs to. */
+  successHref?: string;
 }) {
+  const router = useRouter();
   const [state, dispatch] = useActionState(action, null);
   const { toast } = useToast();
   const formRef = React.useRef<HTMLFormElement>(null);
   const seen = React.useRef<ActionState | null>(null);
+  /*
+   * What was last submitted, so a rejected save can be put back.
+   *
+   * React empties an uncontrolled form once its action resolves, whether the
+   * action succeeded or not. On a refusal — a slug already taken, a field the
+   * server disliked — that threw away everything typed and left the person
+   * facing a blank form and an error about copy they could no longer see.
+   */
+  const submitted = React.useRef<FormData | null>(null);
 
   React.useEffect(() => {
     if (!state || state === seen.current) return;
@@ -78,16 +92,57 @@ export function ActionForm({
         description: state.message,
       });
     }
-    if (state.ok && resetOnSuccess) formRef.current?.reset();
-  }, [state, toast, successTitle, resetOnSuccess]);
+    if (state.ok) {
+      if (resetOnSuccess) formRef.current?.reset();
+      // The toast lives above the route, so it survives the navigation and is
+      // still readable on the list the person lands on.
+      if (successHref) router.push(successHref);
+      return;
+    }
+    restoreForm(formRef.current, submitted.current);
+  }, [state, toast, successTitle, resetOnSuccess, successHref, router]);
 
   return (
     <FormStateContext.Provider value={state}>
-      <form ref={formRef} action={dispatch} className={cn("space-y-5", className)} noValidate>
+      <form
+        ref={formRef}
+        action={(formData) => {
+          submitted.current = formData;
+          dispatch(formData);
+        }}
+        className={cn("space-y-5", className)}
+        noValidate
+      >
         {children}
       </form>
     </FormStateContext.Provider>
   );
+}
+
+/** Writes a submission back into the fields React has just emptied. */
+function restoreForm(form: HTMLFormElement | null, values: FormData | null) {
+  if (!form || !values) return;
+
+  for (const field of Array.from(form.elements)) {
+    const editable =
+      field instanceof HTMLInputElement ||
+      field instanceof HTMLTextAreaElement ||
+      field instanceof HTMLSelectElement;
+    if (!editable || !field.name) continue;
+
+    if (field instanceof HTMLInputElement) {
+      // A file input cannot be written to, and nothing typed is lost from one.
+      if (field.type === "file") continue;
+      if (field.type === "checkbox" || field.type === "radio") {
+        // Unchecked boxes are absent from FormData, which is the answer itself.
+        field.checked = values.getAll(field.name).includes(field.value);
+        continue;
+      }
+    }
+
+    const value = values.get(field.name);
+    if (typeof value === "string") field.value = value;
+  }
 }
 
 /** Small inline confirm-then-run button for destructive or one-way actions. */

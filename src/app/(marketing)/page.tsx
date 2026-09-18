@@ -74,7 +74,12 @@ export default async function HomePage() {
 
       <Hero
         content={homepage.hero}
-        visuals={[<WorldMap key="map" />, <NetworkVisual key="globe" />, <MetricVisual key="metrics" />]}
+        visuals={[
+          <NetworkVisual key="globe" />,
+          <MetricVisual key="metrics" />,
+          <NetworkVisual key="agents" />,
+        ]}
+        consultingVisual={<WorldMap />}
       />
       <CapabilityRail items={homepage.capabilities} />
 

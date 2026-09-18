@@ -39,6 +39,10 @@ export default async function NewServicePage() {
           metaDescription: "",
           deliverables: "",
           technologies: "",
+          features: "",
+          processSteps: "",
+          faqs: "",
+          packages: "",
         }}
       />
     </>

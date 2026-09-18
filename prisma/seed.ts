@@ -483,7 +483,7 @@ async function main() {
         reference: ref("LEAD", index + 1),
         name: ["Sabbir Hossain", "Rumana Akter", "Kamal Uddin", "Tasnia Rahman", "Jahid Hasan"][index],
         email: `lead${index + 1}@example.com`,
-        phone: "+8801700000000",
+        phone: "+8801571083401",
         company: ["Bright Retail", "Skyline Estates", "Orbit Fintech", "Cadence Studio", "Nexa Foods"][index],
         budget: ["100k–200k", "200k–400k", "50k–100k", "400k+", "200k–400k"][index],
         message:

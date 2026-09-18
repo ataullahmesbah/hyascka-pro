@@ -30,6 +30,77 @@ function splitLines(value?: string) {
     .filter(Boolean);
 }
 
+/**
+ * "Title | Detail" per line, for the paired lists on a service page.
+ *
+ * A line with no pipe is still a valid entry — the title carries it and the
+ * detail is simply empty, which beats discarding what someone typed.
+ */
+function splitTitledLines(value?: string) {
+  return splitLines(value).map((line) => {
+    const [title, ...detail] = line.split("|");
+    return { title: title.trim(), detail: detail.join("|").trim() };
+  });
+}
+
+/**
+ * Prisma's duplicate-key failure, as something the person filling in the form
+ * can act on.
+ *
+ * Slugs are unique per table, so reusing one is an ordinary mistake — the same
+ * class of thing as leaving a field blank. It was reaching the browser as an
+ * unhandled 500 instead, which reads as "the site is broken" rather than
+ * "pick another address".
+ */
+function duplicateFieldError(error: unknown, what: string): ActionState | null {
+  if (typeof error !== "object" || error === null) return null;
+  if ((error as { code?: unknown }).code !== "P2002") return null;
+
+  const target = (error as { meta?: { target?: unknown } }).meta?.target;
+  const fields = Array.isArray(target) ? target.map(String) : [String(target ?? "")];
+
+  if (fields.includes("slug")) {
+    const message = `Another ${what} already uses that web address. Change the slug and save again.`;
+    return { ok: false, message, fieldErrors: { slug: [message] } };
+  }
+
+  const named = fields.filter(Boolean).join(", ");
+  const message = `Another ${what} already uses that ${named || "value"}.`;
+  return { ok: false, message };
+}
+
+/**
+ * One package per line:
+ *
+ *   Name | Price | Billing | Summary | Feature; Feature; Feature
+ *
+ * An empty price is a package we quote rather than list. A leading `*` on the
+ * name marks the one to highlight, which is how the middle card gets its
+ * emphasis without a separate control for it.
+ */
+function parsePackages(value?: string) {
+  return splitLines(value)
+    .map((line) => {
+      const [rawName = "", rawPrice = "", billingCycle = "", summary = "", rawFeatures = ""] =
+        line.split("|").map((part) => part.trim());
+      const highlighted = rawName.startsWith("*");
+      const name = (highlighted ? rawName.slice(1) : rawName).trim();
+      const price = rawPrice ? Number(rawPrice.replace(/[^0-9.]/g, "")) : NaN;
+      return {
+        name,
+        highlighted,
+        price: Number.isFinite(price) ? price : null,
+        billingCycle,
+        summary,
+        features: rawFeatures
+          .split(";")
+          .map((feature) => feature.trim())
+          .filter(Boolean),
+      };
+    })
+    .filter((row) => row.name);
+}
+
 export async function saveServiceAction(
   _prev: ActionState | null,
   formData: FormData,
@@ -38,7 +109,18 @@ export async function saveServiceAction(
 
   const parsed = serviceContentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return toActionState(parsed.error);
-  const { id, categorySlug, deliverables, technologies, startingPrice, ...rest } = parsed.data;
+  const {
+    id,
+    categorySlug,
+    deliverables,
+    technologies,
+    features,
+    processSteps,
+    faqs,
+    packages,
+    startingPrice,
+    ...rest
+  } = parsed.data;
 
   const category = categorySlug
     ? await prisma.serviceCategory.findUnique({ where: { slug: categorySlug }, select: { id: true } })
@@ -50,6 +132,7 @@ export async function saveServiceAction(
     categoryId: category?.id ?? null,
     deliverables: splitLines(deliverables),
     technologies: splitLines(technologies),
+    processSteps: splitTitledLines(processSteps),
     startingPrice: startingPrice ?? null,
     tagline: rest.tagline || null,
     icon: rest.icon || null,
@@ -58,9 +141,76 @@ export async function saveServiceAction(
     metaDescription: rest.metaDescription || null,
   };
 
-  const service = id
-    ? await prisma.service.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
-    : await prisma.service.create({ data, select: { id: true, slug: true, title: true } });
+  let service;
+  try {
+    service = id
+      ? await prisma.service.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
+      : await prisma.service.create({ data, select: { id: true, slug: true, title: true } });
+  } catch (error) {
+    const duplicate = duplicateFieldError(error, "service");
+    if (duplicate) return duplicate;
+    throw error;
+  }
+
+  /*
+   * Features live in their own table, so the list is replaced wholesale rather
+   * than diffed: the form is the whole truth about them, and matching rows up
+   * by title would silently drop a renamed one.
+   */
+  const featureRows = splitTitledLines(features);
+  const faqRows = splitTitledLines(faqs).filter((row) => row.title && row.detail);
+  const packageRows = parsePackages(packages);
+
+  await prisma.$transaction([
+    prisma.serviceFeature.deleteMany({ where: { serviceId: service.id } }),
+    ...(featureRows.length
+      ? [
+          prisma.serviceFeature.createMany({
+            data: featureRows.map((feature, index) => ({
+              serviceId: service.id,
+              title: feature.title,
+              detail: feature.detail || null,
+              position: index,
+            })),
+          }),
+        ]
+      : []),
+
+    prisma.serviceFAQ.deleteMany({ where: { serviceId: service.id } }),
+    ...(faqRows.length
+      ? [
+          prisma.serviceFAQ.createMany({
+            data: faqRows.map((faq, index) => ({
+              serviceId: service.id,
+              question: faq.title,
+              answer: faq.detail,
+              position: index,
+            })),
+          }),
+        ]
+      : []),
+
+    prisma.servicePackage.deleteMany({ where: { serviceId: service.id } }),
+    ...(packageRows.length
+      ? [
+          prisma.servicePackage.createMany({
+            data: packageRows.map((row, index) => ({
+              serviceId: service.id,
+              name: row.name,
+              summary: row.summary || null,
+              price: row.price,
+              currency: data.currency,
+              // No price means we are not publishing one, which is a quote.
+              pricingModel: row.price === null ? "CUSTOM_QUOTE" : "FIXED",
+              billingCycle: row.billingCycle || null,
+              features: row.features,
+              highlighted: row.highlighted,
+              position: index,
+            })),
+          }),
+        ]
+      : []),
+  ]);
 
   await audit({
     actorId: user.id,
@@ -109,9 +259,16 @@ export async function savePostAction(
     metaDescription: rest.metaDescription || null,
   };
 
-  const post = id
-    ? await prisma.blogPost.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
-    : await prisma.blogPost.create({ data, select: { id: true, slug: true, title: true } });
+  let post;
+  try {
+    post = id
+      ? await prisma.blogPost.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
+      : await prisma.blogPost.create({ data, select: { id: true, slug: true, title: true } });
+  } catch (error) {
+    const duplicate = duplicateFieldError(error, "article");
+    if (duplicate) return duplicate;
+    throw error;
+  }
 
   await audit({
     actorId: user.id,
@@ -194,12 +351,19 @@ export async function saveCaseStudyAction(
   const { id, ...rest } = parsed.data;
   const data = { ...rest, slug: slugify(rest.slug) };
 
-  const row = id
-    ? await prisma.caseStudy.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
-    : await prisma.caseStudy.create({
-        data: { ...data, metrics: [], services: [] },
-        select: { id: true, slug: true, title: true },
-      });
+  let row;
+  try {
+    row = id
+      ? await prisma.caseStudy.update({ where: { id }, data, select: { id: true, slug: true, title: true } })
+      : await prisma.caseStudy.create({
+          data: { ...data, metrics: [], services: [] },
+          select: { id: true, slug: true, title: true },
+        });
+  } catch (error) {
+    const duplicate = duplicateFieldError(error, "case study");
+    if (duplicate) return duplicate;
+    throw error;
+  }
 
   await audit({
     actorId: user.id,
@@ -292,27 +456,56 @@ export async function saveHeroAction(
   const parsed = heroSettingsSchema.safeParse({
     autoplay: formData.get("autoplay") === "on",
     intervalMs: formData.get("intervalMs"),
-    trustMicrocopy: formData.get("trustMicrocopy"),
-    highlights: formData.get("highlights"),
     slides,
+    chooserLabel: formData.get("chooserLabel"),
+    agencyLabel: formData.get("agencyLabel"),
+    consultingLabel: formData.get("consultingLabel"),
+    consultingEyebrow: formData.get("consultingEyebrow"),
+    consultingHeadline: formData.get("consultingHeadline"),
+    consultingHighlight: formData.get("consultingHighlight"),
+    consultingSubheadline: formData.get("consultingSubheadline"),
+    consultingPoints: formData.get("consultingPoints"),
+    consultingPrimaryLabel: formData.get("consultingPrimaryLabel"),
+    consultingPrimaryHref: formData.get("consultingPrimaryHref"),
+    consultingSecondaryLabel: formData.get("consultingSecondaryLabel"),
+    consultingSecondaryHref: formData.get("consultingSecondaryHref"),
+    clients: formData.get("clients"),
   });
   if (!parsed.success) return toActionState(parsed.error);
-
-  const highlights = (parsed.data.highlights ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 4);
 
   const page = await prisma.page.findUnique({ where: { slug: "home" }, select: { id: true } });
   if (!page) return { ok: false, message: "Homepage record is missing. Run the seed first." };
 
+  const input = parsed.data;
+  const clients = splitLines(input.clients).slice(0, 6);
+  const consultingPoints = splitLines(input.consultingPoints).slice(0, 6);
+
   const data = {
-    autoplay: parsed.data.autoplay,
-    intervalMs: parsed.data.intervalMs,
-    trustMicrocopy: parsed.data.trustMicrocopy,
-    highlights,
-    slides: parsed.data.slides,
+    autoplay: input.autoplay,
+    intervalMs: input.intervalMs,
+    slides: input.slides,
+
+    chooserLabel: input.chooserLabel || "",
+    agencyLabel: input.agencyLabel || "",
+    consultingLabel: input.consultingLabel || "",
+    consultingEyebrow: input.consultingEyebrow || "",
+    /*
+     * An empty headline is how the chooser is switched off: the hero shows the
+     * agency panel alone rather than a toggle onto an empty page.
+     */
+    consultingHeadline: input.consultingHeadline || "",
+    consultingHighlight: input.consultingHighlight || "",
+    consultingSubheadline: input.consultingSubheadline || "",
+    consultingPoints,
+    consultingPrimaryCta: {
+      label: input.consultingPrimaryLabel || "",
+      href: input.consultingPrimaryHref || "",
+    },
+    consultingSecondaryCta: {
+      label: input.consultingSecondaryLabel || "",
+      href: input.consultingSecondaryHref || "",
+    },
+    clients,
   };
 
   await prisma.pageSection.upsert({

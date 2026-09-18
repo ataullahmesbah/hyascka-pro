@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -41,6 +42,9 @@ export function Navbar({
   const servicesRef = React.useRef<HTMLDivElement>(null);
   const drawerRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  // The drawer is portalled, so it may only render once there is a document.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -228,108 +232,120 @@ export function Navbar({
         </div>
       </nav>
 
-      {/* ---- Mobile / tablet drawer ---- */}
-      {drawerOpen ? (
-        <div className="lg:hidden">
-          <div
-            className="fixed inset-0 z-drawer bg-[hsl(var(--overlay))] backdrop-blur-sm"
-            onClick={() => setDrawerOpen(false)}
-            aria-hidden
-          />
-          <div
-            ref={drawerRef}
-            id="mobile-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Site menu"
-            className="fixed inset-y-0 right-0 z-drawer flex w-[min(22rem,88vw)] flex-col border-l border-line bg-bg shadow-lg"
-          >
-            <div className="flex h-[var(--header-h)] shrink-0 items-center justify-between border-b border-line px-5">
-              <Logo siteName={siteName} size={28} />
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close menu"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:bg-surface-2 hover:text-ink"
-              >
-                <X className="h-[1.1rem] w-[1.1rem]" />
-              </button>
-            </div>
+      {/*
+        ---- Mobile / tablet drawer ----
 
-            <div className="scrollbar-thin flex-1 overflow-y-auto overscroll-contain px-4 py-5">
-              <nav aria-label="Mobile">
-                <ul className="space-y-0.5">
-                  {links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className={cn(
-                          "block rounded-lg px-3.5 py-3 text-step-0 font-medium transition-colors duration-fast hover:bg-surface-2",
-                          isActive(link.href) ? "bg-accent-soft text-accent" : "text-ink",
-                        )}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+        Portalled to <body> rather than left inside <header>. Once the page
+        scrolls, the header gains `backdrop-blur-xl`, and an element with a
+        backdrop-filter becomes the containing block for its `position: fixed`
+        descendants. The drawer was therefore laid out against a 60px-tall
+        header instead of the viewport: it opened correctly at the top of a
+        page and collapsed to a sliver everywhere else.
+      */}
+      {drawerOpen && mounted
+        ? createPortal(
+          <div className="lg:hidden">
+            <div
+              className="fixed inset-0 z-drawer bg-[hsl(var(--overlay))] backdrop-blur-sm"
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden
+            />
+            <div
+              ref={drawerRef}
+              id="mobile-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site menu"
+              className="fixed inset-y-0 right-0 z-drawer flex w-[min(22rem,88vw)] flex-col border-l border-line bg-bg shadow-lg"
+            >
+              <div className="flex h-[var(--header-h)] shrink-0 items-center justify-between border-b border-line px-5">
+                <Logo siteName={siteName} size={28} />
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  aria-label="Close menu"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-btn border border-line-strong text-ink-soft transition-colors duration-fast hover:bg-surface-2 hover:text-ink"
+                >
+                  <X className="h-[1.1rem] w-[1.1rem]" />
+                </button>
+              </div>
 
-                <MobileSection title="Services">
+              <div className="scrollbar-thin flex-1 overflow-y-auto overscroll-contain px-4 py-5">
+                <nav aria-label="Mobile">
                   <ul className="space-y-0.5">
-                    {services.map((service) => (
-                      <li key={service.slug}>
+                    {links.map((link) => (
+                      <li key={link.href}>
                         <Link
-                          href={`/services/${service.slug}`}
-                          className="flex items-center gap-3 rounded-lg px-3.5 py-2.5 transition-colors duration-fast hover:bg-surface-2"
+                          href={link.href}
+                          className={cn(
+                            "block rounded-lg px-3.5 py-3 text-step-0 font-medium transition-colors duration-fast hover:bg-surface-2",
+                            isActive(link.href) ? "bg-accent-soft text-accent" : "text-ink",
+                          )}
                         >
-                          <IconBadge name={service.icon} size="xs" />
-                          <span className="text-step--1 font-medium text-ink">{service.title}</span>
+                          {link.label}
                         </Link>
                       </li>
                     ))}
-                    <li>
-                      <Link
-                        href="/services"
-                        className="block rounded-lg px-3.5 py-2.5 text-step--1 font-semibold text-accent transition-colors duration-fast hover:bg-surface-2"
-                      >
-                        View all services →
-                      </Link>
-                    </li>
                   </ul>
-                </MobileSection>
-              </nav>
-            </div>
 
-            <div className="shrink-0 space-y-3 border-t border-line p-4">
-              <ButtonLink href="/contact" size="lg" className="w-full">
-                Get a quote
-              </ButtonLink>
-              <ButtonLink
-                href="/login"
-                variant="outline"
-                size="lg"
-                data-auth-out=""
-                className="w-full"
-              >
-                Sign in
-              </ButtonLink>
-              <ButtonLink
-                href="/dashboard"
-                variant="outline"
-                size="lg"
-                data-auth-in=""
-                className="w-full justify-center"
-              >
-                Dashboard
-              </ButtonLink>
-              <div className="flex items-center justify-between rounded-lg border border-line px-4 py-2.5">
-                <span className="text-step--1 text-ink-soft">Appearance</span>
-                <ThemeToggle />
+                  <MobileSection title="Services">
+                    <ul className="space-y-0.5">
+                      {services.map((service) => (
+                        <li key={service.slug}>
+                          <Link
+                            href={`/services/${service.slug}`}
+                            className="flex items-center gap-3 rounded-lg px-3.5 py-2.5 transition-colors duration-fast hover:bg-surface-2"
+                          >
+                            <IconBadge name={service.icon} size="xs" />
+                            <span className="text-step--1 font-medium text-ink">{service.title}</span>
+                          </Link>
+                        </li>
+                      ))}
+                      <li>
+                        <Link
+                          href="/services"
+                          className="block rounded-lg px-3.5 py-2.5 text-step--1 font-semibold text-accent transition-colors duration-fast hover:bg-surface-2"
+                        >
+                          View all services →
+                        </Link>
+                      </li>
+                    </ul>
+                  </MobileSection>
+                </nav>
+              </div>
+
+              <div className="shrink-0 space-y-3 border-t border-line p-4">
+                <ButtonLink href="/contact" size="lg" className="w-full">
+                  Get a quote
+                </ButtonLink>
+                <ButtonLink
+                  href="/login"
+                  variant="outline"
+                  size="lg"
+                  data-auth-out=""
+                  className="w-full"
+                >
+                  Sign in
+                </ButtonLink>
+                <ButtonLink
+                  href="/dashboard"
+                  variant="outline"
+                  size="lg"
+                  data-auth-in=""
+                  className="w-full justify-center"
+                >
+                  Dashboard
+                </ButtonLink>
+                <div className="flex items-center justify-between rounded-lg border border-line px-4 py-2.5">
+                  <span className="text-step--1 text-ink-soft">Appearance</span>
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          </div>,
+          document.body,
+        )
+        : null}
     </header>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { askGemini, isAssistantConfigured } from "@/lib/ai/gemini";
+import { askAssistant, isAssistantConfigured } from "@/lib/ai/assistant";
 import { buildKnowledgePack, systemPrompt } from "@/lib/ai/knowledge";
 import { rateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/lib/settings";
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const result = await askGemini({
+    const result = await askAssistant({
       system: systemPrompt(settings.assistant.name, pack.context),
       history: parsed.data.history ?? [],
       message: parsed.data.message,

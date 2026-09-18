@@ -29,16 +29,45 @@ export function BackToTop() {
   );
 }
 
-/** Non-intrusive scroll/exit-intent CTA, shown at most once per session. */
+/**
+ * Scroll/exit-intent CTA, shown at most once a month per browser.
+ *
+ * It used to remember in sessionStorage, which is per tab: a second tab, or
+ * tomorrow's visit, counted as a first visit, so a returning reader met the
+ * same panel over and over. Remembering in localStorage with a date makes
+ * "once" mean once, and "Not now" mean not now — for thirty days.
+ */
+const EXIT_CTA_KEY = "hyascka.exitCta";
+const EXIT_CTA_QUIET_DAYS = 30;
+
+function exitCtaSilenced() {
+  try {
+    const seen = Number(localStorage.getItem(EXIT_CTA_KEY));
+    if (!seen) return false;
+    return Date.now() - seen < EXIT_CTA_QUIET_DAYS * 864e5;
+  } catch {
+    // Private browsing can throw on access. Treat that as "say nothing".
+    return true;
+  }
+}
+
+function silenceExitCta() {
+  try {
+    localStorage.setItem(EXIT_CTA_KEY, String(Date.now()));
+  } catch {
+    /* Nothing to remember it in; the panel simply closes. */
+  }
+}
+
 export function ExitIntentCta() {
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (sessionStorage.getItem("hyascka.exitCta")) return;
+    if (exitCtaSilenced()) return;
 
     const trigger = () => {
       setOpen(true);
-      sessionStorage.setItem("hyascka.exitCta", "1");
+      silenceExitCta();
       cleanup();
     };
     const onMouseOut = (event: MouseEvent) => {
@@ -64,6 +93,11 @@ export function ExitIntentCta() {
     };
   }, []);
 
+  const dismiss = () => {
+    silenceExitCta();
+    setOpen(false);
+  };
+
   if (!open) return null;
 
   return (
@@ -74,7 +108,7 @@ export function ExitIntentCta() {
     >
       <button
         type="button"
-        onClick={() => setOpen(false)}
+        onClick={dismiss}
         aria-label="Dismiss"
         className="absolute right-3 top-3 rounded-btn p-1 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
       >
@@ -89,7 +123,7 @@ export function ExitIntentCta() {
         <ButtonLink href="/contact" size="sm" onClick={() => trackEvent("exit_intent_cta_click")}>
           Get a proposal
         </ButtonLink>
-        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+        <Button variant="ghost" size="sm" onClick={dismiss}>
           Not now
         </Button>
       </div>

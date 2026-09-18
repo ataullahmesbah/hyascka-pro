@@ -344,7 +344,7 @@ export function WhatsappForm({ values }: { values: Record<string, string> }) {
       <TextField
         name="phone"
         label="WhatsApp number"
-        hint="With the country code, e.g. +8801700000000. Leave empty to hide the button."
+        hint="With the country code, e.g. +8801571083401. Leave empty to hide the button."
         defaultValue={values.phone ?? ""}
       />
       <TextField name="label" label="Button label" defaultValue={values.label} required />

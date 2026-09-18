@@ -46,7 +46,7 @@ export async function seedDemoData(prisma: PrismaClient) {
         reference: ref("LEAD", index + 10),
         name,
         email: `${name.split(" ")[0].toLowerCase()}@${company.toLowerCase().replace(/[^a-z]/g, "")}.example`,
-        phone: `+8801${700000000 + index * 137}`,
+        phone: `+8801${571083401 + index * 137}`,
         company,
         budget,
         message: `We are looking at ${serviceBySlug.get(slug)?.title ?? "your services"} and would like to understand scope, timeline and cost before committing. We have an internal deadline this quarter.`,

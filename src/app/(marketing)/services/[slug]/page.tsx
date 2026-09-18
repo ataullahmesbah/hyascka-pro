@@ -168,34 +168,51 @@ export default async function ServiceDetailPage({
               ))}
             </div>
 
-            <h2 className="mt-14 font-display text-2xl font-bold">What makes this work</h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {service.features.map((feature, index) => (
-                <Reveal
-                  key={feature.title}
-                  delay={(index % 2) * 60}
-                  className="rounded-xl border border-line bg-surface p-5"
-                >
-                  <h3 className="font-display text-base font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-muted">{feature.detail}</p>
-                </Reveal>
-              ))}
-            </div>
+            {/*
+              A heading with nothing under it is worse than no section at all —
+              it reads as a page that failed to load. Both lists are optional,
+              so both headings come and go with their content.
+            */}
+            {service.features.length ? (
+              <>
+                <h2 className="mt-14 font-display text-2xl font-bold">What makes this work</h2>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  {service.features.map((feature, index) => (
+                    <Reveal
+                      key={feature.title}
+                      delay={(index % 2) * 60}
+                      className="rounded-xl border border-line bg-surface p-5"
+                    >
+                      <h3 className="font-display text-base font-semibold">{feature.title}</h3>
+                      {feature.detail ? (
+                        <p className="mt-2 text-sm leading-relaxed text-ink-muted">{feature.detail}</p>
+                      ) : null}
+                    </Reveal>
+                  ))}
+                </div>
+              </>
+            ) : null}
 
-            <h2 className="mt-14 font-display text-2xl font-bold">How we deliver it</h2>
-            <ol className="mt-6 space-y-4">
-              {service.processSteps.map((step, index) => (
-                <li key={step.title} className="flex gap-4 rounded-xl border border-line bg-surface p-5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-ink">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3 className="font-display text-base font-semibold">{step.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-muted">{step.detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            {service.processSteps.length ? (
+              <>
+                <h2 className="mt-14 font-display text-2xl font-bold">How we deliver it</h2>
+                <ol className="mt-6 space-y-4">
+                  {service.processSteps.map((step, index) => (
+                    <li key={step.title} className="flex gap-4 rounded-xl border border-line bg-surface p-5">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-ink">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <h3 className="font-display text-base font-semibold">{step.title}</h3>
+                        {step.detail ? (
+                          <p className="mt-1 text-sm leading-relaxed text-ink-muted">{step.detail}</p>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
 
             {service.packages?.length ? (
               <>
@@ -301,8 +318,18 @@ export default async function ServiceDetailPage({
               </div>
             ) : null}
 
-            {calculatorEnabled ? (
-              <QuoteCalculator serviceTitle={service.title} serviceSlug={service.slug} currency={service.currency} />
+            {/*
+              No starting price, no estimate. A service we quote on request has
+              no figure to scale from, and inventing one would be the fake
+              number the calculator exists to avoid.
+            */}
+            {calculatorEnabled && service.startingPrice ? (
+              <QuoteCalculator
+                serviceTitle={service.title}
+                serviceSlug={service.slug}
+                currency={service.currency}
+                basePrice={service.startingPrice}
+              />
             ) : null}
           </aside>
         </div>

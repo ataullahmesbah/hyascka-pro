@@ -47,16 +47,7 @@ export function HeroEditor({ content }: { content: HeroContent }) {
     <ActionForm action={saveHeroAction} successTitle="Hero published">
       <input type="hidden" name="slides" value={JSON.stringify(slides)} />
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field
-          label="Trust line"
-          htmlFor="trustMicrocopy"
-          hint="The small reassurance under the buttons."
-          error={useFieldError("trustMicrocopy")}
-        >
-          <Input id="trustMicrocopy" name="trustMicrocopy" defaultValue={content.trustMicrocopy} />
-        </Field>
-
+      <div className="grid gap-5 sm:max-w-xs">
         <Field
           label="Slide interval (ms)"
           htmlFor="intervalMs"
@@ -74,15 +65,6 @@ export function HeroEditor({ content }: { content: HeroContent }) {
           />
         </Field>
       </div>
-
-      <Field
-        label="Highlight bullets"
-        htmlFor="highlights"
-        hint="One per line, up to four. Shown with a tick under the intro text."
-        error={useFieldError("highlights")}
-      >
-        <Textarea id="highlights" name="highlights" rows={3} defaultValue={content.highlights.join("\n")} />
-      </Field>
 
       <label className="flex items-center gap-2.5 text-step--1">
         <Checkbox name="autoplay" defaultChecked={content.autoplay} />
@@ -256,7 +238,172 @@ export function HeroEditor({ content }: { content: HeroContent }) {
         </div>
       </div>
 
+      <ConsultingPanel content={content} />
+
       <SubmitButton>Save & publish hero</SubmitButton>
     </ActionForm>
+  );
+}
+
+/**
+ * The second half of the chooser.
+ *
+ * Leaving the headline empty switches the whole chooser off and publishes the
+ * hero as a single panel, which is the honest default for an install that only
+ * sells one thing.
+ */
+function ConsultingPanel({ content }: { content: HeroContent }) {
+  return (
+    <div className="rounded-xl border border-line p-5">
+      <p className="font-display text-step-0 font-semibold">The “Consulting & Services” side</p>
+      <p className="mt-1 text-step--2 text-ink-muted">
+        Shown when a visitor picks the second option. Clear the headline to hide the chooser
+        entirely and publish the hero as one panel.
+      </p>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-3">
+        <Field label="Chooser label" htmlFor="chooserLabel" error={useFieldError("chooserLabel")}>
+          <Input
+            id="chooserLabel"
+            name="chooserLabel"
+            defaultValue={content.chooserLabel ?? ""}
+            placeholder="I'm looking for"
+          />
+        </Field>
+        <Field label="First button" htmlFor="agencyLabel" error={useFieldError("agencyLabel")}>
+          <Input
+            id="agencyLabel"
+            name="agencyLabel"
+            defaultValue={content.agencyLabel ?? ""}
+            placeholder="HYASCKA"
+          />
+        </Field>
+        <Field label="Second button" htmlFor="consultingLabel" error={useFieldError("consultingLabel")}>
+          <Input
+            id="consultingLabel"
+            name="consultingLabel"
+            defaultValue={content.consultingLabel ?? ""}
+            placeholder="Consulting & Services"
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <Field label="Eyebrow" htmlFor="consultingEyebrow" error={useFieldError("consultingEyebrow")}>
+          <Input
+            id="consultingEyebrow"
+            name="consultingEyebrow"
+            defaultValue={content.consultingEyebrow ?? ""}
+          />
+        </Field>
+        <Field
+          label="Highlighted word"
+          htmlFor="consultingHighlight"
+          hint="One word or phrase from the headline, shown in the accent colour."
+          error={useFieldError("consultingHighlight")}
+        >
+          <Input
+            id="consultingHighlight"
+            name="consultingHighlight"
+            defaultValue={content.consultingHighlight ?? ""}
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5">
+        <Field
+          label="Headline"
+          htmlFor="consultingHeadline"
+          hint="Empty hides the chooser and the whole second panel."
+          error={useFieldError("consultingHeadline")}
+        >
+          <Input
+            id="consultingHeadline"
+            name="consultingHeadline"
+            defaultValue={content.consultingHeadline ?? ""}
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5">
+        <Field
+          label="Subheadline"
+          htmlFor="consultingSubheadline"
+          error={useFieldError("consultingSubheadline")}
+        >
+          <Textarea
+            id="consultingSubheadline"
+            name="consultingSubheadline"
+            rows={3}
+            defaultValue={content.consultingSubheadline ?? ""}
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5">
+        <Field
+          label="What we do"
+          htmlFor="consultingPoints"
+          hint="One short line each, up to six. Shown as a ticked two-column list."
+          error={useFieldError("consultingPoints")}
+        >
+          <Textarea
+            id="consultingPoints"
+            name="consultingPoints"
+            rows={4}
+            defaultValue={(content.consultingPoints ?? []).join("\n")}
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <Field label="Primary button" htmlFor="consultingPrimaryLabel">
+          <Input
+            id="consultingPrimaryLabel"
+            name="consultingPrimaryLabel"
+            defaultValue={content.consultingPrimaryCta?.label ?? ""}
+            placeholder="Book a consultation"
+          />
+        </Field>
+        <Field label="Primary button link" htmlFor="consultingPrimaryHref">
+          <Input
+            id="consultingPrimaryHref"
+            name="consultingPrimaryHref"
+            defaultValue={content.consultingPrimaryCta?.href ?? ""}
+            placeholder="/contact"
+          />
+        </Field>
+        <Field label="Secondary button" htmlFor="consultingSecondaryLabel">
+          <Input
+            id="consultingSecondaryLabel"
+            name="consultingSecondaryLabel"
+            defaultValue={content.consultingSecondaryCta?.label ?? ""}
+          />
+        </Field>
+        <Field label="Secondary button link" htmlFor="consultingSecondaryHref">
+          <Input
+            id="consultingSecondaryHref"
+            name="consultingSecondaryHref"
+            defaultValue={content.consultingSecondaryCta?.href ?? ""}
+          />
+        </Field>
+      </div>
+
+      <div className="mt-5">
+        <Field
+          label="Teams we work with"
+          htmlFor="clients"
+          hint="One company name per line, up to six. Only names you are allowed to show."
+          error={useFieldError("clients")}
+        >
+          <Textarea id="clients" name="clients" rows={4} defaultValue={(content.clients ?? []).join("\n")} />
+        </Field>
+      </div>
+
+      <p className="mt-5 text-step--2 text-ink-muted">
+        Beside this panel the site draws the world map of where we work. It is generated from the
+        theme, so it needs no image and re-colours with the rest of the site.
+      </p>
+    </div>
   );
 }

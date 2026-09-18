@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { AssistantResult, ChatTurn } from "@/lib/ai/types";
+
 /**
  * Minimal Gemini client (PRD §7.3).
  *
@@ -8,13 +10,7 @@ import "server-only";
  */
 const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
 
-export type ChatTurn = { role: "user" | "assistant"; content: string };
-
-export type GeminiResult =
-  | { ok: true; reply: string }
-  | { ok: false; error: string; status?: number };
-
-export function isAssistantConfigured() {
+export function isGeminiConfigured() {
   return Boolean(process.env.GEMINI_API_KEY);
 }
 
@@ -28,7 +24,7 @@ export async function askGemini({
   history: ChatTurn[];
   message: string;
   signal?: AbortSignal;
-}): Promise<GeminiResult> {
+}): Promise<AssistantResult> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return { ok: false, error: "The assistant is not configured yet." };
 

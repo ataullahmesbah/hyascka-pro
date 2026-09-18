@@ -10,6 +10,23 @@ const email = z.string().trim().toLowerCase().email("Enter a valid email address
 const name = z.string().trim().min(2, "Enter your full name.").max(120);
 const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 
+/**
+ * Text from a textarea, with its line endings normalised.
+ *
+ * A browser submits CRLF from a textarea, per the HTML spec, while everything
+ * that reads this text afterwards looks for "\n\n" or /\n{2,}/ to find a
+ * paragraph break. A blank line typed in the dashboard therefore arrived as
+ * "\r\n\r\n" and matched neither, so long copy published as one unbroken
+ * wall. Normalising here fixes it for every reader at once.
+ */
+const multiline = (min: number, max: number) =>
+  z
+    .string()
+    .trim()
+    .min(min)
+    .max(max)
+    .transform((value) => value.replace(/\r\n?/g, "\n"));
+
 export const passwordSchema = z
   .string()
   .min(10, "Use at least 10 characters.")
@@ -267,8 +284,6 @@ export const assistantSettingsSchema = z.object({
 export const heroSettingsSchema = z.object({
   autoplay: z.coerce.boolean(),
   intervalMs: z.coerce.number().int().min(3500).max(20000),
-  trustMicrocopy: z.string().trim().max(200),
-  highlights: z.string().max(600).optional().or(z.literal("")),
   slides: z
     .array(
       z.object({
@@ -290,6 +305,26 @@ export const heroSettingsSchema = z.object({
     )
     .min(1, "At least one slide is required.")
     .max(5, "Keep the hero to five slides or fewer."),
+  /*
+   * The two sides of the hero chooser. A visitor arrives wanting one of two
+   * things — someone to do the work, or a team to advise — and the hero asks
+   * which before it starts talking.
+   */
+  chooserLabel: z.string().trim().max(40).optional().or(z.literal("")),
+  agencyLabel: z.string().trim().max(40).optional().or(z.literal("")),
+  consultingLabel: z.string().trim().max(40).optional().or(z.literal("")),
+  consultingEyebrow: z.string().trim().max(60).optional().or(z.literal("")),
+  consultingHeadline: z.string().trim().max(120).optional().or(z.literal("")),
+  consultingHighlight: z.string().trim().max(40).optional().or(z.literal("")),
+  consultingSubheadline: z.string().trim().max(500).optional().or(z.literal("")),
+  /** One short line per line of text. */
+  consultingPoints: z.string().max(600).optional().or(z.literal("")),
+  consultingPrimaryLabel: z.string().trim().max(40).optional().or(z.literal("")),
+  consultingPrimaryHref: z.string().trim().max(300).optional().or(z.literal("")),
+  consultingSecondaryLabel: z.string().trim().max(40).optional().or(z.literal("")),
+  consultingSecondaryHref: z.string().trim().max(300).optional().or(z.literal("")),
+  /** One company name per line. */
+  clients: z.string().max(600).optional().or(z.literal("")),
 });
 
 /** Chat message accepted by the public assistant endpoint. */
@@ -382,7 +417,7 @@ export const serviceContentSchema = z.object({
   slug: z.string().trim().min(3).max(120).regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and dashes."),
   tagline: optionalText(200),
   shortDescription: z.string().trim().min(20).max(400),
-  longDescription: z.string().trim().min(50).max(8000),
+  longDescription: multiline(50, 8000),
   categorySlug: z.string().trim().max(80),
   icon: optionalText(60),
   timeline: optionalText(120),
@@ -395,6 +430,17 @@ export const serviceContentSchema = z.object({
   metaDescription: optionalText(200),
   deliverables: z.string().max(4000).optional(),
   technologies: z.string().max(2000).optional(),
+  /*
+   * "Title | Detail" per line. Both feed sections the public page renders, and
+   * both were previously seed-only — a service created from the dashboard had
+   * no way to fill them, so it published with two empty headings.
+   */
+  features: z.string().max(4000).optional(),
+  processSteps: z.string().max(4000).optional(),
+  /** "Question | Answer" per line. */
+  faqs: z.string().max(8000).optional(),
+  /** "Name | Price | Billing | Summary | Feature; Feature" per line. */
+  packages: z.string().max(8000).optional(),
 });
 
 export const postContentSchema = z.object({
@@ -402,7 +448,7 @@ export const postContentSchema = z.object({
   title: z.string().trim().min(5).max(160),
   slug: z.string().trim().min(3).max(160).regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and dashes."),
   excerpt: z.string().trim().min(20).max(400),
-  content: z.string().trim().min(100).max(60000),
+  content: multiline(100, 60000),
   categoryName: z.string().trim().max(60).default("Insights"),
   readMinutes: z.coerce.number().int().min(1).max(90).default(5),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),

@@ -73,7 +73,7 @@ export function ContactForm({
           <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@company.com" />
         </Field>
         <Field label="Phone" htmlFor="phone" hint="Optional — helps if we need a quick call." error={state?.fieldErrors?.phone}>
-          <Input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="+880 1700 000000" />
+          <Input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="+880 1571 083401" />
         </Field>
         <Field label="Company" htmlFor="company" error={state?.fieldErrors?.company}>
           <Input id="company" name="company" autoComplete="organization" placeholder="Company name" />

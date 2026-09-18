@@ -92,7 +92,7 @@ const config: Config = {
         "scale-in": "hy-scale-in 0.2s var(--ease-out) both",
         float: "hy-float 6s ease-in-out infinite",
       },
-      zIndex: { header: "50", drawer: "60", modal: "70", toast: "100" },
+      zIndex: { header: "50", consent: "55", drawer: "60", modal: "70", toast: "100" },
     },
   },
   plugins: [],

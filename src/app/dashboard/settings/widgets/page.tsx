@@ -5,13 +5,14 @@ import {
   WhatsappForm,
 } from "@/components/dashboard/settings-forms";
 import { getSettings } from "@/lib/settings";
-import { isAssistantConfigured } from "@/lib/ai/gemini";
+import { assistantModel, assistantProvider } from "@/lib/ai/assistant";
 
 export const dynamic = "force-dynamic";
 
 export default async function WidgetSettingsPage() {
   const { whatsapp, assistant, contact, featureFlags } = await getSettings();
-  const geminiReady = isAssistantConfigured();
+  const provider = assistantProvider();
+  const model = assistantModel();
 
   return (
     <div className="space-y-5">
@@ -46,14 +47,16 @@ export default async function WidgetSettingsPage() {
         title="AI assistant"
         description="Answers visitors from your published services, pricing, case studies, FAQs and blog. It has no access to accounts, invoices or any customer record."
       >
-        {!geminiReady ? (
+        {!provider ? (
           <p className="mb-4 rounded-lg border border-warning/40 bg-warning-soft p-3 text-step--1 text-warning">
-            <strong>GEMINI_API_KEY is not set.</strong> The assistant stays hidden until it is. Get a
-            free key at aistudio.google.com/apikey and add it to your environment variables.
+            <strong>No assistant key is set.</strong> The assistant stays hidden until one is. Add
+            either <code>GROQ_API_KEY</code> (free key at console.groq.com/keys) or{" "}
+            <code>GEMINI_API_KEY</code> (aistudio.google.com/apikey) to your environment variables.
           </p>
         ) : (
           <p className="mb-4 rounded-lg border border-success/40 bg-success-soft p-3 text-step--1 text-success">
-            Gemini is connected. The assistant answers from published content only.
+            {provider === "groq" ? "Groq" : "Gemini"} is connected, running <code>{model}</code>. The
+            assistant answers from published content only.
           </p>
         )}
         <div className="mb-5 rounded-lg border border-line p-4">

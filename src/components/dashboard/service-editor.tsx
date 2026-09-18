@@ -1,5 +1,7 @@
 "use client";
 
+import * as React from "react";
+
 import { saveServiceAction } from "@/actions/content";
 import { ActionForm, SubmitButton, useFieldError } from "@/components/dashboard/action-form";
 import { Panel } from "@/components/dashboard/page-shell";
@@ -24,6 +26,10 @@ export type ServiceDraft = {
   metaDescription: string;
   deliverables: string;
   technologies: string;
+  features: string;
+  processSteps: string;
+  faqs: string;
+  packages: string;
 };
 
 const PRICING = ["FIXED", "STARTING_FROM", "CUSTOM_QUOTE", "MONTHLY_RETAINER", "HIDDEN"];
@@ -39,33 +45,62 @@ export function ServiceEditor({
   draft: ServiceDraft;
   categories: { slug: string; name: string }[];
 }) {
+  /*
+   * The draft is captured once, on first render, and never read from the props
+   * again.
+   *
+   * These are uncontrolled inputs, so their `defaultValue` has to stay stable.
+   * A Server Action re-renders this page, and on a new service the incoming
+   * draft is all empty strings — React saw `defaultValue` change back to ""
+   * and cleared the fields. A save that failed because the slug was taken
+   * therefore threw away everything typed, which is the moment you least want
+   * to retype a page of copy.
+   */
+  const [initial] = React.useState(draft);
+
   return (
-    <ActionForm action={saveServiceAction} successTitle="Service saved">
-      {draft.id ? <input type="hidden" name="id" value={draft.id} /> : null}
+    <ActionForm
+      action={saveServiceAction}
+      successTitle="Service saved"
+      successHref="/dashboard/services"
+    >
+      {initial.id ? <input type="hidden" name="id" value={initial.id} /> : null}
 
       <div className="grid gap-5 lg:grid-cols-[1.5fr_0.5fr]">
         <div className="space-y-5">
           <Panel title="Content">
             <div className="space-y-5">
-              <TitleField defaultValue={draft.title} />
-              <SlugField defaultValue={draft.slug} />
-              <TaglineField defaultValue={draft.tagline} />
-              <ShortField defaultValue={draft.shortDescription} />
-              <LongField defaultValue={draft.longDescription} />
+              <TitleField defaultValue={initial.title} />
+              <SlugField defaultValue={initial.slug} />
+              <TaglineField defaultValue={initial.tagline} />
+              <ShortField defaultValue={initial.shortDescription} />
+              <LongField defaultValue={initial.longDescription} />
             </div>
           </Panel>
 
           <Panel title="Details">
             <div className="space-y-5">
-              <DeliverablesField defaultValue={draft.deliverables} />
-              <TechnologiesField defaultValue={draft.technologies} />
+              <DeliverablesField defaultValue={initial.deliverables} />
+              <TechnologiesField defaultValue={initial.technologies} />
+            </div>
+          </Panel>
+
+          <Panel
+            title="Page sections"
+            description="Each renders as its own section on the public page. Leave one empty and that section is left out entirely."
+          >
+            <div className="space-y-5">
+              <FeaturesField defaultValue={initial.features} />
+              <ProcessStepsField defaultValue={initial.processSteps} />
+              <PackagesField defaultValue={initial.packages} />
+              <FaqsField defaultValue={initial.faqs} />
             </div>
           </Panel>
 
           <Panel title="Search appearance" description="How this page looks in Google results.">
             <div className="space-y-5">
-              <MetaTitleField defaultValue={draft.metaTitle} />
-              <MetaDescriptionField defaultValue={draft.metaDescription} />
+              <MetaTitleField defaultValue={initial.metaTitle} />
+              <MetaDescriptionField defaultValue={initial.metaDescription} />
             </div>
           </Panel>
         </div>
@@ -73,25 +108,20 @@ export function ServiceEditor({
         <aside className="space-y-5">
           <Panel title="Publishing">
             <div className="space-y-5">
-              <StatusField defaultValue={draft.status} />
-              <div className="flex items-center gap-2.5">
-                <Checkbox id="featured" name="featured" defaultChecked={draft.featured} />
-                <label htmlFor="featured" className="text-sm">
-                  Feature on the homepage
-                </label>
-              </div>
-              <SubmitButton className="w-full">Save service</SubmitButton>
+              <StatusField defaultValue={initial.status} />
+              <CategoryField defaultValue={initial.categorySlug} categories={categories} />
+              <IconField defaultValue={initial.icon} />
+              <FeaturedField defaultChecked={initial.featured} />
             </div>
+            <SubmitButton className="mt-5 w-full">Save service</SubmitButton>
           </Panel>
 
-          <Panel title="Commercial">
+          <Panel title="Pricing">
             <div className="space-y-5">
-              <CategoryField categories={categories} defaultValue={draft.categorySlug} />
-              <PricingField defaultValue={draft.pricingModel} />
-              <PriceField defaultValue={draft.startingPrice} />
-              <CurrencyField defaultValue={draft.currency} />
-              <TimelineField defaultValue={draft.timeline} />
-              <IconField defaultValue={draft.icon} />
+              <PricingModelField defaultValue={initial.pricingModel} />
+              <StartingPriceField defaultValue={initial.startingPrice} />
+              <CurrencyField defaultValue={initial.currency} />
+              <TimelineField defaultValue={initial.timeline} />
             </div>
           </Panel>
         </aside>
@@ -111,10 +141,10 @@ function TitleField({ defaultValue }: { defaultValue: string }) {
 function SlugField({ defaultValue }: { defaultValue: string }) {
   return (
     <Field
-      label="URL slug"
+      label="Slug"
       htmlFor="slug"
       required
-      hint="The address of the page: /services/your-slug. Lowercase letters, numbers and dashes only."
+      hint="The web address: /services/your-slug. Must be unique."
       error={useFieldError("slug")}
     >
       <Input id="slug" name="slug" defaultValue={defaultValue} required />
@@ -124,7 +154,7 @@ function SlugField({ defaultValue }: { defaultValue: string }) {
 
 function TaglineField({ defaultValue }: { defaultValue: string }) {
   return (
-    <Field label="Tagline" htmlFor="tagline" hint="One line, shown under the page title." error={useFieldError("tagline")}>
+    <Field label="Tagline" htmlFor="tagline" error={useFieldError("tagline")}>
       <Input id="tagline" name="tagline" defaultValue={defaultValue} />
     </Field>
   );
@@ -136,7 +166,7 @@ function ShortField({ defaultValue }: { defaultValue: string }) {
       label="Short description"
       htmlFor="shortDescription"
       required
-      hint="Shown on the services grid. Two sentences works well."
+      hint="Used on service cards and in search results."
       error={useFieldError("shortDescription")}
     >
       <Textarea id="shortDescription" name="shortDescription" rows={3} defaultValue={defaultValue} required />
@@ -171,6 +201,66 @@ function DeliverablesField({ defaultValue }: { defaultValue: string }) {
   );
 }
 
+function FeaturesField({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field
+      label="What makes this work"
+      htmlFor="features"
+      hint={'One per line, as "Title | Detail". Example: Performance budget enforced | Checked in CI, not measured after launch.'}
+      error={useFieldError("features")}
+    >
+      <Textarea id="features" name="features" rows={6} defaultValue={defaultValue} />
+    </Field>
+  );
+}
+
+function ProcessStepsField({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field
+      label="How we deliver it"
+      htmlFor="processSteps"
+      hint={'One step per line, as "Title | Detail", in the order they happen. They are numbered for you.'}
+      error={useFieldError("processSteps")}
+    >
+      <Textarea id="processSteps" name="processSteps" rows={6} defaultValue={defaultValue} />
+    </Field>
+  );
+}
+
+function PackagesField({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field
+      label="Packages"
+      htmlFor="packages"
+      hint={
+        'One per line: Name | Price | Billing | Summary | Feature; Feature. Leave the price empty for "Custom quote", and put * before a name to highlight that card.'
+      }
+      error={useFieldError("packages")}
+    >
+      <Textarea
+        id="packages"
+        name="packages"
+        rows={5}
+        defaultValue={defaultValue}
+        placeholder={"Launch | 1500 | one-time | A focused build | Up to 8 pages; CMS; 30 days support"}
+      />
+    </Field>
+  );
+}
+
+function FaqsField({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field
+      label="Common questions"
+      htmlFor="faqs"
+      hint={'One per line, as "Question | Answer". A line without an answer is skipped.'}
+      error={useFieldError("faqs")}
+    >
+      <Textarea id="faqs" name="faqs" rows={6} defaultValue={defaultValue} />
+    </Field>
+  );
+}
+
 function TechnologiesField({ defaultValue }: { defaultValue: string }) {
   return (
     <Field label="Tools and technologies" htmlFor="technologies" hint="One per line." error={useFieldError("technologies")}>
@@ -181,13 +271,8 @@ function TechnologiesField({ defaultValue }: { defaultValue: string }) {
 
 function MetaTitleField({ defaultValue }: { defaultValue: string }) {
   return (
-    <Field
-      label="Meta title"
-      htmlFor="metaTitle"
-      hint="Up to about 60 characters. Google truncates longer titles."
-      error={useFieldError("metaTitle")}
-    >
-      <Input id="metaTitle" name="metaTitle" defaultValue={defaultValue} maxLength={70} />
+    <Field label="Meta title" htmlFor="metaTitle" hint="Up to 70 characters." error={useFieldError("metaTitle")}>
+      <Input id="metaTitle" name="metaTitle" defaultValue={defaultValue} />
     </Field>
   );
 }
@@ -197,10 +282,10 @@ function MetaDescriptionField({ defaultValue }: { defaultValue: string }) {
     <Field
       label="Meta description"
       htmlFor="metaDescription"
-      hint="Around 155 characters. This is the grey text under the blue link."
+      hint="Up to 160 characters."
       error={useFieldError("metaDescription")}
     >
-      <Textarea id="metaDescription" name="metaDescription" rows={3} defaultValue={defaultValue} maxLength={200} />
+      <Textarea id="metaDescription" name="metaDescription" rows={3} defaultValue={defaultValue} />
     </Field>
   );
 }
@@ -209,8 +294,8 @@ function StatusField({ defaultValue }: { defaultValue: string }) {
   return (
     <Field label="Status" htmlFor="status" error={useFieldError("status")}>
       <Select id="status" name="status" defaultValue={defaultValue}>
-        <option value="PUBLISHED">Published — live on the site</option>
-        <option value="DRAFT">Draft — not visible publicly</option>
+        <option value="DRAFT">Draft</option>
+        <option value="PUBLISHED">Published</option>
         <option value="ARCHIVED">Archived</option>
       </Select>
     </Field>
@@ -218,11 +303,11 @@ function StatusField({ defaultValue }: { defaultValue: string }) {
 }
 
 function CategoryField({
-  categories,
   defaultValue,
+  categories,
 }: {
-  categories: { slug: string; name: string }[];
   defaultValue: string;
+  categories: { slug: string; name: string }[];
 }) {
   return (
     <Field label="Category" htmlFor="categorySlug" error={useFieldError("categorySlug")}>
@@ -237,13 +322,30 @@ function CategoryField({
   );
 }
 
-function PricingField({ defaultValue }: { defaultValue: string }) {
+function IconField({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Field label="Icon" htmlFor="icon" hint="A lucide icon name, e.g. Code2 or Bot." error={useFieldError("icon")}>
+      <Input id="icon" name="icon" defaultValue={defaultValue} />
+    </Field>
+  );
+}
+
+function FeaturedField({ defaultChecked }: { defaultChecked: boolean }) {
+  return (
+    <label className="flex items-center gap-2.5 text-step--1">
+      <Checkbox name="featured" defaultChecked={defaultChecked} />
+      Feature on the homepage
+    </label>
+  );
+}
+
+function PricingModelField({ defaultValue }: { defaultValue: string }) {
   return (
     <Field label="Pricing model" htmlFor="pricingModel" error={useFieldError("pricingModel")}>
       <Select id="pricingModel" name="pricingModel" defaultValue={defaultValue}>
-        {PRICING.map((model) => (
-          <option key={model} value={model}>
-            {model.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}
+        {PRICING.map((value) => (
+          <option key={value} value={value}>
+            {value.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}
           </option>
         ))}
       </Select>
@@ -251,10 +353,15 @@ function PricingField({ defaultValue }: { defaultValue: string }) {
   );
 }
 
-function PriceField({ defaultValue }: { defaultValue: string }) {
+function StartingPriceField({ defaultValue }: { defaultValue: string }) {
   return (
-    <Field label="Starting price" htmlFor="startingPrice" hint="Leave empty for custom quote." error={useFieldError("startingPrice")}>
-      <Input id="startingPrice" name="startingPrice" type="number" min={0} step={1000} defaultValue={defaultValue} />
+    <Field
+      label="Starting price"
+      htmlFor="startingPrice"
+      hint="Also the figure the estimate range scales from. Leave empty to hide both."
+      error={useFieldError("startingPrice")}
+    >
+      <Input id="startingPrice" name="startingPrice" type="number" min={0} step="0.01" defaultValue={defaultValue} />
     </Field>
   );
 }
@@ -263,9 +370,9 @@ function CurrencyField({ defaultValue }: { defaultValue: string }) {
   return (
     <Field label="Currency" htmlFor="currency" error={useFieldError("currency")}>
       <Select id="currency" name="currency" defaultValue={defaultValue}>
-        {["BDT", "USD", "EUR", "GBP"].map((currency) => (
-          <option key={currency} value={currency}>
-            {currency}
+        {["USD", "BDT", "EUR", "GBP"].map((code) => (
+          <option key={code} value={code}>
+            {code}
           </option>
         ))}
       </Select>
@@ -275,21 +382,8 @@ function CurrencyField({ defaultValue }: { defaultValue: string }) {
 
 function TimelineField({ defaultValue }: { defaultValue: string }) {
   return (
-    <Field label="Typical timeline" htmlFor="timeline" error={useFieldError("timeline")}>
-      <Input id="timeline" name="timeline" defaultValue={defaultValue} placeholder="4–10 weeks" />
-    </Field>
-  );
-}
-
-function IconField({ defaultValue }: { defaultValue: string }) {
-  return (
-    <Field
-      label="Icon"
-      htmlFor="icon"
-      hint="A Lucide icon name, e.g. Code2, Search, Bot."
-      error={useFieldError("icon")}
-    >
-      <Input id="icon" name="icon" defaultValue={defaultValue} placeholder="Sparkles" />
+    <Field label="Timeline" htmlFor="timeline" error={useFieldError("timeline")}>
+      <Input id="timeline" name="timeline" defaultValue={defaultValue} />
     </Field>
   );
 }

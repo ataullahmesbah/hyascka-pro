@@ -8,12 +8,34 @@ import { requirePermission } from "@/lib/auth/guards";
 
 export const dynamic = "force-dynamic";
 
+/** Turns a stored Title/Detail list back into the one-per-line form the editor shows. */
+function toTitledLines(value: unknown) {
+  if (!Array.isArray(value)) return "";
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return "";
+      const { title, detail } = entry as { title?: unknown; detail?: unknown };
+      if (typeof title !== "string" || !title) return "";
+      return typeof detail === "string" && detail ? `${title} | ${detail}` : title;
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
 export default async function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   await requirePermission("services.manage");
   const { id } = await params;
 
   const [service, categories] = await Promise.all([
-    prisma.service.findUnique({ where: { id }, include: { category: { select: { slug: true } } } }),
+    prisma.service.findUnique({
+      where: { id },
+      include: {
+        category: { select: { slug: true } },
+        features: { orderBy: { position: "asc" }, select: { title: true, detail: true } },
+        faqs: { orderBy: { position: "asc" }, select: { question: true, answer: true } },
+        packages: { orderBy: { position: "asc" } },
+      },
+    }),
     prisma.serviceCategory.findMany({ orderBy: { position: "asc" }, select: { slug: true, name: true } }),
   ]);
   if (!service) notFound();
@@ -51,6 +73,20 @@ export default async function EditServicePage({ params }: { params: Promise<{ id
           metaDescription: service.metaDescription ?? "",
           deliverables: service.deliverables.join("\n"),
           technologies: service.technologies.join("\n"),
+          features: toTitledLines(service.features),
+          processSteps: toTitledLines(service.processSteps),
+          faqs: service.faqs.map((faq) => `${faq.question} | ${faq.answer}`).join("\n"),
+          packages: service.packages
+            .map((pkg) =>
+              [
+                `${pkg.highlighted ? "*" : ""}${pkg.name}`,
+                pkg.price === null ? "" : String(Number(pkg.price)),
+                pkg.billingCycle ?? "",
+                pkg.summary ?? "",
+                pkg.features.join("; "),
+              ].join(" | "),
+            )
+            .join("\n"),
         }}
       />
     </>

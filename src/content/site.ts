@@ -36,8 +36,8 @@ export const defaultFonts = {
 export const defaultContact = {
   email: "hello@hyascka.com",
   supportEmail: "support@hyascka.com",
-  phone: "+880 1700 000000",
-  whatsapp: "+8801700000000",
+  phone: "+880 1571 083401",
+  whatsapp: "+8801571083401",
   addressLine: "Level 5, Bashundhara R/A",
   city: "Dhaka",
   country: "Bangladesh",
@@ -179,42 +179,68 @@ export const homepage = {
       {
         id: "h1",
         eyebrow: "Digital Service Provider",
-        headline: "Digital work that can be measured.",
-        highlight: "measured",
+        headline: "One team for the build, the traffic and the automation.",
+        highlight: "One team",
         subheadline:
-          "We build fast, secure web platforms and run the search, paid media and automation programmes that turn them into pipeline. Everything we ship is instrumented, so you always know what it earned.",
+          "Websites, storefronts, search, paid media and AI automation — delivered by the same people and measured against the same number. One accountable partner instead of four suppliers pointing at each other.",
         primaryCta: { label: "Start a project", href: "/contact" },
         secondaryCta: { label: "See our work", href: "/work" },
         imageUrl: "",
       },
       {
         id: "h2",
-        eyebrow: "Engineering",
-        headline: "Sites that load before your visitor gives up.",
-        highlight: "before",
+        eyebrow: "What we build",
+        headline: "Websites, storefronts and the systems behind them.",
+        highlight: "storefronts",
         subheadline:
-          "A performance budget enforced in the deployment pipeline, not measured after launch. Ninety-plus Lighthouse is an acceptance criterion on every build we hand over.",
-        primaryCta: { label: "See our engineering", href: "/services/web-development" },
+          "Web Development · E-commerce · SEO · Technical SEO · Local SEO · Paid Media · Email · Brand & Design. Every build is instrumented, so what it earns is a number rather than an opinion.",
+        primaryCta: { label: "Browse services", href: "/services" },
         secondaryCta: { label: "Compare packages", href: "/pricing" },
         imageUrl: "",
       },
       {
         id: "h3",
-        eyebrow: "Growth",
-        headline: "Reporting you can defend upward.",
-        highlight: "defend",
+        eyebrow: "AI & Automation",
+        headline: "Agents that answer while your team sleeps.",
+        highlight: "Agents",
         subheadline:
-          "Server-side conversion tracking, CRM-matched lead quality and monthly reporting written in the language of revenue rather than impressions.",
-        primaryCta: { label: "Talk to us", href: "/contact" },
-        secondaryCta: { label: "Browse services", href: "/services" },
+          "AI chat agents on WhatsApp, Instagram and Messenger. n8n workflows that do the repeated work. Automation running on infrastructure you own — something the business runs on, not a demo.",
+        primaryCta: { label: "See AI services", href: "/services/ai-chat-agents" },
+        secondaryCta: { label: "Talk to us", href: "/contact" },
         imageUrl: "",
       },
     ],
-    trustMicrocopy: "Fixed-scope proposals · You own the code · No lock-in",
-    highlights: [
-      "90+ Lighthouse as an acceptance criterion",
-      "WCAG 2.1 AA accessibility",
-      "Reporting tied to revenue, not sessions",
+
+    /*
+     * The chooser. A visitor arrives wanting one of two things — a team to
+     * build the work, or people to advise on it — and asking which before we
+     * start talking beats guessing and losing half of them.
+     */
+    chooserLabel: "I'm looking for",
+    agencyLabel: "HYASCKA",
+    consultingLabel: "Consulting & Services",
+    consultingEyebrow: "Consulting & Services",
+    consultingHeadline: "Consulting, from the people who ship the work.",
+    consultingHighlight: "people who ship",
+    consultingSubheadline:
+      "Architecture reviews, growth audits and fractional leadership — scoped to one question, priced before we start, delivered with the working files.",
+    /** Three or four short lines: what this side of the business actually does. */
+    consultingPoints: [
+      "Architecture and code reviews",
+      "SEO and growth audits",
+      "AI automation strategy",
+      "Fractional technical leadership",
+    ],
+    consultingPrimaryCta: { label: "Book a consultation", href: "/contact" },
+    consultingSecondaryCta: { label: "See how we work", href: "/about" },
+    /** Shown as a quiet row under the consulting panel. */
+    clients: [
+      "Northlane Systems",
+      "Vireo Health",
+      "Maison Rouge",
+      "Aurora Collective",
+      "Meridian Advisory",
+      "Trailpoint Logistics",
     ],
   },
 
