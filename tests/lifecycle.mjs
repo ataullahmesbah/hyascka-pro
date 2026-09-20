@@ -10,6 +10,7 @@
  *   4. The client can download their invoice as a PDF, and nobody else can.
  *
  * Run against a built app:  npm run build && npm start &  then
+ * Run against a built app:  npm run build && npm start &  then
  *   CHROMIUM_PATH=… node tests/lifecycle.mjs [baseUrl]
  */
 import { chromium } from "playwright";
